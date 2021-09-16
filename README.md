@@ -16,7 +16,7 @@ As its name says, d18n can mask data to make it desensitized. In addition, d18n 
 
 It can be used as a portable cmd client or imported as a package by other tools.
 
-For more details and latest updates, see [doc](./doc/toc.md) and [release](releases) notes.
+For more details and latest updates, see [doc](./doc/toc.md) and [release](https://github.com/LianjiaTech/d18n/releases) notes.
 
 ## Build
 
@@ -45,7 +45,7 @@ Golang support many
 d18n.darwin-amd64  d18n.darwin-arm64  d18n.linux-amd64  d18n.windows-amd64
 ```
 
-## [Quick Start](quickstart.md)
+## [Quick Start](./doc/quickstart.md)
 
 Simple Example
 
