@@ -1,0 +1,46 @@
+<!-- watermark text -->
+
+<style type="text/css">
+	.watermarked {
+	  position: fixed;
+	  overflow: hidden;
+	}
+
+	.watermarked::before {
+	  position: absolute;
+	  top: -75%;
+	  left: -75%;
+
+	  display: block;
+	  width: 150%;
+	  height: 150%;
+	  z-index: -1;
+
+	  transform: rotate(-45deg);
+	  content: attr(data-watermark);
+
+	  opacity: 0.5;
+	  line-height: 3em;
+	  letter-spacing: 2px;
+	  color: #ccc;
+	}
+</style>
+
+<div class="watermarked" data-watermark="watermark text">
+<TABLE>
+<TR><TH>Database</TH></TR>
+<TR><TD>information_schema</TD></TR>
+<TR><TD>mysql</TD></TR>
+<TR><TD>performance_schema</TD></TR>
+<TR><TD>sakila</TD></TR>
+<TR><TD>sys</TD></TR>
+<TR><TD>test</TD></TR>
+<TR><TD>world_x</TD></TR>
+</TABLE><!-- watermark text -->
+</div>
+
+<script type="text/javascript">
+	Array.from(document.querySelectorAll('.watermarked')).forEach(function(el) {
+	  el.dataset.watermark = (el.dataset.watermark + ' ').repeat(300);
+	});
+</script>

@@ -1,0 +1,41 @@
+CLICKHOUSE_PASSWORD=password
+
+D18N_CLICKHOUSE_ARGS=--server clickhouse --host 127.0.0.1 --port 9000 --user username --password ${CLICKHOUSE_PASSWORD}
+
+.PHONY: docker-clickhouse
+# Container exposes 8123 port for HTTP interface and 9000 port for native client.
+docker-clickhouse: docker-exist
+	@${DOCKER_CMD} stop d18n-clickhouse 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-clickhouse 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d --rm --name d18n-clickhouse \
+	--ulimit nofile=262144:262144 \
+	-e CLICKHOUSE_USER=username \
+	-e CLICKHOUSE_PASSWORD=password \
+	-e CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1 \
+	-p 8123:8123 \
+	-p 9000:9000 \
+	yandex/clickhouse-server
+
+.PHONY: docker-ck-client
+# clickhouse support load csv file directly
+# cat file.csv | time clickhouse-client --query="INSERT INTO mytable FORMAT CSV"
+docker-ck-client:
+	@${DOCKER_CMD} exec -it d18n-clickhouse clickhouse client --user username --password password
+
+.PHONY: test-clickhouse
+test-clickhouse:
+	# test query
+	@./bin/d18n ${D18N_CLICKHOUSE_ARGS} \
+	--verbose \
+	--query "SHOW DATABASES"
+
+	# test array
+	@./bin/d18n ${D18N_CLICKHOUSE_ARGS} \
+	--database system \
+	--verbose \
+	--limit 5 \
+	--query "SELECT name, host_ip, host_names, default_roles_all FROM users"
+
+	# test quote
+	@./bin/d18n ${D18N_CLICKHOUSE_ARGS} \
+	--query "SELECT 'single quote\'', 'double quote\"'"

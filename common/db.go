@@ -1,0 +1,349 @@
+/*
+ * Copyright(c)  2021 Lianjia, Inc.  All Rights Reserved
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package common
+
+import (
+	"database/sql"
+	"encoding/hex"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	// mysql
+	_ "github.com/go-sql-driver/mysql"
+	// postgres
+	_ "github.com/lib/pq"
+	// sqlite pure go driver
+	_ "modernc.org/sqlite"
+	// oracle pure go driver
+	_ "github.com/sijms/go-ora/v2"
+	// MS SQL purge go driver
+	_ "github.com/denisenkom/go-mssqldb"
+	// clickhouse
+	_ "github.com/ClickHouse/clickhouse-go"
+	// presto
+	_ "github.com/prestodb/presto-go-client/presto"
+	// csvq
+	_ "github.com/mithrandie/csvq-driver"
+)
+
+func GetColumnTypes() ([]*sql.ColumnType, error) {
+	db, err := NewConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	sql := fmt.Sprintf("SELECT * FROM %s LIMIT 0", QuoteKey(Cfg.Table))
+
+	rows, err := db.Query(sql)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return rows.ColumnTypes()
+}
+
+// QueryRows mysql query get rows
+func QueryRows() (*sql.Rows, error) {
+	db, err := NewConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	return db.Query(Cfg.Query)
+}
+
+// ExecResult mysql query get result
+func ExecResult() (sql.Result, error) {
+	db, err := NewConnection()
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	return db.Exec(Cfg.Query)
+}
+
+// newConnection init database connection
+// Go 各种数据库连接字符串汇总 | 鸟窝
+// https://colobu.com/2019/01/10/drivers-connection-string-in-Go/
+func NewConnection() (*sql.DB, error) {
+	var dsn string
+	switch Cfg.Server {
+	case "mysql":
+		dsn = dsnMySQL()
+	case "postgres":
+		dsn = dsnPostgres()
+	case "sqlite", "csvq":
+		dsn = dsnFile()
+	case "oracle":
+		dsn = dsnOracle()
+	case "sqlserver":
+		dsn = dsnSQLServer()
+	case "clickhouse":
+		dsn = dsnClickHouse()
+	case "presto":
+		dsn = dsnPresto()
+	}
+	// --dsn flag highest level
+	if Cfg.DSN != "" {
+		dsn = strings.TrimSpace(Cfg.DSN)
+	}
+	return sql.Open(Cfg.Server, dsn)
+}
+
+// SetForeignKeyChecks
+func SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
+	var err error
+	var sql string
+	switch Cfg.Server {
+	case "sqlite":
+		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
+	case "mysql":
+		sql = fmt.Sprintf("SET FOREIGN_KEY_CHECKS = %v;", enable)
+	case "csvq", "clickhouse", "presto":
+		return fmt.Errorf("not support foreign key")
+	case "postgres":
+		if enable {
+			sql = fmt.Sprintf("ALTER TABLE %s ENABLE TRIGGER ALL;", args[0])
+		} else {
+			sql = fmt.Sprintf("ALTER TABLE %s DISABLE TRIGGER ALL;", args[0])
+		}
+	case "oracle", "sqlserver":
+		// Notice: not suport tmp disable foreign key check by session
+		return err
+	}
+
+	if DBAvailable(conn) {
+		_, err = conn.Exec(sql)
+	} else {
+		fmt.Println(sql)
+	}
+
+	return err
+}
+
+// dsnMySQL concat mysql dsn string
+func dsnMySQL() string {
+	var dsn string
+	if Cfg.Socket != "" {
+		dsn = fmt.Sprintf("%s:%s@unix(%s)/%s?charset=%s",
+			Cfg.User, Cfg.Password, Cfg.Socket, Cfg.Database, Cfg.Charset)
+	} else {
+		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
+			Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database, Cfg.Charset)
+	}
+	return dsn
+}
+
+// dsnPostgres concat postgres dsn string
+func dsnPostgres() string {
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database)
+	return dsn
+}
+
+// dsnFile sqlite, csv database file string
+func dsnFile() string {
+	pwd, _ := os.Getwd()
+	if !filepath.IsAbs(Cfg.Database) {
+		Cfg.Database = filepath.Join(pwd, Cfg.Database)
+	}
+
+	return Cfg.Database
+}
+
+// dsnOracle concat oracle dsn string
+func dsnOracle() string {
+	return fmt.Sprintf("oracle://%s:%s@%s:%s/%s",
+		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database,
+	)
+}
+
+// dsnSQLServer concat sqlserver dsn string
+func dsnSQLServer() string {
+	return fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
+		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database,
+	)
+}
+
+// dsnClickHouse concat ClickHouse dsn string
+func dsnClickHouse() string {
+	return fmt.Sprintf("tcp://%s:%s?username=%s&password=%s&database=%s",
+		Cfg.Host, Cfg.Port, Cfg.User, Cfg.Password, Cfg.Database,
+	)
+}
+
+// dsnPresto concat PrestoDB dsn string
+func dsnPresto() string {
+	return fmt.Sprintf("http://%s@%s:%s", Cfg.User, Cfg.Host, Cfg.Port)
+}
+
+// DBParseNullString convert []string to []sql.NullString
+func DBParseNullString(header []HeaderColumn, columns []string) []sql.NullString {
+	values := make([]sql.NullString, len(columns))
+	for i, col := range columns {
+		if col == Cfg.NULLString {
+			values[i] = sql.NullString{String: col, Valid: false}
+		} else {
+			values[i] = sql.NullString{String: col, Valid: true}
+		}
+	}
+	return values
+}
+
+// DBParserColumnNames convert *sql.ColumnType to column name string list
+func DBParserColumnNames(header []*sql.ColumnType) []string {
+	var columns []string
+	for _, h := range header {
+		columns = append(columns, h.Name())
+	}
+	return columns
+}
+
+// DBParseHeaderColumn convert []HeaderColumn to column name string list
+func DBParseHeaderColumn(header []HeaderColumn) []string {
+	var columns []string
+	for _, h := range header {
+		columns = append(columns, h.Name)
+	}
+	return columns
+}
+
+// DBParseColumnTypes convert *sql.ColumnType to self define HeaderColumn list
+func DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
+	var headerColumns []HeaderColumn
+	for _, h := range header {
+		headerColumns = append(headerColumns, HeaderColumn{
+			Name:         h.Name(),
+			ScanType:     h.ScanType().Name(),
+			DatabaseType: h.DatabaseTypeName(),
+		})
+	}
+	return headerColumns
+}
+
+// DBAvailable ...
+func DBAvailable(conn *sql.DB) bool {
+	if conn == nil {
+		return false
+	}
+	err := conn.Ping()
+	return err == nil
+}
+
+func QuoteString(str string) string {
+	// How to escape special characters in Oracle SQL?
+	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
+
+	switch Cfg.Server {
+	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
+		return "'" + strings.Replace(str, "'", "''", -1) + "'"
+	default: // mysql, mariadb, tidb, sqlite, csvq
+		if Cfg.ANSIQuotes {
+			return `'` + Escape(str) + `'`
+		} else {
+			return `"` + Escape(str) + `"`
+		}
+	}
+}
+
+func QuoteKey(str string) string {
+	switch Cfg.Server {
+	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
+		return strconv.Quote(str)
+	default:
+		// MySQL
+		// backtick (`) can be used to delimit identifiers whether or not ANSI_QUOTES
+		// is enabled, but if ANSI_QUOTES is enabled, then "you cannot use double
+		// quotation marks to quote literal strings, because it is interpreted as an identifier."
+		return "`" + str + "`" // mysql, mariadb, tidb, sqlite, csvq
+	}
+}
+
+// HexBLOB ...
+func HexBLOB(name string, value interface{}) (string, bool) {
+	var hexed bool
+	for _, k := range Cfg.HexBLOB {
+		if k == "*" || strings.EqualFold(k, name) {
+			hexed = true
+			return hexBLOB(fmt.Sprint(value)), hexed
+		}
+	}
+	return fmt.Sprint(value), hexed
+}
+
+// hexBLOB hex-blob column
+func hexBLOB(value interface{}) string {
+	var ret = fmt.Sprint(value)
+
+	if len(Cfg.HexBLOB) == 0 {
+		return ret
+	}
+
+	switch Cfg.Server {
+	case "postgres":
+		return `'\x` + hex.EncodeToString([]byte(ret)) + "'::bytea"
+	case "sqlite":
+		return "X'" + hex.EncodeToString([]byte(ret)) + "'"
+	case "oracle":
+		// https://www.sqlines.com/oracle/datatypes/raw
+		return QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
+	case "csvq", "clickhouse", "presto":
+		// not support binary data
+	default: // mysql, mariadb, tidb, sql server
+		return "0x" + hex.EncodeToString([]byte(ret))
+	}
+
+	return ret
+}
+
+func Escape(sql string) string {
+	dest := make([]byte, 0, 2*len(sql))
+	var escape byte
+	for i := 0; i < len(sql); i++ {
+		c := sql[i]
+
+		escape = 0
+
+		switch c {
+		case 0: /* Must be escaped for 'mysql' */
+			escape = '0'
+		case '\n': /* Must be escaped for logs */
+			escape = 'n'
+		case '\r':
+			escape = 'r'
+		case '\\':
+			escape = '\\'
+		case '\'':
+			escape = '\''
+		case '"': /* Better safe than sorry */
+			escape = '"'
+		case '\032': /* This gives problems on Win32 */
+			escape = 'Z'
+		}
+
+		if escape != 0 {
+			dest = append(dest, '\\', escape)
+		} else {
+			dest = append(dest, c)
+		}
+	}
+
+	return string(dest)
+}

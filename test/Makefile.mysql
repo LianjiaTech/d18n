@@ -1,0 +1,266 @@
+.PHONY: test-dir
+test-dir: build
+
+# Useful SQLs
+## SQLite3
+# SELECT '' AS table_schema, name AS table_name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' ORDER BY name
+#
+## MySQL
+# SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'mysql', 'performance_schema') ORDER BY table_schema, table_name
+#
+
+# Add mysql version for testing `MYSQL_RELEASE=percona MYSQL_VERSION=5.7 make docker-mysql`
+# MySQL 5.1 `MYSQL_RELEASE=vsamov/mysql-5.1.73 make docker-mysql`
+# MYSQL_RELEASE: mysql, percona, mariadb ...
+# MYSQL_VERSION: latest, 8.0, 5.7, 5.6, 5.5 ...
+# use mysql:latest as default
+MYSQL_RELEASE := $(or ${MYSQL_RELEASE}, ${MYSQL_RELEASE}, mysql)
+MYSQL_VERSION := $(or ${MYSQL_VERSION}, ${MYSQL_VERSION}, latest)
+
+.PHONY: docker-mysql
+docker-mysql: docker-exist
+	@echo "$(CGREEN)Build mysql test environment ...$(CEND)"
+	@${DOCKER_CMD} stop d18n-mysql 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-mysql 2>/dev/null >/dev/null || true
+	@echo "${DOCKER_CMD} run --name d18n-mysql $(MYSQL_RELEASE):$(MYSQL_VERSION)"
+	@${DOCKER_CMD} run --name d18n-mysql --rm -d \
+	-e MYSQL_ALLOW_EMPTY_PASSWORD=1 \
+	-e MYSQL_DATABASE=test \
+	-v `pwd`/test/sakila.mysql.sql.gz:/docker-entrypoint-initdb.d/sakila.mysql.sql.gz \
+	-p 3306:3306 \
+	$(MYSQL_RELEASE):$(MYSQL_VERSION) \
+	--secure-file-priv=/var/lib/mysql
+
+	@echo "waiting for test database initializing "
+	@timeout=180; while [ $${timeout} -gt 0 ] ; do \
+		if ! ${DOCKER_CMD} exec d18n-mysql mysql --user=root --password="" --host "127.0.0.1" --silent -NBe "do 1" >/dev/null 2>&1 ; then \
+		        timeout=`expr $$timeout - 1`; \
+		        printf '.' ;  sleep 1 ; \
+		else \
+		        echo "." ; echo "mysql test environment is ready!" ; break ; \
+		fi ; \
+		if [ $$timeout = 0 ] ; then \
+		        echo "." ; echo "$(CRED)${DOCKER_CMD} d18n-mysql start timeout(180 s)!$(CEND)" ; exit 1 ; \
+		fi ; \
+	done
+
+.PHONY: docker-connect
+#${DOCKER_CMD} exec -i d18n-mysql mysql --user=root --password="" --host "127.0.0.1" test -f < ./test.sql
+docker-connect:
+	@${DOCKER_CMD} exec -it d18n-mysql env LANG=C.UTF-8 mysql --user=root --password="" --host "127.0.0.1" -c test
+
+.PHONY: test-mysql
+test-mysql: build
+	# test sql
+	@rm -f test/test-mysql.sql
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", 1, 0.4, NULL, "NULL"' \
+	--file test/test-mysql.sql
+	@./bin/d18n --preview 10 --file test/test-mysql.sql
+
+	# test hex-blob sql
+	@rm -f test/test-mysql.hex.sql
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--database sakila \
+	--hex-blob last_name \
+	--query 'select * from actor' \
+	--limit 10 \
+	--file test/test-mysql.hex.sql
+	@./bin/d18n --preview 2 --file test/test-mysql.hex.sql
+
+	# test stdout
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--database sakila \
+	--query 'select * from actor' \
+	--limit 2 \
+	--file stdout
+
+	# test xlsx
+	@rm -f test/test-mysql.xlsx
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--file test/test-mysql.xlsx
+	@./bin/d18n --preview 10 --file test/test-mysql.xlsx
+
+	# test xlsx -no-header
+	@rm -f test/test-mysql.onheader.xlsx
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--no-header \
+	--file test/test-mysql.noheader.xlsx
+	@./bin/d18n --preview 10 --file test/test-mysql.noheader.xlsx
+
+	# test csv
+	@rm -f test/test-mysql.csv
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--file test/test-mysql.csv
+	@./bin/d18n --preview 10 --file test/test-mysql.csv
+
+	# test csv -no-header
+	@rm -f test/test-mysql.noheader.csv
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--no-header \
+	--file test/test-mysql.noheader.csv
+	@./bin/d18n --preview 10 --file test/test-mysql.noheader.csv
+
+	# test html
+	@rm -f test/test-mysql.html
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--file test/test-mysql.html
+	@./bin/d18n --preview 10 --file test/test-mysql.html
+
+	# test html -no-header
+	@rm -f test/test-mysql.noheader.html
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--no-header \
+	--file test/test-mysql.noheader.html
+	@./bin/d18n --preview 10 --file test/test-mysql.noheader.html
+
+	# test txt
+	@rm -f test/test-mysql.txt
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--file test/test-mysql.txt
+	@./bin/d18n --preview 10 --file test/test-mysql.txt
+
+	# test txt -no-header
+	@rm -f test/test-mysql.noheader.txt
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--no-header \
+	--file test/test-mysql.noheader.txt
+	@./bin/d18n --preview 10 --file test/test-mysql.noheader.txt
+
+	# test json
+	@rm -f test/test-mysql.json
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select * from sakila.actor' \
+	--limit 2 \
+	--file test/test-mysql.json
+	@./bin/d18n --preview 1 --file test/test-mysql.json
+
+	# test json -no-header
+	@rm -f test/test-mysql.noheader.json
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select * from sakila.actor' \
+	--limit 2 \
+	--no-header \
+	--file test/test-mysql.noheader.json
+	@./bin/d18n --preview 1 --file test/test-mysql.noheader.json
+
+	# test empty result preview
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select * from sakila.actor where 1=0' \
+	--file test/test-mysql.1.json
+	@./bin/d18n --preview 1 --file test/test-mysql.1.json
+
+	# test ascii
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--verbose
+
+	# test ascii -no-header
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"' \
+	--verbose \
+	--no-header
+
+	# test dump table
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--database sakila --table actor --limit 2
+
+	# test limit
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query "show tables from information_schema" --limit 2
+
+	# test check-empty
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select * from sakila.actor where 1=0'  \
+	--check-empty >test/test-mysql.check-empty.txt 2>&1 || echo "Success"
+
+	# test kill query/max_execution_time
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--query 'select /*+ MAX_EXECUTION_TIME(10) */ * from sakila.actor where sleep(1)'  \
+	>test/test-mysql.kill-query.txt 2>&1 || echo "Success"
+
+	# test sqlite
+	@./bin/d18n --server sqlite \
+	--database test/test-sqlite.db \
+	--query 'select "中文", "english", NULL, 1, 0.4, "NULL"'
+	@#--query "SELECT name FROM sqlite_master" # show tables
+
+	# test csvq
+	@./bin/d18n --server csvq \
+	--database test \
+	--query 'select * from `actor.csv`' \
+	--limit 2
+
+	# test lint csv
+	@echo test/TestCSVLint.right.csv
+	@./bin/d18n --lint \
+	--file test/TestCSVLint.right.csv | grep '^ok'
+
+	# test lint json
+	@echo test/TestJSONLint.right.json
+	@./bin/d18n --lint \
+	--file test/TestJSONLint.right.json | grep '^ok'
+
+	# test lint xlsx
+	@echo test/TestXLSXLint.right.xlsx
+	@./bin/d18n --lint \
+	--file test/TestXLSXLint.right.xlsx | grep '^ok'
+
+	# test lint sql
+	@echo test/TestSQLLint.right.sql
+	@./bin/d18n --lint \
+	--file test/TestSQLLint.right.sql | grep '^ok'
+
+	# test import print sql
+	@./bin/d18n --import \
+		--schema test/schema.txt \
+		--file test/actor.csv | head -n 2
+
+	# test import direct into mysql
+	@./bin/d18n --defaults-extra-file test/my.cnf --import \
+	--schema test/schema.txt \
+	--table actor --database sakila \
+	--replace --verbose \
+	--disable-foreign-key-checks \
+	--file test/actor.csv
+
+	# test update
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--update actor_id \
+	--verbose \
+	--database sakila \
+	--query "select * from actor where actor_id between 10 and 12" \
+	--file test/actor.update.sql
+
+	# test mask
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--mask test/mask.csv \
+	--database sakila \
+	--verbose \
+	--query "select * from actor where actor_id between 10 and 12" \
+
+	# test html watermark
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	-e "show databases" \
+	-f test/watermark.html \
+	--watermark "watermark text"
+
+	# test xlsx watermark
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	-e "show databases" \
+	-f test/watermark.xlsx \
+	--watermark "watermark text"
+
+	# test ignore-columns
+	@./bin/d18n --defaults-extra-file=test/my.cnf \
+	--database sakila \
+	--query "select * from actor limit 1" \
+	--ignore-columns first_name,last_udpate

@@ -1,0 +1,63 @@
+# https://github.com/MaksymBilenko/docker-oracle-12c
+
+D18N_ORACLE_ARGS=--server oracle --host 127.0.0.1 --port 1521 --user system --password oracle --database xe
+
+.PHONY: docker-oracle
+docker-oracle: docker-exist
+	@${DOCKER_CMD} stop d18n-oracle 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-oracle 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d --rm \
+	--name d18n-oracle \
+	-p 1521:1521 \
+	-e NLS_LANG="SIMPLIFIED CHINESE_CHINA.AL32UTF8" \
+	-v `pwd`/test/oracle.init.sql:/docker-entrypoint-initdb.d/oracle.init.sql \
+	quay.io/maksymbilenko/oracle-12c
+	@echo "waiting for test database initializing "
+	@timeout=180; while [ $${timeout} -gt 0 ] ; do \
+		ready=$$(${DOCKER_CMD} logs --tail 10 d18n-oracle | grep -c "Database ready to use"); \
+		if [ $${ready} -eq 0 ] ; then \
+		        timeout=`expr $$timeout - 1`; \
+		        printf '.' ;  sleep 1 ; \
+		else \
+		        echo "." ; echo "mysql test environment is ready!" ; break ; \
+		fi ; \
+		if [ $${timeout} -eq 0 ] ; then \
+		        echo "." ; echo "$(CRED)${DOCKER_CMD} d18n-mysql start timeout(180 s)!$(CEND)" ; exit 1 ; \
+		fi ; \
+	done
+
+.PHONY: docker-sqlplus
+#@${DOCKER_CMD} exec -it d18n-oracle sqlplus / as sysdba
+docker-sqlplus:
+	@${DOCKER_CMD} exec -it d18n-oracle sqlplus system/oracle@//localhost:1521/xe
+
+.PHONY: test-oracle
+test-oracle:
+	# SELECT FROM DUAL
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query "SELECT 'Hello world', 1, 0.4, '中文', N'中文' FROM DUAL"
+
+	# SHOW TABLES
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--limit 2 \
+	--query "SELECT table_name FROM user_tables"
+
+	# SELECT LIMIT
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query 'SELECT * FROM HELP WHERE ROWNUM <= 2'
+
+	# SELECT TABLE
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--table HELP --limit 2
+
+	# SELECT NVARCHAR
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query 'SELECT * FROM "nvarchar2_demo"' \
+	--file test/oracle.nvarchar2_demo.sql
+
+	# SELECT RAW DATA
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query 'SELECT * FROM "rawdata"' \
+	--table "rawdata" \
+	--hex-blob c1 \
+	--file test/oracle.rawdata.sql

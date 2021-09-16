@@ -1,0 +1,6 @@
+*.xlsx
+coverage.*
+
+bin/
+release/
+.vscode/

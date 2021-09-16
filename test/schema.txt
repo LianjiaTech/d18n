@@ -1,0 +1,5 @@
+# select COLUMN_NAME, DATA_TYPE from information_schema.COLUMNS where TABLE_NAME = 'actor';
+actor_id SMALLINT
+first_name VARCHAR
+last_name VARCHAR
+last_update TIMESTAMP

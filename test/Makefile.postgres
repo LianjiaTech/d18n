@@ -1,0 +1,44 @@
+# Useful SQLs
+## PostgreSQL
+#
+# Show Databases: \l
+#
+# Show Tables: \dt
+# 
+# SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'pg_catalog') ORDER BY table_schema, table_name
+#
+
+POSTGRES_RELEASE := $(or ${POSTGRES_RELEASE}, ${POSTGRES_RELEASE}, postgres)
+POSTGRES_VERSION := $(or ${POSTGRES_VERSION}, ${POSTGRES_VERSION}, latest)
+POSTGRES_PASSWORD=mysecretpassword
+
+D18N_POSTGRES_ARGS=--user postgres --server postgres --port 5432 --password ${POSTGRES_PASSWORD}
+
+
+.PHONY: docker-postgres
+docker-postgres: docker-exist
+	@echo "$(CGREEN)Build postgres test environment ...$(CEND)"
+	@${DOCKER_CMD} stop d18n-postgres 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-postgres 2>/dev/null >/dev/null || true
+	@echo "${DOCKER_CMD} run --name d18n-postgres $(POSTGRES_RELEASE):$(POSTGRES_VERSION)"
+	@${DOCKER_CMD} run --name d18n-postgres --rm -d \
+	-v `pwd`/test/sakila.postgres.sql.gz:/docker-entrypoint-initdb.d/sakila.postgres.sql.gz \
+	-e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+	-p 5432:5432 \
+	$(POSTGRES_RELEASE):$(POSTGRES_VERSION)
+
+.PHONY: docker-psql
+docker-psql:
+	@${DOCKER_CMD} exec -it d18n-postgres psql -U postgres
+
+.PHONY: test-postgres
+test-postgres:
+	#select * from actor limit 2
+	@./bin/d18n ${D18N_POSTGRES_ARGS} --query "select * from actor limit 2"
+
+	#SELECT datname FROM pg_database
+	@./bin/d18n --database postgres \
+	${D18N_POSTGRES_ARGS} \
+	--query "SELECT datname FROM pg_database;"
+
+
