@@ -100,7 +100,7 @@ func ParseFlags() error {
 	opt.Help = func() error {
 		var b bytes.Buffer
 		p.WriteHelp(&b)
-		println(b.String())
+		fmt.Println(b.String())
 		os.Exit(0)
 		return nil
 	}

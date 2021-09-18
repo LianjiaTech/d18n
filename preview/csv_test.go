@@ -26,7 +26,8 @@ func init() {
 func TestPreviewCSV(t *testing.T) {
 	orgCfg := common.Cfg
 	common.Cfg.File = common.TestPath + "/test/TestSaveRows.csv"
-	err := previewCSV()
+	p, _ := NewPreviewStruct(common.Cfg)
+	err := previewCSV(p)
 	if err != nil {
 		t.Error(err.Error())
 	}

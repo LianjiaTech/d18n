@@ -18,28 +18,26 @@ import (
 	"fmt"
 	"os"
 
-	"d18n/common"
-
 	"golang.org/x/net/html"
 )
 
-func previewHTML() error {
-	if common.Cfg.Preview == 0 {
+func previewHTML(p *PreviewStruct) error {
+	if p.CommonConfig.Preview == 0 {
 		return nil
 	}
 
-	file, err := os.Open(common.Cfg.File)
+	file, err := os.Open(p.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	r := bufio.NewReaderSize(file, common.Cfg.MaxBufferSize)
+	r := bufio.NewReaderSize(file, p.CommonConfig.MaxBufferSize)
 	token := html.NewTokenizer(r)
 
 	var line int
 	for {
-		if line >= common.Cfg.Preview {
+		if line >= p.CommonConfig.Preview {
 			break
 		}
 

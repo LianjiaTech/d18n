@@ -48,7 +48,7 @@ func main() {
 
 	// preview file
 	if common.Cfg.Preview > 0 {
-		common.PanicIfError(preview.Preview())
+		common.PanicIfError(previewFile())
 		return
 	}
 
@@ -74,6 +74,14 @@ func main() {
 	}
 
 	common.PanicIfError(saveRows())
+}
+
+func previewFile() error {
+	p, err := preview.NewPreviewStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
+	return p.Preview()
 }
 
 func saveRows() error {

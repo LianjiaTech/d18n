@@ -22,8 +22,20 @@ import (
 	"d18n/common"
 )
 
+type PreviewStruct struct {
+	CommonConfig common.Config
+}
+
+func NewPreviewStruct(c common.Config) (*PreviewStruct, error) {
+	var p *PreviewStruct
+	p = &PreviewStruct{
+		CommonConfig: c,
+	}
+	return p, nil
+}
+
 // Preview preview export file
-func Preview() error {
+func (p *PreviewStruct) Preview() error {
 	var err error
 
 	switch common.Cfg.File {
@@ -39,13 +51,13 @@ func Preview() error {
 	switch suffix {
 	case "stdout", "":
 	case "csv", "psv", "tsv", "txt", "sql":
-		err = previewCSV()
+		err = previewCSV(p)
 	case "html":
-		err = previewHTML()
+		err = previewHTML(p)
 	case "xlsx":
-		err = previewXlsx()
+		err = previewXlsx(p)
 	case "json":
-		err = previewJSON()
+		err = previewJSON(p)
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}

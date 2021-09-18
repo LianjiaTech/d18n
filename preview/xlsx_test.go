@@ -22,7 +22,9 @@ import (
 func TestPreviewXlsxFile(t *testing.T) {
 	orgCfg := common.Cfg
 	common.Cfg.File = common.TestPath + "/test/TestSaveRows2ELSX.xlsx"
-	err := previewXlsx()
+
+	p, _ := NewPreviewStruct(common.Cfg)
+	err := previewXlsx(p)
 	if err != nil {
 		t.Error(err.Error())
 	}

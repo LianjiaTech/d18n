@@ -17,16 +17,14 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
-	"d18n/common"
 )
 
-func previewCSV() error {
-	if common.Cfg.Preview == 0 {
+func previewCSV(p *PreviewStruct) error {
+	if p.CommonConfig.Preview == 0 {
 		return nil
 	}
 
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(p.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -34,10 +32,10 @@ func previewCSV() error {
 
 	var line int
 	s := bufio.NewScanner(fd)
-	s.Buffer([]byte{}, common.Cfg.MaxBufferSize)
+	s.Buffer([]byte{}, p.CommonConfig.MaxBufferSize)
 
 	for s.Scan() {
-		if line >= common.Cfg.Preview {
+		if line >= p.CommonConfig.Preview {
 			break
 		}
 		fmt.Println(s.Text())
