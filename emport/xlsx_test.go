@@ -32,11 +32,11 @@ func TestEmportXLSX(t *testing.T) {
 	common.Cfg.Replace = false
 
 	conn, _ := common.NewConnection()
-	err := emportXlsx(conn)
+	err := emportXlsx(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(emportStatus)
+	pretty.Println(testES.Status)
 	common.Cfg = orgCfg
 
 }

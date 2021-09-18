@@ -17,7 +17,6 @@ import (
 	"d18n/common"
 	"fmt"
 	"testing"
-	"time"
 )
 
 func TestFakeName(t *testing.T) {
@@ -84,7 +83,6 @@ func TestFakeRegexRandomData(t *testing.T) {
 		"^C[0-9A-HJ-NP-Z]\\d{7}$", // 大陆港澳台
 		"^\\d{6}[0-9A-HJ-NPQRTUWXY]{10}$",
 	}
-	common.Cfg.RandSeed = time.Now().Unix()
 	for _, pattern := range patterns {
 		context, err := fakeRegexRandomData(pattern, 5, 10)
 		if err != nil {
@@ -131,7 +129,7 @@ func TestFake(t *testing.T) {
 
 func Example_fakePassword() {
 	orgCfg := common.Cfg
-	common.Cfg.RandSeed = 1989
+	// common.Cfg.RandSeed = 1989
 	var fakeData string
 	var err error
 	// default policy and length
@@ -149,8 +147,8 @@ func Example_fakePassword() {
 	common.Cfg = orgCfg
 	// Output:
 	// cq8d1uhfy4l4gk4p <nil>
-	// 0023369360722229 <nil>
-	// nxCVAJmQUNws <nil>
+	// 6890465967198159 <nil>
+	// LlrvUELBmCil <nil>
 }
 
 func TestFakerUSCC(t *testing.T) {

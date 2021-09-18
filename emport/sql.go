@@ -24,7 +24,7 @@ import (
 )
 
 // emportSQL import sql file into database
-func emportSQL(conn *sql.DB) error {
+func emportSQL(e *EmportStruct, conn *sql.DB) error {
 	var err error
 	f, err := os.Open(common.Cfg.File)
 	if err != nil {
@@ -37,17 +37,17 @@ func emportSQL(conn *sql.DB) error {
 	s.Split(common.SQLReadLine)
 
 	for s.Scan() {
-		emportStatus.Lines++
+		e.Status.Lines++
 
 		// read one sql
 		sqlString := strings.TrimSpace(s.Text())
 
 		// SkipLines
-		if emportStatus.Lines <= common.Cfg.SkipLines {
+		if e.Status.Lines <= common.Cfg.SkipLines {
 			continue
 		}
 		if common.Cfg.Limit > 0 &&
-			(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+			(e.Status.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
 			break
 		}
 
@@ -64,7 +64,7 @@ func emportSQL(conn *sql.DB) error {
 	}
 	if s.Err() != nil {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes or error comment
-		return fmt.Errorf("line: %d, %s", emportStatus.Lines+1, s.Err().Error())
+		return fmt.Errorf("line: %d, %s", e.Status.Lines+1, s.Err().Error())
 	}
 	return err
 }

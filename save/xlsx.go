@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"d18n/common"
-	"d18n/mask"
 
 	"github.com/tealeg/xlsx/v3"
 )
@@ -98,7 +97,7 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(s.Status.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}

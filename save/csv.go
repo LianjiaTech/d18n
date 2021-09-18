@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
 // saveRows2CSV save rows result into csv format file
@@ -96,7 +95,7 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(s.Status.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}

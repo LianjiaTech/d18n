@@ -10,12 +10,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package common
+package mask
 
 import (
 	"fmt"
 	"testing"
+
+	"d18n/common"
+
+	"github.com/kr/pretty"
 )
+
+func TestParseMaskConfig(t *testing.T) {
+	orgMask := defaultMaskConfig
+
+	file := common.TestPath + "/test/mask.csv"
+	err := ParseMaskConfig(file)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	pretty.Println(defaultMaskConfig)
+
+	defaultMaskConfig = orgMask
+}
 
 func TestGenRSAKey(t *testing.T) {
 	privatekey, publicKey, err := genRSAKey()

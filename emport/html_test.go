@@ -31,7 +31,7 @@ func TestEmportHTML(t *testing.T) {
 	common.Cfg.Verbose = true
 
 	conn, _ := common.NewConnection()
-	err := emportHTML(conn)
+	err := emportHTML(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}

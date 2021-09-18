@@ -33,12 +33,12 @@ func TestEmportJSON(t *testing.T) {
 	common.Cfg.Replace = false
 
 	conn, _ := common.NewConnection()
-	err := emportJSON(conn)
+	err := emportJSON(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	pretty.Println(emportStatus)
+	pretty.Println(testES.Status)
 
 	common.Cfg = orgCfg
 

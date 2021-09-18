@@ -15,11 +15,7 @@ package common
 
 import (
 	"database/sql"
-	"encoding/csv"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 	"strings"
 
 	ini "gopkg.in/ini.v1"
@@ -125,59 +121,6 @@ func parseDefaultsExtraFile(file string) error {
 	Cfg.Port = c.Section("client").Key("port").String()
 	Cfg.Charset = c.Section("client").Key("default-character-set").String()
 
-	return err
-}
-
-type MaskRule struct {
-	MaskFunc string   `yaml:"func"`
-	Args     []string `yaml:"args"`
-}
-
-var MaskConfig = make(map[string]MaskRule)
-
-func ParseMaskConfig() error {
-
-	// not config mask
-	if Cfg.Mask == "" {
-		return nil
-	}
-
-	fd, err := os.Open(Cfg.Mask)
-	if err != nil {
-		return err
-	}
-	defer fd.Close()
-
-	r := csv.NewReader(fd)
-	r.FieldsPerRecord = -1 // fix wrong number of fields
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(Cfg.Mask), "."))
-	switch suffix {
-	case "csv":
-		r.Comma = ','
-	case "psv":
-		r.Comma = '|'
-	case "tsv":
-		r.Comma = '\t'
-	case "txt":
-		r.Comma = ' '
-	default:
-		err = fmt.Errorf("not support extension: " + suffix)
-	}
-	for {
-		row, err := r.Read()
-		if err == io.EOF { // end of file
-			break
-		} else if err != nil {
-			return err
-		}
-
-		if len(row) > 1 {
-			MaskConfig[strings.ToLower(row[0])] = MaskRule{
-				MaskFunc: strings.ToLower(row[1]),
-				Args:     row[2:],
-			}
-		}
-	}
 	return err
 }
 

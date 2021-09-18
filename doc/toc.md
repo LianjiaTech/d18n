@@ -16,8 +16,6 @@
 
 ## [Save query result into file](save.md)
 
-## [Limitation](limits.md)
-
 ## [FAQ](FAQ.md)
 
 ## [Tips](tips.md)

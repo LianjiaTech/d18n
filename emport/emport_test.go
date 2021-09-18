@@ -45,6 +45,11 @@ func TestEmportRows(t *testing.T) {
 		t.Error(err.Error())
 	}
 
+	e, err := NewEmportStruct(common.Cfg)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
 	for i, file := range files {
 		common.Cfg.File = file
 		switch i {
@@ -58,8 +63,8 @@ func TestEmportRows(t *testing.T) {
 			common.Cfg.Comma = '|'
 		}
 		fmt.Println(common.Cfg.File)
-		emportStatus.Lines = 0
-		err = emportRows(conn)
+		e.Status.Lines = 0
+		err = emportRows(e, conn)
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -70,9 +75,14 @@ func TestEmportRows(t *testing.T) {
 
 func TestCheckStatus(t *testing.T) {
 	orgCfg := common.Cfg
-
 	common.Cfg.Verbose = true
-	err := CheckStatus()
+
+	e, err := NewEmportStruct(common.Cfg)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	err = e.CheckStatus()
 	if err != nil {
 		t.Error(err.Error())
 	}

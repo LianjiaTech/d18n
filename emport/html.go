@@ -20,12 +20,11 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 
 	"golang.org/x/net/html"
 )
 
-func emportHTML(conn *sql.DB) error {
+func emportHTML(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	fd, err := os.Open(common.Cfg.File)
@@ -34,7 +33,7 @@ func emportHTML(conn *sql.DB) error {
 	}
 	defer fd.Close()
 
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(emportStatus.Header))
+	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(e.Status.Header))
 	if err != nil {
 		return err
 	}
@@ -62,13 +61,13 @@ func emportHTML(conn *sql.DB) error {
 				token.Next()
 				row = append(row, html.UnescapeString(string(token.Raw())))
 			case "tr":
-				emportStatus.Lines++
+				e.Status.Lines++
 			}
 		case html.EndTagToken:
 			switch string(tag) {
 			case "tr":
 				// skip header line
-				if emportStatus.Lines == 1 && !common.Cfg.NoHeader {
+				if e.Status.Lines == 1 && !common.Cfg.NoHeader {
 					continue
 				}
 
@@ -77,18 +76,18 @@ func emportHTML(conn *sql.DB) error {
 					continue
 				}
 
-				if len(emportStatus.Header) != len(row) {
+				if len(e.Status.Header) != len(row) {
 					return fmt.Errorf(common.WrongColumnsCnt)
 				}
 
 				//  mask data
-				row, err = mask.MaskRow(emportStatus.Header, row)
+				row, err = e.Masker.MaskRow(e.Status.Header, row)
 				if err != nil {
 					return err
 				}
 
 				// concat sql
-				values, err := common.SQLInsertValues(emportStatus.Header, common.DBParseNullString(emportStatus.Header, row))
+				values, err := common.SQLInsertValues(e.Status.Header, common.DBParseNullString(e.Status.Header, row))
 				if err != nil {
 					return err
 				}
@@ -110,11 +109,11 @@ func emportHTML(conn *sql.DB) error {
 		}
 
 		// SkipLines
-		if emportStatus.Lines <= common.Cfg.SkipLines {
+		if e.Status.Lines <= common.Cfg.SkipLines {
 			continue
 		}
 		if common.Cfg.Limit > 0 &&
-			(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+			(e.Status.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
 			break
 		}
 	}

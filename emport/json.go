@@ -20,12 +20,11 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 
 	json "github.com/json-iterator/go"
 )
 
-func emportJSON(conn *sql.DB) error {
+func emportJSON(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	fd, err := os.Open(common.Cfg.File)
@@ -34,7 +33,7 @@ func emportJSON(conn *sql.DB) error {
 	}
 	defer fd.Close()
 
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(emportStatus.Header))
+	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(e.Status.Header))
 	if err != nil {
 		return err
 	}
@@ -57,19 +56,19 @@ func emportJSON(conn *sql.DB) error {
 							row = append(row, elem)
 							return true
 						}); ok {
-						emportStatus.Lines++
+						e.Status.Lines++
 
 						// skip header line
-						if emportStatus.Lines == 1 && !common.Cfg.NoHeader {
+						if e.Status.Lines == 1 && !common.Cfg.NoHeader {
 							return true
 						}
 
 						// SkipLines
-						if emportStatus.Lines <= common.Cfg.SkipLines {
+						if e.Status.Lines <= common.Cfg.SkipLines {
 							return true
 						}
 						if common.Cfg.Limit > 0 &&
-							(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+							(e.Status.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
 							return false
 						}
 
@@ -79,13 +78,13 @@ func emportJSON(conn *sql.DB) error {
 						}
 
 						//  mask data
-						row, err = mask.MaskRow(emportStatus.Header, row)
+						row, err = e.Masker.MaskRow(e.Status.Header, row)
 						if err != nil {
 							iterator.Error = err
 							return false
 						}
 
-						values, err := common.SQLInsertValues(emportStatus.Header, common.DBParseNullString(emportStatus.Header, row))
+						values, err := common.SQLInsertValues(e.Status.Header, common.DBParseNullString(e.Status.Header, row))
 						if err != nil {
 							iterator.Error = err
 							return false

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"d18n/common"
+	"d18n/mask"
 )
 
 type saveStatus struct {
@@ -32,15 +33,23 @@ type saveStatus struct {
 }
 
 type SaveStruct struct {
-	CommonConfig common.Config // common config
-	Status       saveStatus    // save status
+	CommonConfig common.Config    // common config
+	Status       saveStatus       // save status
+	Masker       *mask.MaskStruct // masker
 }
 
 func NewSaveStruct(c common.Config) (*SaveStruct, error) {
-	save := &SaveStruct{
-		CommonConfig: c,
+	var s *SaveStruct
+	m, err := mask.NewMaskStruct(c)
+	if err != nil {
+		return s, err
 	}
-	return save, nil
+
+	s = &SaveStruct{
+		CommonConfig: c,
+		Masker:       m,
+	}
+	return s, err
 }
 
 func (s *SaveStruct) Save() error {

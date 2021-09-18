@@ -39,10 +39,6 @@ func TestSaveRows2ASCII(t *testing.T) {
 }
 
 func testQueryRows(s *SaveStruct) (*sql.Rows, error) {
-	orgCfg := common.Cfg
-
-	common.Cfg.Query = "do 1"
-
 	// QueryRows
 	rows, err := common.QueryRows()
 	if err != nil {
@@ -54,7 +50,5 @@ func testQueryRows(s *SaveStruct) (*sql.Rows, error) {
 	if err != nil {
 		return rows, err
 	}
-
-	common.Cfg = orgCfg
 	return rows, err
 }

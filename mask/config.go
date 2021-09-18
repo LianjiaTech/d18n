@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package common
+package mask
 
 import (
 	"crypto/ecdsa"
@@ -19,17 +19,75 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
 	"hash"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/tjfoc/gmsm/sm2"
 	"github.com/tjfoc/gmsm/sm3"
 	"gopkg.in/yaml.v2"
 )
+
+type MaskRule struct {
+	MaskFunc string   `yaml:"func"`
+	Args     []string `yaml:"args"`
+}
+
+var defaultMaskConfig map[string]MaskRule
+
+func ParseMaskConfig(file string) error {
+
+	defaultMaskConfig = make(map[string]MaskRule)
+
+	// not config mask
+	if file == "" {
+		return nil
+	}
+
+	fd, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer fd.Close()
+
+	r := csv.NewReader(fd)
+	r.FieldsPerRecord = -1 // fix wrong number of fields
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(file), "."))
+	switch suffix {
+	case "csv":
+		r.Comma = ','
+	case "psv":
+		r.Comma = '|'
+	case "tsv":
+		r.Comma = '\t'
+	case "txt":
+		r.Comma = ' '
+	default:
+		err = fmt.Errorf("not support extension: " + suffix)
+	}
+	for {
+		row, err := r.Read()
+		if err == io.EOF { // end of file
+			break
+		} else if err != nil {
+			return err
+		}
+
+		if len(row) > 1 {
+			defaultMaskConfig[strings.ToLower(row[0])] = MaskRule{
+				MaskFunc: strings.ToLower(row[1]),
+				Args:     row[2:],
+			}
+		}
+	}
+	return err
+}
 
 type EncryptCipherString struct {
 	FFKey   string `yaml:"FFKey"`
@@ -59,7 +117,7 @@ type EncryptCipherString struct {
 	AESCTRIV  string `yaml:"AESCTRIV"`
 }
 
-var DefaultCipherString EncryptCipherString
+var defaultCipherString EncryptCipherString
 
 type EncryptCipher struct {
 	FFKey   []byte
@@ -91,7 +149,7 @@ type EncryptCipher struct {
 	AESCTRIV  []byte
 }
 
-var DefaultCipher EncryptCipher
+var defaultCipher EncryptCipher
 
 // GenerateEncryptCipher ...
 func GenerateEncryptCipher() error {
@@ -154,7 +212,7 @@ func GenerateEncryptCipher() error {
 	// ECC KEY
 	privateKeyECC, publicKeyECC, err := genECCKey()
 
-	DefaultCipher = EncryptCipher{
+	defaultCipher = EncryptCipher{
 		FFKey:         ffKey,
 		FFTweak:       ffTweak,
 		PublicKeyRSA:  publicKeyRSA,
@@ -174,7 +232,7 @@ func GenerateEncryptCipher() error {
 		AESCTRKey:     encryptKey[:24],
 		AESCTRIV:      encryptIV[:16],
 	}
-	DefaultCipherString = encodeCipher(DefaultCipher)
+	defaultCipherString = encodeCipher(defaultCipher)
 
 	return err
 }
@@ -232,21 +290,21 @@ func genECCKey() (privatekey []byte, publickey []byte, err error) {
 }
 
 func PrintCipher() {
-	cipher, err := yaml.Marshal(DefaultCipherString)
+	cipher, err := yaml.Marshal(defaultCipherString)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	fmt.Println(string(cipher))
 }
 
-func ParseCipherConfig() error {
+func ParseCipherConfig(file string) error {
 
 	// not config mask
-	if Cfg.Cipher == "" {
+	if file == "" {
 		return GenerateEncryptCipher()
 	}
 
-	fd, err := os.Open(Cfg.Cipher)
+	fd, err := os.Open(file)
 	if err != nil {
 		return err
 	}
@@ -257,11 +315,11 @@ func ParseCipherConfig() error {
 		return err
 	}
 
-	err = yaml.Unmarshal(buf, &DefaultCipherString)
+	err = yaml.Unmarshal(buf, &defaultCipherString)
 	if err != nil {
 		return err
 	}
-	DefaultCipher, err = decodeCipher(DefaultCipherString)
+	defaultCipher, err = decodeCipher(defaultCipherString)
 	return err
 }
 

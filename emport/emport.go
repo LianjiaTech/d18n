@@ -21,36 +21,53 @@ import (
 	"time"
 
 	"d18n/common"
+	"d18n/mask"
 )
 
-var emportStatus EmportStatus
-
-type EmportStatus struct {
+type emportStatus struct {
 	Header   []common.HeaderColumn // Column Header, include column type info
 	Lines    int                   // lines save into file
 	TimeCost int64                 // time cost
 }
 
-func Emport() error {
+type EmportStruct struct {
+	Status emportStatus     // emport status
+	Masker *mask.MaskStruct // masker
+}
+
+func NewEmportStruct(c common.Config) (*EmportStruct, error) {
+	var e *EmportStruct
+	m, err := mask.NewMaskStruct(c)
+	if err != nil {
+		return e, err
+	}
+
+	e = &EmportStruct{
+		Masker: m,
+	}
+	return e, nil
+}
+
+func (e *EmportStruct) Emport() error {
 	emportStartTime := time.Now().UnixNano()
 	// new *sql.DB, by pass error
 	conn, _ := common.NewConnection()
 
-	err := emportRows(conn)
+	err := emportRows(e, conn)
 	if err != nil {
-		err = fmt.Errorf("line: %d, error: %s", emportStatus.Lines, err.Error())
+		err = fmt.Errorf("line: %d, error: %s", e.Status.Lines, err.Error())
 	}
 
 	emportEndTime := time.Now().UnixNano()
-	emportStatus.TimeCost = emportEndTime - emportStartTime
+	e.Status.TimeCost = emportEndTime - emportStartTime
 
 	return err
 }
 
-func emportRows(conn *sql.DB) error {
+func emportRows(e *EmportStruct, conn *sql.DB) error {
 	var err error
 	// get Header
-	emportStatus.Header, err = common.ParseSchema()
+	e.Status.Header, err = common.ParseSchema()
 	if err != nil {
 		return err
 	}
@@ -66,24 +83,24 @@ func emportRows(conn *sql.DB) error {
 	switch suffix {
 	case "tsv": // tab-separated values
 		common.Cfg.Comma = '\t'
-		err = emportCSV(conn)
+		err = emportCSV(e, conn)
 	case "txt": // space-separated values
 		common.Cfg.Comma = ' '
-		err = emportCSV(conn)
+		err = emportCSV(e, conn)
 	case "psv": // pipe-separated values
 		common.Cfg.Comma = '|'
-		err = emportCSV(conn)
+		err = emportCSV(e, conn)
 	case "csv": // comma-separated values
 		common.Cfg.Comma = ','
-		err = emportCSV(conn)
+		err = emportCSV(e, conn)
 	case "xlsx": // microsoft office excel
-		err = emportXlsx(conn)
+		err = emportXlsx(e, conn)
 	case "html": // html format
-		err = emportHTML(conn)
+		err = emportHTML(e, conn)
 	case "sql": // sql file
-		err = emportSQL(conn)
+		err = emportSQL(e, conn)
 	case "json": // json file
-		err = emportJSON(conn)
+		err = emportJSON(e, conn)
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
@@ -132,7 +149,7 @@ func executeSQL(sql string, conn *sql.DB) error {
 	return err
 }
 
-func CheckStatus() error {
+func (e *EmportStruct) CheckStatus() error {
 	var err error
 
 	if common.Cfg.SkipLines > 0 {
@@ -144,8 +161,8 @@ func CheckStatus() error {
 		return err
 	}
 	println(
-		"Import Rows:", emportStatus.Lines,
-		"Total Cost:", fmt.Sprint(time.Duration(emportStatus.TimeCost)*time.Nanosecond),
+		"Import Rows:", e.Status.Lines,
+		"Total Cost:", fmt.Sprint(time.Duration(e.Status.TimeCost)*time.Nanosecond),
 	)
 
 	return err

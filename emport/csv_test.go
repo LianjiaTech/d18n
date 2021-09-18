@@ -19,12 +19,18 @@ import (
 	"d18n/common"
 )
 
+var testES *EmportStruct
+
 func init() {
 	var err error
 	common.InitTestEnv()
-
 	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
-	emportStatus.Header, err = common.ParseSchema()
+
+	testES, err = NewEmportStruct(common.Cfg)
+	if err != nil {
+		panic(err.Error())
+	}
+	testES.Status.Header, err = common.ParseSchema()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -41,7 +47,7 @@ func TestEmportCSV(t *testing.T) {
 	common.Cfg.Comma = ','
 
 	conn, _ := common.NewConnection()
-	err := emportCSV(conn)
+	err := emportCSV(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -20,7 +20,6 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
 // saveRows2SQL save rows result into sql file
@@ -76,7 +75,7 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 					values[j] = sql.NullString{String: fmt.Sprint(col), Valid: true}
 				}
 				// data mask
-				valueMask, err := mask.Mask(s.Status.Header[j].Name(), values[j].String)
+				valueMask, err := s.Masker.Mask(s.Status.Header[j].Name(), values[j].String)
 				if err != nil {
 					return err
 				}

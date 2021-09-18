@@ -32,14 +32,14 @@ func main() {
 	common.PanicIfError(common.ParseFlags())
 
 	// parse mask config
-	common.PanicIfError(common.ParseMaskConfig())
+	common.PanicIfError(mask.ParseMaskConfig(common.Cfg.Mask))
 
 	// parse cipher config
-	common.PanicIfError(common.ParseCipherConfig())
+	common.PanicIfError(mask.ParseCipherConfig(common.Cfg.Cipher))
 
 	// print cipher
 	if common.Cfg.PrintCipher {
-		common.PrintCipher()
+		mask.PrintCipher()
 		return
 	}
 
@@ -68,7 +68,7 @@ func main() {
 	}
 
 	// init mask corpus
-	common.PanicIfError(mask.InitMask())
+	common.PanicIfError(mask.InitMaskCorpus(common.Cfg.RandSeed))
 
 	// import file
 	if common.Cfg.Import {
@@ -102,11 +102,15 @@ func lintFile() error {
 }
 
 func emportFile() error {
+	e, err := emport.NewEmportStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
 	// import file into database
-	common.PanicIfError(emport.Emport())
+	common.PanicIfError(e.Emport())
 
 	// check emport status
-	return emport.CheckStatus()
+	return e.CheckStatus()
 }
 
 func detectRows() error {
