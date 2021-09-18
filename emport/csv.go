@@ -25,7 +25,7 @@ import (
 func emportCSV(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(e.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func emportCSV(e *EmportStruct, conn *sql.DB) error {
 	}
 
 	r := csv.NewReader(fd)
-	r.Comma = common.Cfg.Comma
+	r.Comma = e.CommonConfig.Comma
 	var sql string
 	var sqlCounter int
 	for {
@@ -51,21 +51,21 @@ func emportCSV(e *EmportStruct, conn *sql.DB) error {
 		}
 
 		// skip header line
-		if e.Status.Lines == 1 && !common.Cfg.NoHeader {
+		if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
 			continue
 		}
 
 		// SkipLines
-		if e.Status.Lines <= common.Cfg.SkipLines {
+		if e.Status.Lines <= e.CommonConfig.SkipLines {
 			continue
 		}
-		if common.Cfg.Limit > 0 &&
-			(e.Status.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+		if e.CommonConfig.Limit > 0 &&
+			(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
 			break
 		}
 
 		// ignore blank lines
-		if common.Cfg.IgnoreBlank && len(row) == 0 {
+		if e.CommonConfig.IgnoreBlank && len(row) == 0 {
 			continue
 		}
 
@@ -84,7 +84,7 @@ func emportCSV(e *EmportStruct, conn *sql.DB) error {
 		// extended-insert
 		sqlCounter++
 		sql += common.SQLMultiValues(sqlCounter, insertPrefix, values)
-		if common.Cfg.ExtendedInsert <= 1 || sqlCounter%common.Cfg.ExtendedInsert == 0 {
+		if e.CommonConfig.ExtendedInsert <= 1 || sqlCounter%e.CommonConfig.ExtendedInsert == 0 {
 			err = executeSQL(sql, conn)
 			if err != nil {
 				return err

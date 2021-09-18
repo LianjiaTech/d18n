@@ -45,11 +45,6 @@ func TestEmportRows(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	e, err := NewEmportStruct(common.Cfg)
-	if err != nil {
-		t.Error(err.Error())
-	}
-
 	for i, file := range files {
 		common.Cfg.File = file
 		switch i {
@@ -63,6 +58,12 @@ func TestEmportRows(t *testing.T) {
 			common.Cfg.Comma = '|'
 		}
 		fmt.Println(common.Cfg.File)
+
+		e, err := NewEmportStruct(common.Cfg)
+		if err != nil {
+			t.Error(err.Error())
+		}
+
 		e.Status.Lines = 0
 		err = emportRows(e, conn)
 		if err != nil {

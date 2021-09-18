@@ -30,6 +30,7 @@ func TestEmportXLSX(t *testing.T) {
 	common.Cfg.Table = "actor_xlsx"
 	common.Cfg.Database = "sakila"
 	common.Cfg.Replace = false
+	testES.CommonConfig = common.Cfg
 
 	conn, _ := common.NewConnection()
 	err := emportXlsx(testES, conn)

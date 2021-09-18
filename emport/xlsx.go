@@ -23,7 +23,7 @@ import (
 )
 
 func emportXlsx(e *EmportStruct, conn *sql.DB) error {
-	fd, err := xlsx.OpenFile(common.Cfg.File)
+	fd, err := xlsx.OpenFile(e.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -51,26 +51,26 @@ func emportXlsx(e *EmportStruct, conn *sql.DB) error {
 			}
 
 			// skip header line
-			if e.Status.Lines == 1 && !common.Cfg.NoHeader {
+			if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
 				continue
 			}
 
 			// SkipLines
-			if e.Status.Lines <= common.Cfg.SkipLines {
+			if e.Status.Lines <= e.CommonConfig.SkipLines {
 				continue
 			}
-			if common.Cfg.Limit > 0 &&
-				(e.Status.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+			if e.CommonConfig.Limit > 0 &&
+				(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
 				break
 			}
 
 			// ignore blank lines
-			if common.Cfg.IgnoreBlank && len(row) == 0 {
+			if e.CommonConfig.IgnoreBlank && len(row) == 0 {
 				continue
 			}
 
 			// mask data
-			if common.Cfg.IgnoreBlank {
+			if e.CommonConfig.IgnoreBlank {
 				rowLen := len(row)
 				// ignore extra blank cell
 				if len(e.Status.Header) < len(row) {
@@ -93,7 +93,7 @@ func emportXlsx(e *EmportStruct, conn *sql.DB) error {
 			// extended-insert
 			sqlCounter++
 			sql += common.SQLMultiValues(sqlCounter, insertPrefix, values)
-			if common.Cfg.ExtendedInsert <= 1 || sqlCounter%common.Cfg.ExtendedInsert == 0 {
+			if e.CommonConfig.ExtendedInsert <= 1 || sqlCounter%e.CommonConfig.ExtendedInsert == 0 {
 				err = executeSQL(sql, conn)
 				if err != nil {
 					return err

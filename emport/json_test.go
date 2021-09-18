@@ -31,6 +31,7 @@ func TestEmportJSON(t *testing.T) {
 	common.Cfg.Table = "actor_json"
 	common.Cfg.Database = "sakila"
 	common.Cfg.Replace = false
+	testES.CommonConfig = common.Cfg
 
 	conn, _ := common.NewConnection()
 	err := emportJSON(testES, conn)

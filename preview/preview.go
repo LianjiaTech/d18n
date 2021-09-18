@@ -38,16 +38,16 @@ func NewPreviewStruct(c common.Config) (*PreviewStruct, error) {
 func (p *PreviewStruct) Preview() error {
 	var err error
 
-	switch common.Cfg.File {
+	switch p.CommonConfig.File {
 	case "", "stdout":
 		return fmt.Errorf("expect -file arg")
 	}
 
-	if _, err := os.Stat(common.Cfg.File); err != nil {
+	if _, err := os.Stat(p.CommonConfig.File); err != nil {
 		return err
 	}
 
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(p.CommonConfig.File), "."))
 	switch suffix {
 	case "stdout", "":
 	case "csv", "psv", "tsv", "txt", "sql":

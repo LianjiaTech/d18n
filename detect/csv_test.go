@@ -32,7 +32,7 @@ func init() {
 	detectStatus.Columns = make(map[string][]string, len(detectStatus.Header))
 }
 
-func TestEmportCSV(t *testing.T) {
+func TestDetectCSV(t *testing.T) {
 	orgCfg := common.Cfg
 
 	common.Cfg.File = common.TestPath + "/test/actor.csv"
