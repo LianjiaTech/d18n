@@ -14,7 +14,6 @@
 package detect
 
 import (
-	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -96,12 +95,17 @@ func Detect() error {
 	switch common.Cfg.File {
 	case "stdout", "":
 		if common.Cfg.Query != "" {
-			err = detectFromQuery()
+			d, err := NewDetectStruct(common.Cfg)
+			if err != nil {
+				return err
+			}
+			err = d.DetectQuery()
+			detectStatus = d.Status
 		} else {
 			return fmt.Errorf("no data source or file to check")
 		}
 	default:
-		err = detectFromFile()
+		err = DetectFile()
 	}
 
 	detectEndTime := time.Now().UnixNano()
@@ -110,8 +114,8 @@ func Detect() error {
 	return err
 }
 
-// detectFromFile check data from file
-func detectFromFile() error {
+// DetectFile check data from file
+func DetectFile() error {
 	var err error
 
 	// get column header
@@ -151,58 +155,7 @@ func detectFromFile() error {
 	return err
 }
 
-// detectFromQuery check data from query result
-func detectFromQuery() error {
-
-	rows, err := common.QueryRows()
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	// get column header
-	header, err := rows.ColumnTypes()
-	if err != nil {
-		return err
-	}
-	detectStatus.Header = common.DBParseColumnTypes(header)
-
-	// check column names
-	checkHeader(detectStatus.Header)
-
-	// check column values
-	for rows.Next() {
-		detectStatus.Lines++
-		// limit return rows
-		if common.Cfg.Limit != 0 && detectStatus.Lines > common.Cfg.Limit {
-			break
-		}
-
-		columns := make([]sql.NullString, len(detectStatus.Header))
-		cols := make([]interface{}, len(detectStatus.Header))
-		for j := range columns {
-			cols[j] = &columns[j]
-		}
-
-		if err := rows.Scan(cols...); err != nil {
-			return err
-		}
-
-		// check value
-		for j, col := range columns {
-			// pass NULL string
-			if col.Valid {
-				detectStatus.Columns[detectStatus.Header[j].Name] = append(detectStatus.Columns[detectStatus.Header[j].Name], checkValue(col.String)...)
-			}
-		}
-	}
-
-	err = rows.Err()
-
-	return err
-}
-
-func checkHeader(header []common.HeaderColumn) {
+func checkFileHeader(header []common.HeaderColumn) {
 
 	detectStatus.Columns = make(map[string][]string, len(header))
 

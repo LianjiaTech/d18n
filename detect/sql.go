@@ -72,7 +72,7 @@ func detectSQL() error {
 						detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: col.String()})
 					}
 				}
-				checkHeader(detectStatus.Header)
+				checkFileHeader(detectStatus.Header)
 			}
 
 			// check value

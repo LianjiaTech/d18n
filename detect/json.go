@@ -69,7 +69,7 @@ func jsonDetectRow(iterator *json.Iterator) bool {
 					detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: r})
 				}
 			}
-			checkHeader(detectStatus.Header)
+			checkFileHeader(detectStatus.Header)
 			if !common.Cfg.NoHeader {
 				return true
 			}

@@ -43,7 +43,7 @@ var lintStatus LintStatus
 
 var lintLevels = []string{"FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
 
-// Lint ...
+// Lint lint file one time for one file only
 func Lint() error {
 	lintStartTime := time.Now().UnixNano()
 
