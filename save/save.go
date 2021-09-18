@@ -23,7 +23,7 @@ import (
 	"d18n/common"
 )
 
-type SaveStatus struct {
+type saveStatus struct {
 	Header        []*sql.ColumnType // Column Header, include column type info
 	Lines         int               // lines save into file
 	QueryTimeCost int64             // query time cost
@@ -31,9 +31,19 @@ type SaveStatus struct {
 	TimeCost      int64             // total time cost
 }
 
-var saveStatus SaveStatus
+type SaveStruct struct {
+	CommonConfig common.Config // common config
+	Status       saveStatus    // save status
+}
 
-func Save() error {
+func NewSaveStruct(c common.Config) (*SaveStruct, error) {
+	save := &SaveStruct{
+		CommonConfig: c,
+	}
+	return save, nil
+}
+
+func (s *SaveStruct) Save() error {
 	// execute sql and get all result rows
 	queryStartTime := time.Now().UnixNano()
 	rows, err := common.QueryRows()
@@ -46,60 +56,60 @@ func Save() error {
 
 	// save rows result
 	saveStartTime := time.Now().UnixNano()
-	err = saveRows(rows)
+	err = saveRows(s, rows)
 	if err != nil {
-		err = fmt.Errorf("line: %d, %s", saveStatus.Lines, err.Error())
+		err = fmt.Errorf("line: %d, %s", s.Status.Lines, err.Error())
 	}
 	saveEndTime := time.Now().UnixNano()
 
 	// update time cost
-	saveStatus.QueryTimeCost = queryEndTime - queryStartTime
-	saveStatus.SaveTimeCost = saveEndTime - saveStartTime
-	saveStatus.TimeCost = saveEndTime - queryStartTime
+	s.Status.QueryTimeCost = queryEndTime - queryStartTime
+	s.Status.SaveTimeCost = saveEndTime - saveStartTime
+	s.Status.TimeCost = saveEndTime - queryStartTime
 
 	return err
 }
 
 // saveRows ...
-func saveRows(rows *sql.Rows) error {
+func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	var err error
 
 	// get column header
-	saveStatus.Header, err = rows.ColumnTypes()
+	s.Status.Header, err = rows.ColumnTypes()
 	if err != nil {
 		return err
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(s.CommonConfig.File), "."))
 	switch suffix {
 	case "": // stdout ascii table
-		if strings.EqualFold(common.Cfg.File, "stdout") {
-			common.Cfg.Comma = '\t'
-			err = saveRows2CSV(rows)
+		if strings.EqualFold(s.CommonConfig.File, "stdout") {
+			s.CommonConfig.Comma = '\t'
+			err = saveRows2CSV(s, rows)
 		} else {
-			err = saveRows2ASCII(rows)
+			err = saveRows2ASCII(s, rows)
 		}
 	case "tsv": // tab-separated values
-		common.Cfg.Comma = '\t'
-		err = saveRows2CSV(rows)
+		s.CommonConfig.Comma = '\t'
+		err = saveRows2CSV(s, rows)
 	case "txt": // space-separated values
-		common.Cfg.Comma = ' '
-		err = saveRows2CSV(rows)
+		s.CommonConfig.Comma = ' '
+		err = saveRows2CSV(s, rows)
 	case "psv": // pipe-separated values
-		common.Cfg.Comma = '|'
-		err = saveRows2CSV(rows)
+		s.CommonConfig.Comma = '|'
+		err = saveRows2CSV(s, rows)
 	case "csv": // comma-separated values
-		common.Cfg.Comma = ','
-		err = saveRows2CSV(rows)
+		s.CommonConfig.Comma = ','
+		err = saveRows2CSV(s, rows)
 	case "html": // html
-		err = saveRows2HTML(rows)
+		err = saveRows2HTML(s, rows)
 	case "xlsx": // microsoft office excel
-		err = saveRows2XLSX(rows)
+		err = saveRows2XLSX(s, rows)
 	case "sql": // sql file
-		err = saveRows2SQL(rows)
+		err = saveRows2SQL(s, rows)
 	case "json": // json file, first element is column name, others are values
-		err = saveRows2JSON(rows)
+		err = saveRows2JSON(s, rows)
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
@@ -108,23 +118,23 @@ func saveRows(rows *sql.Rows) error {
 }
 
 // CheckStatus check SaveRows status at last
-func CheckStatus() error {
+func (s *SaveStruct) CheckStatus() error {
 	var err error
 
 	// like QueryRow, should get result, but return empty set raise error
-	if common.Cfg.CheckEmpty && saveStatus.Lines == 0 {
+	if s.CommonConfig.CheckEmpty && s.Status.Lines == 0 {
 		err = fmt.Errorf(common.WrongEmptySet)
 	}
 
 	// verbose mode print
-	if !common.Cfg.Verbose {
+	if !s.CommonConfig.Verbose {
 		return err
 	}
 	println(
-		"Get rows:", saveStatus.Lines,
-		"Query cost:", fmt.Sprint(time.Duration(saveStatus.QueryTimeCost)*time.Nanosecond),
-		"Save cost:", fmt.Sprint(time.Duration(saveStatus.SaveTimeCost)*time.Nanosecond),
-		"Total Cost:", fmt.Sprint(time.Duration(saveStatus.TimeCost)*time.Nanosecond),
+		"Get rows:", s.Status.Lines,
+		"Query cost:", fmt.Sprint(time.Duration(s.Status.QueryTimeCost)*time.Nanosecond),
+		"Save cost:", fmt.Sprint(time.Duration(s.Status.SaveTimeCost)*time.Nanosecond),
+		"Total Cost:", fmt.Sprint(time.Duration(s.Status.TimeCost)*time.Nanosecond),
 	)
 	return err
 }

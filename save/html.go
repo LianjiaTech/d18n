@@ -26,16 +26,16 @@ import (
 )
 
 // saveRows2HTML save rows result into HTML format file
-func saveRows2HTML(rows *sql.Rows) error {
-	file, err := os.Create(common.Cfg.File)
+func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
+	file, err := os.Create(s.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	w := bufio.NewWriterSize(file, common.Cfg.MaxBufferSize)
-	if common.Cfg.Watermark != "" {
-		_, err = w.WriteString("<!-- " + common.Cfg.Watermark + " -->\n" + fmt.Sprintf(common.WatermarkPrefix, common.Cfg.Watermark))
+	w := bufio.NewWriterSize(file, s.CommonConfig.MaxBufferSize)
+	if s.CommonConfig.Watermark != "" {
+		_, err = w.WriteString("<!-- " + s.CommonConfig.Watermark + " -->\n" + fmt.Sprintf(common.WatermarkPrefix, s.CommonConfig.Watermark))
 		if err != nil {
 			return err
 		}
@@ -46,12 +46,12 @@ func saveRows2HTML(rows *sql.Rows) error {
 		return err
 	}
 	// set table header with column name
-	if !common.Cfg.NoHeader {
+	if !s.CommonConfig.NoHeader {
 		_, err = w.WriteString("<TR>")
 		if err != nil {
 			return err
 		}
-		for _, h := range saveStatus.Header {
+		for _, h := range s.Status.Header {
 			_, err = w.WriteString("<TH>" + html.EscapeString(h.Name()) + "</TH>")
 			if err != nil {
 				return err
@@ -64,16 +64,16 @@ func saveRows2HTML(rows *sql.Rows) error {
 	}
 
 	// init columns
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -91,7 +91,7 @@ func saveRows2HTML(rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = common.Cfg.NULLString
+				values[j] = s.CommonConfig.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -103,13 +103,13 @@ func saveRows2HTML(rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(saveStatus.Header[j].Name(), values[j])
+				values[j], err = mask.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(saveStatus.Header[j].Name(), values[j])
+				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
 			}
 
 			_, err = w.WriteString("<TD>" + html.EscapeString(values[j]) + "</TD>")
@@ -134,8 +134,8 @@ func saveRows2HTML(rows *sql.Rows) error {
 		return err
 	}
 
-	if common.Cfg.Watermark != "" {
-		_, err = w.WriteString("<!-- " + common.Cfg.Watermark + " -->" + common.WatermarkSuffix)
+	if s.CommonConfig.Watermark != "" {
+		_, err = w.WriteString("<!-- " + s.CommonConfig.Watermark + " -->" + common.WatermarkSuffix)
 		if err != nil {
 			return err
 		}

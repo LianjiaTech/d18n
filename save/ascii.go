@@ -25,33 +25,33 @@ import (
 )
 
 // saveRows2ASCII print rows as ascii table
-func saveRows2ASCII(rows *sql.Rows) error {
+func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	var err error
 
 	table := tablewriter.NewWriter(os.Stdout)
 
 	// set table header
-	if !common.Cfg.NoHeader {
-		table.SetHeader(common.DBParserColumnNames(saveStatus.Header))
+	if !s.CommonConfig.NoHeader {
+		table.SetHeader(common.DBParserColumnNames(s.Status.Header))
 	}
 
 	// init columns
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	// set every rows
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 		// preview only show first N lines
-		if common.Cfg.Preview != 0 && saveStatus.Lines > common.Cfg.Preview {
+		if s.CommonConfig.Preview != 0 && s.Status.Lines > s.CommonConfig.Preview {
 			break
 		}
 
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -63,7 +63,7 @@ func saveRows2ASCII(rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = common.Cfg.NULLString
+				values[j] = s.CommonConfig.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -75,13 +75,13 @@ func saveRows2ASCII(rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(saveStatus.Header[j].Name(), values[j])
+				values[j], err = mask.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(saveStatus.Header[j].Name(), values[j])
+				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
 			}
 		}
 		table.Append(values)
@@ -92,7 +92,7 @@ func saveRows2ASCII(rows *sql.Rows) error {
 	}
 
 	// print table
-	if len(saveStatus.Header) > 0 { // `do 1` only return empty set without columns
+	if len(s.Status.Header) > 0 { // `do 1` only return empty set without columns
 		table.Render()
 	}
 	return nil

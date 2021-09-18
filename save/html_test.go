@@ -24,7 +24,14 @@ func TestSaveRows2HTML(t *testing.T) {
 
 	common.Cfg.File = common.TestPath + "/test/TestSaveRows2HTML.html"
 	common.Cfg.Comma = ','
-	if err := Save(); err != nil {
+
+	// new save struct
+	s, err := NewSaveStruct(common.Cfg)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if err := s.Save(); err != nil {
 		t.Error(err.Error())
 	}
 

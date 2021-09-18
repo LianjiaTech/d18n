@@ -80,11 +80,17 @@ func main() {
 }
 
 func saveRows() error {
+	// new save struct
+	s, err := save.NewSaveStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
+
 	// query and save result
-	common.PanicIfError(save.Save())
+	common.PanicIfError(s.Save())
 
 	// check save status
-	return save.CheckStatus()
+	return s.CheckStatus()
 }
 
 func lintFile() error {
