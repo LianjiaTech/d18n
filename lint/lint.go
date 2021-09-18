@@ -41,16 +41,16 @@ type LintStatus struct {
 
 var lintStatus LintStatus
 
-var LintLevels = []string{"FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
+var lintLevels = []string{"FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
 
 // Lint ...
 func Lint() error {
 	lintStartTime := time.Now().UnixNano()
 
 	lintStatus = LintStatus{}
-	for i, l := range LintLevels {
+	for i, l := range lintLevels {
 		if strings.ToUpper(common.Cfg.LintLevel) == l {
-			LintLevels = LintLevels[:i]
+			lintLevels = lintLevels[:i]
 			break
 		}
 	}
@@ -71,11 +71,11 @@ func Lint() error {
 		common.Cfg.Comma = '|'
 		err = lintCSV()
 	case "tsv":
-		delete(LintRules, "Whitespace") // tsv not check white space after closed quote
+		delete(lintRules, "Whitespace") // tsv not check white space after closed quote
 		common.Cfg.Comma = '\t'
 		err = lintCSV()
 	case "txt":
-		delete(LintRules, "Whitespace") // txt not check white space after closed quote
+		delete(lintRules, "Whitespace") // txt not check white space after closed quote
 		common.Cfg.Comma = ' '
 		err = lintCSV()
 	case "xlsx":
@@ -132,7 +132,7 @@ func lintFile(line int64, raw []string) error {
 
 // lintLine ...
 func lintLine(line int64, raw []string) error {
-	for _, r := range LintRules {
+	for _, r := range lintRules {
 		switch r.LintLevel {
 		case "line":
 			column, err := r.Func(line, raw)
@@ -153,7 +153,7 @@ func lintLine(line int64, raw []string) error {
 
 // lintCell ...
 func lintCell(line int64, raw []string) error {
-	for _, r := range LintRules {
+	for _, r := range lintRules {
 		switch r.LintLevel {
 		case "cell":
 			column, err := r.Func(line, raw)
@@ -286,7 +286,7 @@ func lintCellDupColumnName(line int64, raw []string) (column int, wrong bool) {
 
 // checkLevelBreak ...
 func checkLevelBreak(r LintCode) (br bool) {
-	for _, l := range LintLevels {
+	for _, l := range lintLevels {
 		if l == r.Level {
 			br = true
 			break

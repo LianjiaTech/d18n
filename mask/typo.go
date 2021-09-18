@@ -15,8 +15,8 @@ package mask
 
 type MaskFunc func(args ...interface{}) (ret string, err error)
 
-// MaskFuncs support functions list, case insensitive
-var MaskFuncs = map[string]MaskFunc{
+// maskFuncs support functions list, case insensitive
+var maskFuncs = map[string]MaskFunc{
 	"aes":                 AES,
 	"aesctr":              AESCTR,
 	"abbreviate":          Abbreviate,

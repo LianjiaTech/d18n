@@ -90,7 +90,7 @@ Generate a list of words using your system dictionary.
 aspell -d en dump master | aspell -l en expand > mask/corpus/mangle.en_US
 ```
 
-## Generate MaskFuncs
+## Generate maskFuncs
 
 ```bash
 ~ $ make mask-typo

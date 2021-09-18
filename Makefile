@@ -116,8 +116,8 @@ mask-typo:
 	@echo "" >> mask/typo.tmp
 	@echo "type MaskFunc func(args ...interface{}) (ret string, err error)" >> mask/typo.tmp
 	@echo "" >> mask/typo.tmp
-	@echo "// MaskFuncs support functions list, case insensitive" >> mask/typo.tmp
-	@echo "var MaskFuncs = map[string]MaskFunc{" >> mask/typo.tmp
+	@echo "// maskFuncs support functions list, case insensitive" >> mask/typo.tmp
+	@echo "var maskFuncs = map[string]MaskFunc{" >> mask/typo.tmp
 	@go doc --short d18n/mask | grep "^func" | grep '(args' | awk -F '(' '{print $$1}'  | \
 	awk '{print "\""tolower($$2)"\":", $$2","}' >> mask/typo.tmp
 	@echo "}" >> mask/typo.tmp

@@ -22,12 +22,12 @@ import (
 
 // TestMask test FakeXXXX
 func TestMask(t *testing.T) {
-	m, err := NewMaskStruct(common.Cfg)
+	m, err := NewMaskStruct(common.Cfg.Mask)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	m.Config = map[string]MaskRule{
+	m.Config = map[string]maskRule{
 		"col1": {
 			MaskFunc: "fake",
 			Args:     []string{"name"},
@@ -54,8 +54,8 @@ func TestMask(t *testing.T) {
 }
 
 func ExampleMask() {
-	m, _ := NewMaskStruct(common.Cfg)
-	m.Config = map[string]MaskRule{
+	m, _ := NewMaskStruct(common.Cfg.Mask)
+	m.Config = map[string]maskRule{
 		"col1": {
 			MaskFunc: "crc32",
 			Args:     []string{},

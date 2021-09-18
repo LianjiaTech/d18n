@@ -23,8 +23,8 @@ import (
 
 func TestLintJSON(t *testing.T) {
 	orgCfg := common.Cfg
-	levels := LintLevels
-	LintLevels = []string{"FATAL", "ERROR"}
+	levels := lintLevels
+	lintLevels = []string{"FATAL", "ERROR"}
 	common.Cfg.NoHeader = true
 
 	lintStatus = LintStatus{}
@@ -43,6 +43,6 @@ func TestLintJSON(t *testing.T) {
 	}
 	pretty.Println(lintStatus)
 
-	LintLevels = levels
+	lintLevels = levels
 	common.Cfg = orgCfg
 }

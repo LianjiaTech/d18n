@@ -40,7 +40,7 @@ type SaveStruct struct {
 
 func NewSaveStruct(c common.Config) (*SaveStruct, error) {
 	var s *SaveStruct
-	m, err := mask.NewMaskStruct(c)
+	m, err := mask.NewMaskStruct(c.Mask)
 	if err != nil {
 		return s, err
 	}

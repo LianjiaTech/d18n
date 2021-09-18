@@ -37,7 +37,7 @@ type EmportStruct struct {
 
 func NewEmportStruct(c common.Config) (*EmportStruct, error) {
 	var e *EmportStruct
-	m, err := mask.NewMaskStruct(c)
+	m, err := mask.NewMaskStruct(c.Mask)
 	if err != nil {
 		return e, err
 	}

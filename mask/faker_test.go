@@ -128,10 +128,10 @@ func TestFake(t *testing.T) {
 }
 
 func Example_fakePassword() {
-	orgCfg := common.Cfg
-	// common.Cfg.RandSeed = 1989
 	var fakeData string
 	var err error
+
+	InitFaker(common.Cfg.RandSeed)
 	// default policy and length
 	fakeData, err = Fake("password")
 	fmt.Println(fakeData, err)
@@ -143,8 +143,6 @@ func Example_fakePassword() {
 	// all specified
 	fakeData, _ = Fake("password", "aA", 12)
 	fmt.Println(fakeData, err)
-
-	common.Cfg = orgCfg
 	// Output:
 	// cq8d1uhfy4l4gk4p <nil>
 	// 6890465967198159 <nil>

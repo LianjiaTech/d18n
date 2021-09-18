@@ -25,12 +25,18 @@ import (
 var corpusFS embed.FS
 
 type MaskStruct struct {
-	Config map[string]MaskRule // mask config
+	Config maskConfig // mask config
 }
 
-func NewMaskStruct(c common.Config) (*MaskStruct, error) {
-	m := &MaskStruct{
-		Config: defaultMaskConfig,
+func NewMaskStruct(file string) (*MaskStruct, error) {
+	var m *MaskStruct
+	mc, err := ParseMaskConfig(file)
+	if err != nil {
+		return m, err
+	}
+
+	m = &MaskStruct{
+		Config: mc,
 	}
 	return m, nil
 }
@@ -46,7 +52,7 @@ func (m *MaskStruct) Mask(name string, value interface{}) (ret string, err error
 	if _, ok := m.Config[name]; !ok {
 		return fmt.Sprint(value), nil
 	}
-	if _, ok := MaskFuncs[m.Config[name].MaskFunc]; !ok {
+	if _, ok := maskFuncs[m.Config[name].MaskFunc]; !ok {
 		return fmt.Sprint(value), fmt.Errorf(common.WrongMaskFunc)
 	}
 
@@ -61,7 +67,7 @@ func (m *MaskStruct) Mask(name string, value interface{}) (ret string, err error
 	}
 
 	// run mask function
-	mask := MaskFuncs[m.Config[name].MaskFunc]
+	mask := maskFuncs[m.Config[name].MaskFunc]
 	return mask(args...)
 }
 

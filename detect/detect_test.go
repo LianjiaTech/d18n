@@ -29,7 +29,7 @@ func TestParseSensitiveConfig(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(SensitiveConfig["mac"])
+	pretty.Println(sensitiveConfig["mac"])
 }
 
 func TestCheckHeader(t *testing.T) {

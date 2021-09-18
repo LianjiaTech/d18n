@@ -17,21 +17,15 @@ import (
 	"testing"
 
 	"d18n/common"
-
-	"github.com/kr/pretty"
 )
 
-func TestParseMaskConfig(t *testing.T) {
-	orgMask := defaultMaskConfig
+func ExampleParseMaskConfig() {
 
 	file := common.TestPath + "/test/mask.csv"
-	err := ParseMaskConfig(file)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	pretty.Println(defaultMaskConfig)
-
-	defaultMaskConfig = orgMask
+	mc, err := ParseMaskConfig(file)
+	fmt.Println(mc, err)
+	// Output:
+	// map[id:{shuffle []} last_name:{smokeleft [3 x]}] <nil>
 }
 
 func TestGenRSAKey(t *testing.T) {

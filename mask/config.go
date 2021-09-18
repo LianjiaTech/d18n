@@ -34,25 +34,25 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type MaskRule struct {
+type maskRule struct {
 	MaskFunc string   `yaml:"func"`
 	Args     []string `yaml:"args"`
 }
 
-var defaultMaskConfig map[string]MaskRule
+// maskConfig map[column name](mask rule)
+type maskConfig map[string]maskRule
 
-func ParseMaskConfig(file string) error {
-
-	defaultMaskConfig = make(map[string]MaskRule)
+func ParseMaskConfig(file string) (maskConfig, error) {
+	mc := make(maskConfig)
 
 	// not config mask
 	if file == "" {
-		return nil
+		return mc, nil
 	}
 
 	fd, err := os.Open(file)
 	if err != nil {
-		return err
+		return mc, err
 	}
 	defer fd.Close()
 
@@ -76,17 +76,17 @@ func ParseMaskConfig(file string) error {
 		if err == io.EOF { // end of file
 			break
 		} else if err != nil {
-			return err
+			return mc, err
 		}
 
 		if len(row) > 1 {
-			defaultMaskConfig[strings.ToLower(row[0])] = MaskRule{
+			mc[strings.ToLower(row[0])] = maskRule{
 				MaskFunc: strings.ToLower(row[1]),
 				Args:     row[2:],
 			}
 		}
 	}
-	return err
+	return mc, err
 }
 
 type EncryptCipherString struct {

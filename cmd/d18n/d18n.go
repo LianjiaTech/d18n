@@ -31,9 +31,6 @@ func main() {
 	// common.PanicIfError(common.ParseFlag())
 	common.PanicIfError(common.ParseFlags())
 
-	// parse mask config
-	common.PanicIfError(mask.ParseMaskConfig(common.Cfg.Mask))
-
 	// parse cipher config
 	common.PanicIfError(mask.ParseCipherConfig(common.Cfg.Cipher))
 

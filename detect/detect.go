@@ -41,8 +41,8 @@ type BasicDetect struct {
 // Config sensitive config
 type Config map[string]BasicDetect
 
-// SensitiveConfig ...
-var SensitiveConfig Config
+// sensitiveConfig ...
+var sensitiveConfig Config
 
 // DetectStatus ...
 type DetectStatus struct {
@@ -62,13 +62,13 @@ func ParseSensitiveConfig() error {
 		defaultSensitiveConfig = buf
 	}
 
-	err = yaml.Unmarshal(defaultSensitiveConfig, &SensitiveConfig)
+	err = yaml.Unmarshal(defaultSensitiveConfig, &sensitiveConfig)
 	if err != nil {
 		return err
 	}
 
 	// check config regexp valid
-	for _, v := range SensitiveConfig {
+	for _, v := range sensitiveConfig {
 		for _, r := range v.Key {
 			_, err = regexp.Compile(r)
 			if err != nil {
@@ -211,7 +211,7 @@ func checkHeader(header []common.HeaderColumn) {
 		var types []string
 
 		// sensitive key word check
-		for t, rule := range SensitiveConfig {
+		for t, rule := range sensitiveConfig {
 			for _, k := range rule.Key {
 				r := regexp.MustCompile(k)
 				if r.MatchString(key) {
@@ -235,7 +235,7 @@ func checkValue(value string) []string {
 	}
 
 	// regexp
-	for t, rule := range SensitiveConfig {
+	for t, rule := range sensitiveConfig {
 		for _, k := range rule.Value {
 			r := regexp.MustCompile(k)
 			if r.MatchString(value) {
