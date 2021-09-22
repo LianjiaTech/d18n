@@ -16,6 +16,8 @@ package mask
 import (
 	"fmt"
 	"testing"
+
+	"d18n/common"
 )
 
 var shuffleTestCases = []interface{}{
@@ -29,18 +31,19 @@ var shuffleTestCases = []interface{}{
 }
 
 func ExampleShuffle() {
+	InitShuffle(common.Cfg.RandSeed)
 	for _, c := range shuffleTestCases {
 		r, err := Shuffle(c)
 		fmt.Println(r, err)
 	}
 	// Output:
-	// 4802731596 <nil>
-	// 4802731596 <nil>
-	// 480rgf2731596 <nil>
-	// 480UMK2731596 <nil>
-	// 肥涡rgfUMK <nil>
-	// 46.499.96.467 <nil>
-	// rgf <nil>
+	// 7964358102 <nil>
+	// 7964358102 <nil>
+	// 796tbq4358102 <nil>
+	// 796FNW4358102 <nil>
+	// 蕉均tbqFNW <nil>
+	// 72.700.02.723 <nil>
+	// tbq <nil>
 }
 
 func TestShuffleRight(t *testing.T) {

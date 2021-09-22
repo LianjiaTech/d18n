@@ -15,20 +15,19 @@ package preview
 
 import (
 	"fmt"
-	//"encoding/json"
-	json "github.com/json-iterator/go"
 	"os"
 
-	"d18n/common"
+	//"encoding/json"
+	json "github.com/json-iterator/go"
 )
 
-func previewJSON() error {
-	if common.Cfg.Preview == 0 {
+func previewJSON(p *PreviewStruct) error {
+	if p.CommonConfig.Preview == 0 {
 		return nil
 	}
 
 	// use iterator to reader
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(p.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -36,9 +35,9 @@ func previewJSON() error {
 
 	// read line
 	var records []interface{}
-	iter := json.Parse(json.ConfigDefault, fd, common.Cfg.MaxBufferSize)
+	iter := json.Parse(json.ConfigDefault, fd, p.CommonConfig.MaxBufferSize)
 	if iter.WhatIsNext() == json.ArrayValue {
-		for count := 0; iter.ReadArray() && count < common.Cfg.Preview; count++ {
+		for count := 0; iter.ReadArray() && count < p.CommonConfig.Preview; count++ {
 			ret := iter.Read()
 			if iter.Error != nil {
 				return iter.Error

@@ -21,69 +21,88 @@ import (
 	"time"
 
 	"d18n/common"
+	"d18n/mask"
 )
 
-var emportStatus EmportStatus
-
-type EmportStatus struct {
+type emportStatus struct {
 	Header   []common.HeaderColumn // Column Header, include column type info
 	Lines    int                   // lines save into file
 	TimeCost int64                 // time cost
 }
 
-func Emport() error {
+type EmportStruct struct {
+	Status       emportStatus     // emport status
+	Masker       *mask.MaskStruct // masker
+	CommonConfig common.Config    //
+}
+
+func NewEmportStruct(c common.Config) (*EmportStruct, error) {
+	var e *EmportStruct
+	m, err := mask.NewMaskStruct(c.Mask)
+	if err != nil {
+		return e, err
+	}
+
+	e = &EmportStruct{
+		Masker:       m,
+		CommonConfig: c,
+	}
+	return e, nil
+}
+
+func (e *EmportStruct) Emport() error {
 	emportStartTime := time.Now().UnixNano()
 	// new *sql.DB, by pass error
 	conn, _ := common.NewConnection()
 
-	err := emportRows(conn)
+	err := emportRows(e, conn)
 	if err != nil {
-		err = fmt.Errorf("line: %d, error: %s", emportStatus.Lines, err.Error())
+		err = fmt.Errorf("line: %d, error: %s", e.Status.Lines, err.Error())
 	}
 
 	emportEndTime := time.Now().UnixNano()
-	emportStatus.TimeCost = emportEndTime - emportStartTime
+	e.Status.TimeCost = emportEndTime - emportStartTime
 
 	return err
 }
 
-func emportRows(conn *sql.DB) error {
+func emportRows(e *EmportStruct, conn *sql.DB) error {
 	var err error
 	// get Header
-	emportStatus.Header, err = common.ParseSchema()
+	e.Status.Header, err = common.ParseSchema()
 	if err != nil {
 		return err
 	}
 
 	// exec sql before load data, e.g., foreign key, lock table write ...
-	err = emportPrefixExec(conn)
+	err = emportPrefixExec(e, conn)
 	if err != nil {
 		return err
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(e.CommonConfig.File), "."))
 	switch suffix {
 	case "tsv": // tab-separated values
-		common.Cfg.Comma = '\t'
-		err = emportCSV(conn)
+		e.CommonConfig.Comma = '\t'
+		err = emportCSV(e, conn)
 	case "txt": // space-separated values
-		common.Cfg.Comma = ' '
-		err = emportCSV(conn)
+		e.CommonConfig.Comma = ' '
+		err = emportCSV(e, conn)
 	case "psv": // pipe-separated values
-		common.Cfg.Comma = '|'
-		err = emportCSV(conn)
+		e.CommonConfig.Comma = '|'
+		err = emportCSV(e, conn)
 	case "csv": // comma-separated values
-		common.Cfg.Comma = ','
-		err = emportCSV(conn)
+		e.CommonConfig.Comma = ','
+		err = emportCSV(e, conn)
 	case "xlsx": // microsoft office excel
-		err = emportXlsx(conn)
+		err = emportXlsx(e, conn)
 	case "html": // html format
-		err = emportHTML(conn)
+		err = emportHTML(e, conn)
 	case "sql": // sql file
-		err = emportSQL(conn)
+		err = emportSQL(e, conn)
 	case "json": // json file
-		err = emportJSON(conn)
+		err = emportJSON(e, conn)
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
@@ -92,28 +111,28 @@ func emportRows(conn *sql.DB) error {
 	}
 
 	// exec sql before load data, e.g., foreign key, lock table write ...
-	err = emportSuffixExec(conn)
+	err = emportSuffixExec(e, conn)
 
 	return err
 }
 
-func emportPrefixExec(conn *sql.DB) error {
+func emportPrefixExec(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	// change foreign key checks
-	if common.Cfg.DisableForeignKeyChecks {
-		err = common.SetForeignKeyChecks(!common.Cfg.DisableForeignKeyChecks, conn, common.Cfg.Table)
+	if e.CommonConfig.DisableForeignKeyChecks {
+		err = common.SetForeignKeyChecks(!e.CommonConfig.DisableForeignKeyChecks, conn, e.CommonConfig.Table)
 	}
 
 	return err
 }
 
-func emportSuffixExec(conn *sql.DB) error {
+func emportSuffixExec(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	// change foreign key checks
-	if common.Cfg.DisableForeignKeyChecks {
-		err = common.SetForeignKeyChecks(common.Cfg.DisableForeignKeyChecks, conn, common.Cfg.Table)
+	if e.CommonConfig.DisableForeignKeyChecks {
+		err = common.SetForeignKeyChecks(e.CommonConfig.DisableForeignKeyChecks, conn, e.CommonConfig.Table)
 	}
 
 	return err
@@ -132,20 +151,20 @@ func executeSQL(sql string, conn *sql.DB) error {
 	return err
 }
 
-func CheckStatus() error {
+func (e *EmportStruct) CheckStatus() error {
 	var err error
 
-	if common.Cfg.SkipLines > 0 {
-		println("Skip Lines:", common.Cfg.SkipLines)
+	if e.CommonConfig.SkipLines > 0 {
+		println("Skip Lines:", e.CommonConfig.SkipLines)
 	}
 
 	// verbose mode print
-	if !common.Cfg.Verbose {
+	if !e.CommonConfig.Verbose {
 		return err
 	}
 	println(
-		"Import Rows:", emportStatus.Lines,
-		"Total Cost:", fmt.Sprint(time.Duration(emportStatus.TimeCost)*time.Nanosecond),
+		"Import Rows:", e.Status.Lines,
+		"Total Cost:", fmt.Sprint(time.Duration(e.Status.TimeCost)*time.Nanosecond),
 	)
 
 	return err

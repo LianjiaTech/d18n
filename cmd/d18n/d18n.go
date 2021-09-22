@@ -31,15 +31,12 @@ func main() {
 	// common.PanicIfError(common.ParseFlag())
 	common.PanicIfError(common.ParseFlags())
 
-	// parse mask config
-	common.PanicIfError(common.ParseMaskConfig())
-
 	// parse cipher config
-	common.PanicIfError(common.ParseCipherConfig())
+	common.PanicIfError(mask.ParseCipherConfig(common.Cfg.Cipher))
 
 	// print cipher
 	if common.Cfg.PrintCipher {
-		common.PrintCipher()
+		mask.PrintCipher()
 		return
 	}
 
@@ -51,7 +48,7 @@ func main() {
 
 	// preview file
 	if common.Cfg.Preview > 0 {
-		common.PanicIfError(preview.Preview())
+		common.PanicIfError(previewFile())
 		return
 	}
 
@@ -68,7 +65,7 @@ func main() {
 	}
 
 	// init mask corpus
-	common.PanicIfError(mask.InitMask())
+	common.PanicIfError(mask.InitMaskCorpus(common.Cfg.RandSeed))
 
 	// import file
 	if common.Cfg.Import {
@@ -79,12 +76,26 @@ func main() {
 	common.PanicIfError(saveRows())
 }
 
+func previewFile() error {
+	p, err := preview.NewPreviewStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
+	return p.Preview()
+}
+
 func saveRows() error {
+	// new save struct
+	s, err := save.NewSaveStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
+
 	// query and save result
-	common.PanicIfError(save.Save())
+	common.PanicIfError(s.Save())
 
 	// check save status
-	return save.CheckStatus()
+	return s.CheckStatus()
 }
 
 func lintFile() error {
@@ -96,11 +107,15 @@ func lintFile() error {
 }
 
 func emportFile() error {
+	e, err := emport.NewEmportStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
 	// import file into database
-	common.PanicIfError(emport.Emport())
+	common.PanicIfError(e.Emport())
 
 	// check emport status
-	return emport.CheckStatus()
+	return e.CheckStatus()
 }
 
 func detectRows() error {

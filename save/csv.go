@@ -21,17 +21,16 @@ import (
 	"strings"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
 // saveRows2CSV save rows result into csv format file
-func saveRows2CSV(rows *sql.Rows) error {
+func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 	var err error
 	var file *os.File
-	if strings.EqualFold(common.Cfg.File, "stdout") {
+	if strings.EqualFold(s.CommonConfig.File, "stdout") {
 		file = os.Stdout
 	} else {
-		file, err = os.Create(common.Cfg.File)
+		file, err = os.Create(s.CommonConfig.File)
 		if err != nil {
 			return err
 		}
@@ -42,7 +41,7 @@ func saveRows2CSV(rows *sql.Rows) error {
 	// windows 环境下导出的 csv 文件默认添加 UTF8 BOM。
 	// 添加 BOM 对 less, awk 等 *nix 系统命令并不友好，因此仅对特定的文件名生效。
 	// Linux 环境删除文件 UTF8 BOM 头命令：dos2unix xxx.csv
-	if common.Cfg.BOM {
+	if s.CommonConfig.BOM {
 		_, err = file.WriteString(common.UTF8BOM)
 		if err != nil {
 			return err
@@ -50,29 +49,29 @@ func saveRows2CSV(rows *sql.Rows) error {
 	}
 
 	w := csv.NewWriter(file)
-	w.Comma = common.Cfg.Comma
+	w.Comma = s.CommonConfig.Comma
 	defer w.Flush()
 
 	// set table header with column name
-	if !common.Cfg.NoHeader {
-		err = w.Write(common.DBParserColumnNames(saveStatus.Header))
+	if !s.CommonConfig.NoHeader {
+		err = w.Write(common.DBParserColumnNames(s.Status.Header))
 		if err != nil {
 			return err
 		}
 	}
 
 	// init columns
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	// set every table rows
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -84,7 +83,7 @@ func saveRows2CSV(rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = common.Cfg.NULLString
+				values[j] = s.CommonConfig.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -96,13 +95,13 @@ func saveRows2CSV(rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(saveStatus.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(saveStatus.Header[j].Name(), values[j])
+				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
 			}
 		}
 

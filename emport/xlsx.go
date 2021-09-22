@@ -18,13 +18,12 @@ import (
 	"fmt"
 
 	"d18n/common"
-	"d18n/mask"
 
 	xlsx "github.com/360EntSecGroup-Skylar/excelize/v2"
 )
 
-func emportXlsx(conn *sql.DB) error {
-	fd, err := xlsx.OpenFile(common.Cfg.File)
+func emportXlsx(e *EmportStruct, conn *sql.DB) error {
+	fd, err := xlsx.OpenFile(e.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -36,7 +35,7 @@ func emportXlsx(conn *sql.DB) error {
 			return err
 		}
 
-		insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(emportStatus.Header))
+		insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(e.Status.Header))
 		if err != nil {
 			return err
 		}
@@ -44,7 +43,7 @@ func emportXlsx(conn *sql.DB) error {
 		var sql string
 		var sqlCounter int
 		for rows.Next() {
-			emportStatus.Lines++
+			e.Status.Lines++
 			// read row
 			row, err := rows.Columns()
 			if err != nil {
@@ -52,41 +51,41 @@ func emportXlsx(conn *sql.DB) error {
 			}
 
 			// skip header line
-			if emportStatus.Lines == 1 && !common.Cfg.NoHeader {
+			if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
 				continue
 			}
 
 			// SkipLines
-			if emportStatus.Lines <= common.Cfg.SkipLines {
+			if e.Status.Lines <= e.CommonConfig.SkipLines {
 				continue
 			}
-			if common.Cfg.Limit > 0 &&
-				(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+			if e.CommonConfig.Limit > 0 &&
+				(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
 				break
 			}
 
 			// ignore blank lines
-			if common.Cfg.IgnoreBlank && len(row) == 0 {
+			if e.CommonConfig.IgnoreBlank && len(row) == 0 {
 				continue
 			}
 
 			// mask data
-			if common.Cfg.IgnoreBlank {
+			if e.CommonConfig.IgnoreBlank {
 				rowLen := len(row)
 				// ignore extra blank cell
-				if len(emportStatus.Header) < len(row) {
-					rowLen = len(emportStatus.Header)
+				if len(e.Status.Header) < len(row) {
+					rowLen = len(e.Status.Header)
 				}
-				row, err = mask.MaskRow(emportStatus.Header, row[:rowLen])
+				row, err = e.Masker.MaskRow(e.Status.Header, row[:rowLen])
 			} else {
-				row, err = mask.MaskRow(emportStatus.Header, row)
+				row, err = e.Masker.MaskRow(e.Status.Header, row)
 			}
 			if err != nil {
 				return err
 			}
 
 			// concat sql
-			values, err := common.SQLInsertValues(emportStatus.Header, common.DBParseNullString(emportStatus.Header, row))
+			values, err := common.SQLInsertValues(e.Status.Header, common.DBParseNullString(e.Status.Header, row))
 			if err != nil {
 				return err
 			}
@@ -94,7 +93,7 @@ func emportXlsx(conn *sql.DB) error {
 			// extended-insert
 			sqlCounter++
 			sql += common.SQLMultiValues(sqlCounter, insertPrefix, values)
-			if common.Cfg.ExtendedInsert <= 1 || sqlCounter%common.Cfg.ExtendedInsert == 0 {
+			if e.CommonConfig.ExtendedInsert <= 1 || sqlCounter%e.CommonConfig.ExtendedInsert == 0 {
 				err = executeSQL(sql, conn)
 				if err != nil {
 					return err

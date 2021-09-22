@@ -13,16 +13,17 @@
 
 package mask
 
-func InitMask() error {
+// InitMaskCorpus init mask corpus, it's cost long time
+func InitMaskCorpus(seed int64) error {
 	err := InitMangle()
 	if err != nil {
 		return err
 	}
-	err = InitShuffle()
+	err = InitShuffle(seed)
 	if err != nil {
 		return err
 	}
-	err = InitFakeCorpus()
+	err = InitFaker(seed)
 	if err != nil {
 		return err
 	}

@@ -20,39 +20,38 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
 // saveRows2SQL save rows result into sql file
-func saveRows2SQL(rows *sql.Rows) error {
+func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 
-	file, err := os.Create(common.Cfg.File)
+	file, err := os.Create(s.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	// insert prefix
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParserColumnNames(saveStatus.Header))
+	insertPrefix, err := common.SQLInsertPrefix(common.DBParserColumnNames(s.Status.Header))
 	if err != nil {
 		return err
 	}
 
 	// header & columns
-	headerColumns := common.DBParseColumnTypes(saveStatus.Header)
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	headerColumns := common.DBParseColumnTypes(s.Status.Header)
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	// write every row into sql
-	w := bufio.NewWriterSize(file, common.Cfg.MaxBufferSize)
+	w := bufio.NewWriterSize(file, s.CommonConfig.MaxBufferSize)
 	var sqlCounter int
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -65,7 +64,7 @@ func saveRows2SQL(rows *sql.Rows) error {
 		values := make([]sql.NullString, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = sql.NullString{String: common.Cfg.NULLString, Valid: false}
+				values[j] = sql.NullString{String: s.CommonConfig.NULLString, Valid: false}
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -76,7 +75,7 @@ func saveRows2SQL(rows *sql.Rows) error {
 					values[j] = sql.NullString{String: fmt.Sprint(col), Valid: true}
 				}
 				// data mask
-				valueMask, err := mask.Mask(saveStatus.Header[j].Name(), values[j].String)
+				valueMask, err := s.Masker.Mask(s.Status.Header[j].Name(), values[j].String)
 				if err != nil {
 					return err
 				}
@@ -103,7 +102,7 @@ func saveRows2SQL(rows *sql.Rows) error {
 	}
 
 	// last semicolon
-	if common.Cfg.ExtendedInsert > 0 && saveStatus.Lines > 0 && sqlCounter%common.Cfg.ExtendedInsert != 0 {
+	if s.CommonConfig.ExtendedInsert > 0 && s.Status.Lines > 0 && sqlCounter%s.CommonConfig.ExtendedInsert != 0 {
 		_, err = w.WriteString(";\n")
 		if err != nil {
 			return err

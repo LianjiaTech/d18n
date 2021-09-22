@@ -22,8 +22,8 @@ import (
 
 func init() {
 	common.InitTestEnv()
-	common.ParseCipherConfig()
-	InitMask()
+	ParseCipherConfig(common.Cfg.Cipher)
+	InitMaskCorpus(common.Cfg.RandSeed)
 }
 
 func TestLaplaceDPFloat64(t *testing.T) {

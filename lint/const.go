@@ -28,12 +28,12 @@ type LintCode struct {
 	Func      lintFunc // lint rule function
 }
 
-var LintRules map[string]LintCode
+var lintRules map[string]LintCode
 
 func init() {
-	LintRules = make(map[string]LintCode)
+	lintRules = make(map[string]LintCode)
 
-	LintRules = map[string]LintCode{
+	lintRules = map[string]LintCode{
 		"OK": {
 			Name:    "OK",
 			Message: "OK.",

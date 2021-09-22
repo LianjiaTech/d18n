@@ -42,7 +42,8 @@ func TestPreview(t *testing.T) {
 	for _, file := range files[0] {
 		common.Cfg.File = file
 		fmt.Println("# Preview: ", common.Cfg.File)
-		err := Preview()
+		p, _ := NewPreviewStruct(common.Cfg)
+		err := p.Preview()
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -51,7 +52,8 @@ func TestPreview(t *testing.T) {
 	for _, file := range files[1] {
 		common.Cfg.File = file
 		fmt.Println("# Preview: ", common.Cfg.File)
-		err := Preview()
+		p, _ := NewPreviewStruct(common.Cfg)
+		err := p.Preview()
 		if err == nil {
 			t.Error(err.Error())
 		}

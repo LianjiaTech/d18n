@@ -24,44 +24,62 @@ import (
 //go:embed corpus
 var corpusFS embed.FS
 
-// Mask mask column data
+type MaskStruct struct {
+	Config maskConfig // mask config
+}
+
+func NewMaskStruct(file string) (*MaskStruct, error) {
+	var m *MaskStruct
+	mc, err := ParseMaskConfig(file)
+	if err != nil {
+		return m, err
+	}
+
+	m = &MaskStruct{
+		Config: mc,
+	}
+	return m, nil
+}
+
+// Mask mask column data for SQL query
 // name: column name, case insensitive
 // value: column value
-func Mask(name string, value interface{}) (ret string, err error) {
+func (m *MaskStruct) Mask(name string, value interface{}) (ret string, err error) {
 	// column name case insensitive
 	name = strings.ToLower(name)
 
 	// check mask config
-	if _, ok := common.MaskConfig[name]; !ok {
+	if _, ok := m.Config[name]; !ok {
 		return fmt.Sprint(value), nil
 	}
-	if _, ok := MaskFuncs[common.MaskConfig[name].MaskFunc]; !ok {
+	if _, ok := maskFuncs[m.Config[name].MaskFunc]; !ok {
 		return fmt.Sprint(value), fmt.Errorf(common.WrongMaskFunc)
 	}
 
 	// concat mask args
 	var args []interface{}
 	// generate fake data no need origin value
-	if !strings.HasPrefix(common.MaskConfig[name].MaskFunc, "fake") {
+	if !strings.HasPrefix(m.Config[name].MaskFunc, "fake") {
 		args = append(args, value)
 	}
-	for _, arg := range common.MaskConfig[name].Args {
+	for _, arg := range m.Config[name].Args {
 		args = append(args, arg)
 	}
 
 	// run mask function
-	mask := MaskFuncs[common.MaskConfig[name].MaskFunc]
+	mask := maskFuncs[m.Config[name].MaskFunc]
 	return mask(args...)
 }
 
-func MaskRow(header []common.HeaderColumn, row []string) (ret []string, err error) {
+// MaskRow mask data for read file
+func (m *MaskStruct) MaskRow(header []common.HeaderColumn, row []string) (ret []string, err error) {
 	if len(header) != len(row) {
 		return ret, fmt.Errorf(common.WrongColumnsCnt)
 	}
 
 	ret = make([]string, len(header))
 	for i, h := range header {
-		ret[i], err = Mask(h.Name, row[i])
+		ret[i], err = m.Mask(h.Name, row[i])
 		if err != nil {
 			return
 		}

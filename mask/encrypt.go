@@ -53,8 +53,8 @@ func FF1(args ...interface{}) (ret string, err error) {
 	}
 
 	if len(args) < 4 {
-		ffKey = common.DefaultCipher.FFKey
-		ffTweak = common.DefaultCipher.FFTweak
+		ffKey = defaultCipher.FFKey
+		ffTweak = defaultCipher.FFTweak
 	} else {
 		ffKey, err = hex.DecodeString(fmt.Sprint(args[2]))
 		if err != nil {
@@ -93,8 +93,8 @@ func FF3(args ...interface{}) (ret string, err error) {
 	}
 
 	if len(args) < 4 {
-		ffKey = common.DefaultCipher.FFKey
-		ffTweak = common.DefaultCipher.FFTweak
+		ffKey = defaultCipher.FFKey
+		ffTweak = defaultCipher.FFTweak
 	} else {
 		ffKey, err = hex.DecodeString(fmt.Sprint(args[2]))
 		if err != nil {
@@ -151,12 +151,12 @@ func DES(args ...interface{}) (ret string, err error) {
 	if len(args) > 1 {
 		key = []byte(fmt.Sprint(args[1]))
 	} else {
-		key = common.DefaultCipher.DESKey
+		key = defaultCipher.DESKey
 	}
 	if len(args) > 2 {
 		ivAes = []byte(fmt.Sprint(args[2]))
 	} else {
-		ivAes = common.DefaultCipher.DESIV
+		ivAes = defaultCipher.DESIV
 	}
 	return doGoEncrypt(goEncrypt.DesCbcEncrypt, args[0], key, ivAes)
 }
@@ -167,12 +167,12 @@ func AES(args ...interface{}) (ret string, err error) {
 	if len(args) > 1 {
 		key = []byte(fmt.Sprint(args[1]))
 	} else {
-		key = common.DefaultCipher.AESKey
+		key = defaultCipher.AESKey
 	}
 	if len(args) > 2 {
 		ivAes = []byte(fmt.Sprint(args[2]))
 	} else {
-		ivAes = common.DefaultCipher.AESIV
+		ivAes = defaultCipher.AESIV
 	}
 	return doGoEncrypt(goEncrypt.AesCbcEncrypt, args[0], key, ivAes)
 }
@@ -183,12 +183,12 @@ func TDEA(args ...interface{}) (ret string, err error) {
 	if len(args) > 1 {
 		key = []byte(fmt.Sprint(args[1]))
 	} else {
-		key = common.DefaultCipher.TDEAKey
+		key = defaultCipher.TDEAKey
 	}
 	if len(args) > 2 {
 		ivAes = []byte(fmt.Sprint(args[2]))
 	} else {
-		ivAes = common.DefaultCipher.TDEAIV
+		ivAes = defaultCipher.TDEAIV
 	}
 	return doGoEncrypt(goEncrypt.TripleDesEncrypt, args[0], key, ivAes)
 }
@@ -201,12 +201,12 @@ func AESCTR(args ...interface{}) (ret string, err error) {
 	if len(args) > 1 {
 		key = []byte(fmt.Sprint(args[1]))
 	} else {
-		key = common.DefaultCipher.AESCTRKey
+		key = defaultCipher.AESCTRKey
 	}
 	if len(args) > 2 {
 		ivAes = []byte(fmt.Sprint(args[2]))
 	} else {
-		ivAes = common.DefaultCipher.AESCTRIV
+		ivAes = defaultCipher.AESCTRIV
 	}
 	return doGoEncrypt(goEncrypt.AesCtrEncrypt, args[0], key, ivAes)
 }
@@ -217,7 +217,7 @@ func RSA(args ...interface{}) (ret string, err error) {
 	if len(args) < 1 {
 		return ret, fmt.Errorf(common.WrongArgsCount)
 	}
-	crypttext, err := goEncrypt.RsaEncrypt([]byte(fmt.Sprint(args[0])), common.DefaultCipher.PublicKeyRSA)
+	crypttext, err := goEncrypt.RsaEncrypt([]byte(fmt.Sprint(args[0])), defaultCipher.PublicKeyRSA)
 	if err != nil {
 		return ret, err
 	}
@@ -230,7 +230,7 @@ func ECC(args ...interface{}) (ret string, err error) {
 	if len(args) < 1 {
 		return ret, fmt.Errorf(common.WrongArgsCount)
 	}
-	crypttext, err := goEncrypt.EccEncrypt([]byte(fmt.Sprint(args[0])), common.DefaultCipher.PublicKeyECC)
+	crypttext, err := goEncrypt.EccEncrypt([]byte(fmt.Sprint(args[0])), defaultCipher.PublicKeyECC)
 	if err != nil {
 		return ret, err
 	}
@@ -243,7 +243,7 @@ func SM2(args ...interface{}) (ret string, err error) {
 	if len(args) < 1 {
 		return ret, fmt.Errorf(common.WrongArgsCount)
 	}
-	pub := &common.DefaultCipher.PrivateKeySM2.PublicKey
+	pub := &defaultCipher.PrivateKeySM2.PublicKey
 	crypttext, err := pub.Encrypt([]byte(fmt.Sprint(args[0])))
 	if err != nil {
 		return ret, err
@@ -270,7 +270,7 @@ func SM4(args ...interface{}) (ret string, err error) {
 		return ret, fmt.Errorf(common.WrongArgsCount)
 	}
 
-	crypttext, err := sm4Encrypt(common.DefaultCipher.SM4Key, common.DefaultCipher.SM4IV, []byte(fmt.Sprint(args[0])))
+	crypttext, err := sm4Encrypt(defaultCipher.SM4Key, defaultCipher.SM4IV, []byte(fmt.Sprint(args[0])))
 	if err != nil {
 		return ret, err
 	}

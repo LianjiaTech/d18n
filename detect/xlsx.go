@@ -49,7 +49,7 @@ func detectXlsx() error {
 						detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: r})
 					}
 				}
-				checkHeader(detectStatus.Header)
+				checkFileHeader(detectStatus.Header)
 
 				if !common.Cfg.NoHeader {
 					continue

@@ -18,7 +18,6 @@ import (
 	"fmt"
 
 	"d18n/common"
-	"d18n/mask"
 
 	"github.com/tealeg/xlsx/v3"
 )
@@ -31,7 +30,7 @@ const (
 )
 
 // saveRows2XLSX save rows result into xlsx format file
-func saveRows2XLSX(rows *sql.Rows) error {
+func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 	file := xlsx.NewFile()
 	// create new sheet
 	sheet, err := file.AddSheet("result")
@@ -40,41 +39,41 @@ func saveRows2XLSX(rows *sql.Rows) error {
 	}
 
 	// check columns count
-	if len(saveStatus.Header) > ExcelMaxColumns {
+	if len(s.Status.Header) > ExcelMaxColumns {
 		return fmt.Errorf("excel max columns(%d) exceeded", ExcelMaxColumns)
 	}
 
 	// set table header with column name
-	if !common.Cfg.NoHeader {
+	if !s.CommonConfig.NoHeader {
 		sheetHeader := sheet.AddRow()
 		sheetHeader.SetHeight(12.5) // https://github.com/tealeg/xlsx/issues/647
-		for _, header := range saveStatus.Header {
+		for _, header := range s.Status.Header {
 			cell := sheetHeader.AddCell()
 			cell.Value = header.Name()
 		}
 	}
 
 	// init columns
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	var bufSize int
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 
 		// Check excel limit
-		if saveStatus.Lines > ExcelMaxRows {
+		if s.Status.Lines > ExcelMaxRows {
 			return fmt.Errorf("excel max rows(%d) exceeded", ExcelMaxRows)
 		}
-		if bufSize > common.Cfg.ExcelMaxFileSize {
-			return fmt.Errorf("excel max file size(%d) exceeded", common.Cfg.ExcelMaxFileSize)
+		if bufSize > s.CommonConfig.ExcelMaxFileSize {
+			return fmt.Errorf("excel max file size(%d) exceeded", s.CommonConfig.ExcelMaxFileSize)
 		}
 
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -86,7 +85,7 @@ func saveRows2XLSX(rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = common.Cfg.NULLString
+				values[j] = s.CommonConfig.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -98,13 +97,13 @@ func saveRows2XLSX(rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(saveStatus.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(saveStatus.Header[j].Name(), values[j])
+				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
 			}
 		}
 
@@ -126,13 +125,13 @@ func saveRows2XLSX(rows *sql.Rows) error {
 	}
 
 	// save to file
-	err = file.Save(common.Cfg.File)
+	err = file.Save(s.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 
-	if common.Cfg.Watermark != "" {
-		err = common.SetXlsxWatermark(common.Cfg.File, common.Cfg.Watermark)
+	if s.CommonConfig.Watermark != "" {
+		err = common.SetXlsxWatermark(s.CommonConfig.File, s.CommonConfig.Watermark)
 	}
 
 	return err

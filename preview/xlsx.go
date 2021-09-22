@@ -16,25 +16,23 @@ package preview
 import (
 	"fmt"
 
-	"d18n/common"
-
 	"github.com/tealeg/xlsx/v3"
 )
 
 // PreviewXlsx ...
-func previewXlsx() error {
-	if common.Cfg.Preview == 0 {
+func previewXlsx(p *PreviewStruct) error {
+	if p.CommonConfig.Preview == 0 {
 		return nil
 	}
 
-	opts := xlsx.RowLimit(common.Cfg.Preview)
-	wb, err := xlsx.OpenFile(common.Cfg.File, opts)
+	opts := xlsx.RowLimit(p.CommonConfig.Preview)
+	wb, err := xlsx.OpenFile(p.CommonConfig.File, opts)
 	if err != nil {
 		return err
 	}
 
 	if len(wb.Sheets) > 0 {
-		for i := 0; i < common.Cfg.Preview && i < wb.Sheets[0].MaxRow; i++ {
+		for i := 0; i < p.CommonConfig.Preview && i < wb.Sheets[0].MaxRow; i++ {
 			row, err := wb.Sheets[0].Row(i)
 			if err != nil {
 				return err

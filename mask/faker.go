@@ -30,6 +30,8 @@ import (
 	regen "github.com/zach-klippenstein/goregen"
 )
 
+var faker *gofakeit.Faker
+
 type district map[string][]string
 type city map[string]district
 type province map[string]city
@@ -44,7 +46,12 @@ type personalName struct {
 
 var fakeNameCorpus map[string]personalName
 
-func InitFakeCorpus() error {
+func InitFaker(seed int64) error {
+	faker = gofakeit.New(seed) // or NewCrypto() to use crypto/rand
+	return initFakeCorpus()
+}
+
+func initFakeCorpus() error {
 	files, err := corpusFS.ReadDir("corpus")
 	if err != nil {
 		return err
@@ -93,7 +100,6 @@ func Fake(args ...interface{}) (ret string, err error) {
 		return ret, fmt.Errorf(common.WrongArgsCount)
 	}
 
-	faker := gofakeit.New(common.Cfg.RandSeed) // or NewCrypto() to use crypto/rand
 	switch strings.ToLower(fmt.Sprint(args[0])) {
 	case "address":
 		var country, level string

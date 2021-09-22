@@ -23,7 +23,9 @@ func TestPreviewJSON(t *testing.T) {
 	orgCfg := common.Cfg
 	common.Cfg.File = common.TestPath + "/test/TestSaveRows2JSON.json"
 	common.Cfg.Preview = 10
-	err := previewJSON()
+
+	p, _ := NewPreviewStruct(common.Cfg)
+	err := previewJSON(p)
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -31,14 +31,15 @@ func TestEmportJSON(t *testing.T) {
 	common.Cfg.Table = "actor_json"
 	common.Cfg.Database = "sakila"
 	common.Cfg.Replace = false
+	testES.CommonConfig = common.Cfg
 
 	conn, _ := common.NewConnection()
-	err := emportJSON(conn)
+	err := emportJSON(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	pretty.Println(emportStatus)
+	pretty.Println(testES.Status)
 
 	common.Cfg = orgCfg
 

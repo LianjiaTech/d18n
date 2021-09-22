@@ -25,29 +25,30 @@ func init() {
 }
 
 func TestSaveRows2ASCII(t *testing.T) {
-	rows, err := testQueryRows()
+	// new save struct
+	s, err := NewSaveStruct(common.Cfg)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	saveRows2ASCII(rows)
+
+	rows, err := testQueryRows(s)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	saveRows2ASCII(s, rows)
 }
 
-func testQueryRows() (*sql.Rows, error) {
-	orgCfg := common.Cfg
-
-	common.Cfg.Query = "do 1"
-
+func testQueryRows(s *SaveStruct) (*sql.Rows, error) {
 	// QueryRows
 	rows, err := common.QueryRows()
 	if err != nil {
 		return rows, err
 	}
+
 	// get column header
-	saveStatus.Header, err = rows.ColumnTypes()
+	s.Status.Header, err = rows.ColumnTypes()
 	if err != nil {
 		return rows, err
 	}
-
-	common.Cfg = orgCfg
 	return rows, err
 }

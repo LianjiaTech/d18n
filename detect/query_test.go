@@ -10,25 +10,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package common
+
+package detect
 
 import (
-	"fmt"
 	"testing"
+
+	"d18n/common"
+
+	"github.com/kr/pretty"
 )
 
-func TestGenRSAKey(t *testing.T) {
-	privatekey, publicKey, err := genRSAKey()
-	if err != nil {
-		t.Error(err.Error())
-	}
-	fmt.Println(string(privatekey), string(publicKey))
-}
+func TestDetectQuery(t *testing.T) {
+	orgCfg := common.Cfg
 
-func TestGenECCKey(t *testing.T) {
-	privatekey, publicKey, err := genECCKey()
+	common.Cfg.Query = "select * from address limit 10"
+	common.Cfg.Database = "sakila"
+
+	d, _ := NewDetectStruct(common.Cfg)
+	err := d.DetectQuery()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	fmt.Println(string(privatekey), string(publicKey))
+	pretty.Println(detectStatus)
+
+	common.Cfg = orgCfg
 }

@@ -23,7 +23,6 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
 // JSON limit
@@ -31,8 +30,8 @@ import (
 // https://www.ibm.com/docs/en/datapower-gateways/7.6?topic=20-json-parser-limits
 
 // saveRows2JSON save rows result into JSON format file
-func saveRows2JSON(rows *sql.Rows) error {
-	file, err := os.Create(common.Cfg.File)
+func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
+	file, err := os.Create(s.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -43,8 +42,8 @@ func saveRows2JSON(rows *sql.Rows) error {
 	stream.WriteArrayStart() // [
 
 	// key names as json list first element
-	if !common.Cfg.NoHeader {
-		buf, err := json.Marshal(common.DBParserColumnNames(saveStatus.Header))
+	if !s.CommonConfig.NoHeader {
+		buf, err := json.Marshal(common.DBParserColumnNames(s.Status.Header))
 		if err != nil {
 			return err
 		}
@@ -59,16 +58,16 @@ func saveRows2JSON(rows *sql.Rows) error {
 	}
 
 	// init columns
-	columns := make([]interface{}, len(saveStatus.Header))
-	cols := make([]interface{}, len(saveStatus.Header))
+	columns := make([]interface{}, len(s.Status.Header))
+	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
 		cols[j] = &columns[j]
 	}
 
 	for rows.Next() {
-		saveStatus.Lines++
+		s.Status.Lines++
 		// limit return rows
-		if common.Cfg.Limit != 0 && saveStatus.Lines > common.Cfg.Limit {
+		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
 			break
 		}
 
@@ -80,7 +79,7 @@ func saveRows2JSON(rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = common.Cfg.NULLString
+				values[j] = s.CommonConfig.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
@@ -92,13 +91,13 @@ func saveRows2JSON(rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = mask.Mask(saveStatus.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(saveStatus.Header[j].Name(), values[j])
+				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
 			}
 		}
 
@@ -109,7 +108,7 @@ func saveRows2JSON(rows *sql.Rows) error {
 		}
 
 		// add comma
-		if common.Cfg.NoHeader && saveStatus.Lines == 1 {
+		if s.CommonConfig.NoHeader && s.Status.Lines == 1 {
 			// -no-header and first line don't add comma
 		} else {
 			stream.WriteMore() // ,

@@ -29,10 +29,10 @@ func TestParseSensitiveConfig(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(SensitiveConfig["mac"])
+	pretty.Println(sensitiveConfig["mac"])
 }
 
-func TestCheckHeader(t *testing.T) {
+func TestcheckFileHeader(t *testing.T) {
 	var cases = []string{
 		"name",
 		"birthday",
@@ -60,7 +60,7 @@ func TestCheckHeader(t *testing.T) {
 	for _, v := range cases {
 		headers = append(headers, common.HeaderColumn{Name: v})
 	}
-	checkHeader(headers)
+	checkFileHeader(headers)
 	for k, v := range detectStatus.Columns {
 		if len(v) > 1 || len(v) == 0 {
 			t.Error("get wrong types return", k, v)
@@ -91,21 +91,6 @@ func TestCheckValue(t *testing.T) {
 	}
 }
 
-func TestDetectFromQuery(t *testing.T) {
-	orgCfg := common.Cfg
-
-	common.Cfg.Query = "select * from address limit 10"
-	common.Cfg.Database = "sakila"
-
-	err := detectFromQuery()
-	if err != nil {
-		t.Error(err.Error())
-	}
-	pretty.Println(detectStatus)
-
-	common.Cfg = orgCfg
-}
-
 func TestDetectFromFile(t *testing.T) {
 	orgCfg := common.Cfg
 	files := []string{
@@ -120,7 +105,7 @@ func TestDetectFromFile(t *testing.T) {
 
 	for _, f := range files {
 		common.Cfg.File = common.TestPath + "/test/" + f
-		err := detectFromFile()
+		err := DetectFile()
 		if err != nil {
 			t.Error(f, err.Error())
 		}

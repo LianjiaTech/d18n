@@ -62,7 +62,7 @@ func detectHTML() error {
 							detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: r})
 						}
 					}
-					checkHeader(detectStatus.Header)
+					checkFileHeader(detectStatus.Header)
 
 					// truncate row after new line
 					row = []string{}

@@ -16,7 +16,7 @@
 
 ## [Save query result into file](save.md)
 
-## [Limitation](limits.md)
+## [Development](dev.md)
 
 ## [FAQ](FAQ.md)
 

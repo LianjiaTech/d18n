@@ -20,29 +20,28 @@ import (
 	"os"
 
 	"d18n/common"
-	"d18n/mask"
 )
 
-func emportCSV(conn *sql.DB) error {
+func emportCSV(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(e.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(emportStatus.Header))
+	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(e.Status.Header))
 	if err != nil {
 		return err
 	}
 
 	r := csv.NewReader(fd)
-	r.Comma = common.Cfg.Comma
+	r.Comma = e.CommonConfig.Comma
 	var sql string
 	var sqlCounter int
 	for {
-		emportStatus.Lines++
+		e.Status.Lines++
 
 		row, err := r.Read()
 		if err == io.EOF { // end of file
@@ -52,32 +51,32 @@ func emportCSV(conn *sql.DB) error {
 		}
 
 		// skip header line
-		if emportStatus.Lines == 1 && !common.Cfg.NoHeader {
+		if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
 			continue
 		}
 
 		// SkipLines
-		if emportStatus.Lines <= common.Cfg.SkipLines {
+		if e.Status.Lines <= e.CommonConfig.SkipLines {
 			continue
 		}
-		if common.Cfg.Limit > 0 &&
-			(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+		if e.CommonConfig.Limit > 0 &&
+			(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
 			break
 		}
 
 		// ignore blank lines
-		if common.Cfg.IgnoreBlank && len(row) == 0 {
+		if e.CommonConfig.IgnoreBlank && len(row) == 0 {
 			continue
 		}
 
 		//  mask data
-		row, err = mask.MaskRow(emportStatus.Header, row)
+		row, err = e.Masker.MaskRow(e.Status.Header, row)
 		if err != nil {
 			return err
 		}
 
 		// concat sql
-		values, err := common.SQLInsertValues(emportStatus.Header, common.DBParseNullString(emportStatus.Header, row))
+		values, err := common.SQLInsertValues(e.Status.Header, common.DBParseNullString(e.Status.Header, row))
 		if err != nil {
 			return err
 		}
@@ -85,7 +84,7 @@ func emportCSV(conn *sql.DB) error {
 		// extended-insert
 		sqlCounter++
 		sql += common.SQLMultiValues(sqlCounter, insertPrefix, values)
-		if common.Cfg.ExtendedInsert <= 1 || sqlCounter%common.Cfg.ExtendedInsert == 0 {
+		if e.CommonConfig.ExtendedInsert <= 1 || sqlCounter%e.CommonConfig.ExtendedInsert == 0 {
 			err = executeSQL(sql, conn)
 			if err != nil {
 				return err

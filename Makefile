@@ -11,6 +11,7 @@ CGREEN:=$(shell tput setaf 2 2>/dev/null)
 CYELLOW:=$(shell tput setaf 3 2>/dev/null)
 CEND:=$(shell tput sgr0 2>/dev/null)
 
+.PHONY: build
 build: fmt
 	@echo "$(CGREEN)Building ...$(CEND)"
 	@mkdir -p bin
@@ -116,8 +117,8 @@ mask-typo:
 	@echo "" >> mask/typo.tmp
 	@echo "type MaskFunc func(args ...interface{}) (ret string, err error)" >> mask/typo.tmp
 	@echo "" >> mask/typo.tmp
-	@echo "// MaskFuncs support functions list, case insensitive" >> mask/typo.tmp
-	@echo "var MaskFuncs = map[string]MaskFunc{" >> mask/typo.tmp
+	@echo "// maskFuncs support functions list, case insensitive" >> mask/typo.tmp
+	@echo "var maskFuncs = map[string]MaskFunc{" >> mask/typo.tmp
 	@go doc --short d18n/mask | grep "^func" | grep '(args' | awk -F '(' '{print $$1}'  | \
 	awk '{print "\""tolower($$2)"\":", $$2","}' >> mask/typo.tmp
 	@echo "}" >> mask/typo.tmp

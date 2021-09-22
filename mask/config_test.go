@@ -10,28 +10,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package save
+package mask
 
 import (
+	"fmt"
 	"testing"
 
 	"d18n/common"
 )
 
-func TestSaveRows2SQL(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2SQL.sql"
-	common.Cfg.Table = "TestSaveRows2SQL"
+func ExampleParseMaskConfig() {
 
-	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	file := common.TestPath + "/test/mask.csv"
+	mc, err := ParseMaskConfig(file)
+	fmt.Println(mc, err)
+	// Output:
+	// map[id:{shuffle []} last_name:{smokeleft [3 x]}] <nil>
+}
+
+func TestGenRSAKey(t *testing.T) {
+	privatekey, publicKey, err := genRSAKey()
 	if err != nil {
 		t.Error(err.Error())
 	}
+	fmt.Println(string(privatekey), string(publicKey))
+}
 
-	if err := s.Save(); err != nil {
+func TestGenECCKey(t *testing.T) {
+	privatekey, publicKey, err := genECCKey()
+	if err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	fmt.Println(string(privatekey), string(publicKey))
 }

@@ -24,20 +24,20 @@ import (
 func TestEmportSQL(t *testing.T) {
 	orgCfg := common.Cfg
 
-	emportStatus = EmportStatus{}
 	common.Cfg.File = common.TestPath + "/test/actor.sql"
 	common.Cfg.User = ""
 	common.Cfg.Limit = 12
 	common.Cfg.SkipLines = 1
 	common.Cfg.Table = "actor_sql"
 	common.Cfg.Database = "sakila"
+	testES.CommonConfig = common.Cfg
 
 	conn, _ := common.NewConnection()
-	err := emportSQL(conn)
+	err := emportSQL(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(emportStatus)
+	pretty.Println(testES.Status)
 
 	common.Cfg = orgCfg
 }

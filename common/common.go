@@ -54,7 +54,8 @@ func InitTestEnv() {
 
 		ExcelMaxFileSize: DefaultExcelMaxFileSize,
 
-		Cipher: TestPath + "/test/cipher.yaml",
+		Cipher:   TestPath + "/test/cipher.yaml",
+		RandSeed: 1989,
 	}
 }
 

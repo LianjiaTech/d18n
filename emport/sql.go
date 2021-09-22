@@ -24,35 +24,35 @@ import (
 )
 
 // emportSQL import sql file into database
-func emportSQL(conn *sql.DB) error {
+func emportSQL(e *EmportStruct, conn *sql.DB) error {
 	var err error
-	f, err := os.Open(common.Cfg.File)
+	f, err := os.Open(e.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, common.Cfg.MaxBufferSize)
+	s.Buffer([]byte{}, e.CommonConfig.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	for s.Scan() {
-		emportStatus.Lines++
+		e.Status.Lines++
 
 		// read one sql
 		sqlString := strings.TrimSpace(s.Text())
 
 		// SkipLines
-		if emportStatus.Lines <= common.Cfg.SkipLines {
+		if e.Status.Lines <= e.CommonConfig.SkipLines {
 			continue
 		}
-		if common.Cfg.Limit > 0 &&
-			(emportStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+		if e.CommonConfig.Limit > 0 &&
+			(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
 			break
 		}
 
 		// ignore blank lines
-		if common.Cfg.IgnoreBlank && strings.TrimSpace(sqlString) == "" {
+		if e.CommonConfig.IgnoreBlank && strings.TrimSpace(sqlString) == "" {
 			continue
 		}
 
@@ -64,7 +64,7 @@ func emportSQL(conn *sql.DB) error {
 	}
 	if s.Err() != nil {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes or error comment
-		return fmt.Errorf("line: %d, %s", emportStatus.Lines+1, s.Err().Error())
+		return fmt.Errorf("line: %d, %s", e.Status.Lines+1, s.Err().Error())
 	}
 	return err
 }

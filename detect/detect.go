@@ -14,7 +14,6 @@
 package detect
 
 import (
-	"database/sql"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -41,8 +40,8 @@ type BasicDetect struct {
 // Config sensitive config
 type Config map[string]BasicDetect
 
-// SensitiveConfig ...
-var SensitiveConfig Config
+// sensitiveConfig ...
+var sensitiveConfig Config
 
 // DetectStatus ...
 type DetectStatus struct {
@@ -62,13 +61,13 @@ func ParseSensitiveConfig() error {
 		defaultSensitiveConfig = buf
 	}
 
-	err = yaml.Unmarshal(defaultSensitiveConfig, &SensitiveConfig)
+	err = yaml.Unmarshal(defaultSensitiveConfig, &sensitiveConfig)
 	if err != nil {
 		return err
 	}
 
 	// check config regexp valid
-	for _, v := range SensitiveConfig {
+	for _, v := range sensitiveConfig {
 		for _, r := range v.Key {
 			_, err = regexp.Compile(r)
 			if err != nil {
@@ -96,12 +95,17 @@ func Detect() error {
 	switch common.Cfg.File {
 	case "stdout", "":
 		if common.Cfg.Query != "" {
-			err = detectFromQuery()
+			d, err := NewDetectStruct(common.Cfg)
+			if err != nil {
+				return err
+			}
+			err = d.DetectQuery()
+			detectStatus = d.Status
 		} else {
 			return fmt.Errorf("no data source or file to check")
 		}
 	default:
-		err = detectFromFile()
+		err = DetectFile()
 	}
 
 	detectEndTime := time.Now().UnixNano()
@@ -110,8 +114,8 @@ func Detect() error {
 	return err
 }
 
-// detectFromFile check data from file
-func detectFromFile() error {
+// DetectFile check data from file
+func DetectFile() error {
 	var err error
 
 	// get column header
@@ -151,58 +155,7 @@ func detectFromFile() error {
 	return err
 }
 
-// detectFromQuery check data from query result
-func detectFromQuery() error {
-
-	rows, err := common.QueryRows()
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	// get column header
-	header, err := rows.ColumnTypes()
-	if err != nil {
-		return err
-	}
-	detectStatus.Header = common.DBParseColumnTypes(header)
-
-	// check column names
-	checkHeader(detectStatus.Header)
-
-	// check column values
-	for rows.Next() {
-		detectStatus.Lines++
-		// limit return rows
-		if common.Cfg.Limit != 0 && detectStatus.Lines > common.Cfg.Limit {
-			break
-		}
-
-		columns := make([]sql.NullString, len(detectStatus.Header))
-		cols := make([]interface{}, len(detectStatus.Header))
-		for j := range columns {
-			cols[j] = &columns[j]
-		}
-
-		if err := rows.Scan(cols...); err != nil {
-			return err
-		}
-
-		// check value
-		for j, col := range columns {
-			// pass NULL string
-			if col.Valid {
-				detectStatus.Columns[detectStatus.Header[j].Name] = append(detectStatus.Columns[detectStatus.Header[j].Name], checkValue(col.String)...)
-			}
-		}
-	}
-
-	err = rows.Err()
-
-	return err
-}
-
-func checkHeader(header []common.HeaderColumn) {
+func checkFileHeader(header []common.HeaderColumn) {
 
 	detectStatus.Columns = make(map[string][]string, len(header))
 
@@ -211,7 +164,7 @@ func checkHeader(header []common.HeaderColumn) {
 		var types []string
 
 		// sensitive key word check
-		for t, rule := range SensitiveConfig {
+		for t, rule := range sensitiveConfig {
 			for _, k := range rule.Key {
 				r := regexp.MustCompile(k)
 				if r.MatchString(key) {
@@ -235,7 +188,7 @@ func checkValue(value string) []string {
 	}
 
 	// regexp
-	for t, rule := range SensitiveConfig {
+	for t, rule := range sensitiveConfig {
 		for _, k := range rule.Value {
 			r := regexp.MustCompile(k)
 			if r.MatchString(value) {

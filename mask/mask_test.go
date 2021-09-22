@@ -22,9 +22,12 @@ import (
 
 // TestMask test FakeXXXX
 func TestMask(t *testing.T) {
-	orgMask := common.MaskConfig
+	m, err := NewMaskStruct(common.Cfg.Mask)
+	if err != nil {
+		t.Error(err.Error())
+	}
 
-	common.MaskConfig = map[string]common.MaskRule{
+	m.Config = map[string]maskRule{
 		"col1": {
 			MaskFunc: "fake",
 			Args:     []string{"name"},
@@ -42,30 +45,26 @@ func TestMask(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		ret, err := Mask(c[0].(string), c[1])
+		ret, err := m.Mask(c[0].(string), c[1])
 		if err != nil {
-			t.Error(common.MaskConfig[c[0].(string)], err.Error())
+			t.Error(m.Config[c[0].(string)], err.Error())
 		}
-		fmt.Println(c[0], common.MaskConfig[c[0].(string)], ret)
+		fmt.Println(c[0], m.Config[c[0].(string)], ret)
 	}
-
-	common.MaskConfig = orgMask
 }
 
 func ExampleMask() {
-	orgMask := common.MaskConfig
-
-	common.MaskConfig = map[string]common.MaskRule{
+	m, _ := NewMaskStruct(common.Cfg.Mask)
+	m.Config = map[string]maskRule{
 		"col1": {
 			MaskFunc: "crc32",
 			Args:     []string{},
 		},
 	}
-	fmt.Println(Mask("col", "hello world"))
-	fmt.Println(Mask("col1", "hello world"))
+
+	fmt.Println(m.Mask("col", "hello world"))
+	fmt.Println(m.Mask("col1", "hello world"))
 	// Output:
 	// hello world <nil>
 	// 0d4a1185 <nil>
-
-	common.MaskConfig = orgMask
 }

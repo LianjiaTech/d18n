@@ -30,21 +30,6 @@ func TestParseDefaultsExtraFile(t *testing.T) {
 	Cfg = orgCfg
 }
 
-func TestParseMaskConfig(t *testing.T) {
-	orgCfg := Cfg
-	orgMask := MaskConfig
-
-	Cfg.Mask = TestPath + "/test/mask.csv"
-	err := ParseMaskConfig()
-	if err != nil {
-		t.Error(err.Error())
-	}
-	pretty.Println(MaskConfig)
-
-	MaskConfig = orgMask
-	Cfg = orgCfg
-}
-
 func Example_parseCommaFlag() {
 	fmt.Println(parseCommaFlag(""))
 	fmt.Println(parseCommaFlag(" "))

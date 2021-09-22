@@ -29,8 +29,8 @@ import (
 
 var shuffleMap map[string]map[string]string
 
-func InitShuffle() error {
-	rand.Seed(common.Cfg.RandSeed)
+func InitShuffle(seed int64) error {
+	rand.Seed(seed)
 
 	files, err := corpusFS.ReadDir("corpus")
 	if err != nil {

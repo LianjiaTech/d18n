@@ -22,9 +22,10 @@ import (
 func TestPreviewHTML(t *testing.T) {
 	orgCfg := common.Cfg
 	common.Cfg.Preview = 2
-
 	common.Cfg.File = common.TestPath + "/test/TestSaveRows2HTML.html"
-	err := previewHTML()
+
+	p, _ := NewPreviewStruct(common.Cfg)
+	err := previewHTML(p)
 	if err != nil {
 		t.Error(err.Error())
 	}

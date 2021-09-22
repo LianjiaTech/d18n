@@ -29,9 +29,10 @@ func TestEmportHTML(t *testing.T) {
 	common.Cfg.Replace = true
 	common.Cfg.CompleteInsert = true
 	common.Cfg.Verbose = true
+	testES.CommonConfig = common.Cfg
 
 	conn, _ := common.NewConnection()
-	err := emportHTML(conn)
+	err := emportHTML(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}

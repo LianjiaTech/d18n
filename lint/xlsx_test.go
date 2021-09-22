@@ -23,8 +23,8 @@ import (
 
 func TestLintXlsx(t *testing.T) {
 	orgCfg := common.Cfg
-	levels := LintLevels
-	LintLevels = []string{"FATAL", "ERROR"}
+	levels := lintLevels
+	lintLevels = []string{"FATAL", "ERROR"}
 	// right
 	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestXLSXLint.right.xlsx"
@@ -43,6 +43,6 @@ func TestLintXlsx(t *testing.T) {
 	}
 	pretty.Println(lintStatus)
 
-	LintLevels = levels
+	lintLevels = levels
 	common.Cfg = orgCfg
 }

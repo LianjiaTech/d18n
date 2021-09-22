@@ -14,7 +14,6 @@
 package mask
 
 import (
-	"d18n/common"
 	"fmt"
 	"testing"
 )
@@ -298,13 +297,11 @@ func ExampleChar2Const() {
 }
 
 func TestRegexpRandomReplace(t *testing.T) {
-	orgCfg := common.Cfg
 	ret, err := RegexpRandomReplace("13782430405", "^1[3-9][\\d]{9}$", 5, 10)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	fmt.Println(ret)
-	common.Cfg = orgCfg
 }
 
 func ExampleTruncateLeft() {
