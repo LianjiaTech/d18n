@@ -30,7 +30,7 @@ cd d18n
 make build
 
 # Windows
-go build -o d18n cmd\d18n\d18n.go
+go build -o d18n.exe cmd\d18n\d18n.go
 ```
 
 ## Cross-platform compile

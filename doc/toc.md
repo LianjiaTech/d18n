@@ -16,6 +16,8 @@
 
 ## [Save query result into file](save.md)
 
+## [Development](dev.md)
+
 ## [FAQ](FAQ.md)
 
 ## [Tips](tips.md)

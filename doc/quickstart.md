@@ -188,3 +188,11 @@ Application Options:
       --max-buffer-size=            bufio MaxScanTokenSize
       --null-string=                NULL string write into file. e.g., NULL, nil, None, "" (default: NULL)
 ```
+
+Note: d18n use `github.com/jessevdk/go-flags` package. It also supports Windows-style. Running in Windows, POSIX-style option will do well yet.
+
+```text
+Options with short names (/v)
+Options with long names (/verbose)
+Windows-style options with arguments use a colon as the delimiter
+```
