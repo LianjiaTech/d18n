@@ -36,6 +36,7 @@ func emportSQL(e *EmportStruct, conn *sql.DB) error {
 	s.Buffer([]byte{}, e.CommonConfig.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
+	var sqlCounter int
 	for s.Scan() {
 		e.Status.Lines++
 
@@ -57,6 +58,7 @@ func emportSQL(e *EmportStruct, conn *sql.DB) error {
 		}
 
 		// execute SQL
+		sqlCounter++
 		err = executeSQL(sqlString, conn)
 		if err != nil {
 			return err
@@ -66,5 +68,7 @@ func emportSQL(e *EmportStruct, conn *sql.DB) error {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes or error comment
 		return fmt.Errorf("line: %d, %s", e.Status.Lines+1, s.Err().Error())
 	}
+
+	e.Status.Rows = sqlCounter
 	return err
 }

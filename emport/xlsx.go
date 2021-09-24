@@ -109,6 +109,7 @@ func emportXlsx(e *EmportStruct, conn *sql.DB) error {
 				return err
 			}
 		}
+		e.Status.Rows = sqlCounter
 
 	} else {
 		return fmt.Errorf("empty xlsx file")

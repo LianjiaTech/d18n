@@ -41,14 +41,13 @@ func emportCSV(e *EmportStruct, conn *sql.DB) error {
 	var sql string
 	var sqlCounter int
 	for {
-		e.Status.Lines++
-
 		row, err := r.Read()
 		if err == io.EOF { // end of file
 			break
 		} else if err != nil {
 			return err
 		}
+		e.Status.Lines++
 
 		// skip header line
 		if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
@@ -97,6 +96,8 @@ func emportCSV(e *EmportStruct, conn *sql.DB) error {
 	if sql != "" {
 		err = executeSQL(sql, conn)
 	}
+
+	e.Status.Rows = sqlCounter
 
 	return err
 }
