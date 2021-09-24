@@ -11,6 +11,7 @@ CGREEN:=$(shell tput setaf 2 2>/dev/null)
 CYELLOW:=$(shell tput setaf 3 2>/dev/null)
 CEND:=$(shell tput sgr0 2>/dev/null)
 
+.PHONY: build
 build: fmt
 	@echo "$(CGREEN)Building ...$(CEND)"
 	@mkdir -p bin

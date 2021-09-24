@@ -1,6 +1,3 @@
-.PHONY: test-dir
-test-dir: build
-
 # Useful SQLs
 ## SQLite3
 # SELECT '' AS table_schema, name AS table_name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' ORDER BY name
