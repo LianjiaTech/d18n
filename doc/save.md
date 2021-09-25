@@ -2,7 +2,7 @@
 
 ## Support File Type
 
-Flag `--file` supports the following file types. Without the flag, d18n will print query result as ASCII table into `stdout`.
+Flag `--file` supports the following file types. Without the flag, d18n will print query result as ASCII table into `stdout`. If `--file stdout`, d18n will print query result as txt format into `stdout`.
 
 * xlsx: Microsoft Office Excel. [Example](../test/actor.xlsx)
 * csv: Comma Separated Values. [Example](../test/actor.csv)
@@ -28,6 +28,7 @@ Query result print as ASCII table.
 | test               |
 | world_x            |
 +--------------------+
+Get rows: 7 Query cost: 3.943ms Save cost: 247µs Total Cost: 4.191ms
 ```
 
 Save query result into a file.
@@ -69,9 +70,9 @@ There are two methods to limit return lines.
 2. Use `--limit` flag.
 
 ```bash
-~ $ d18n --defaults-extra-file test/my.cnf --query "select * from actor limit 10"
+~ $ d18n --defaults-extra-file test/my.cnf --database sakila --query "select * from actor limit 10"
 
-~ $ d18n --defaults-extra-file test/my.cnf --query "select * from actor" --limit 10
+~ $ d18n --defaults-extra-file test/my.cnf --database sakila --query "select * from actor" --limit 10
 ```
 
 ## BOM (Byte Of Mark)

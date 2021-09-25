@@ -109,5 +109,5 @@ last_update,DateFormat,"MM/DD/YYYY HH:mm:ss"
 ```
 
 ```bash
-~ $ d18n -defaults-extra-file test/my.cnf -file actor.xlsx -mask test/mask.csv -import -database sakila -table actor -replace -disable-foreign-key-checks
+~ $ d18n --defaults-extra-file test/my.cnf --file actor.xlsx --mask test/mask.csv --import --database sakila --table actor --replace --disable-foreign-key-checks
 ```
