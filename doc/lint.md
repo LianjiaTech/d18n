@@ -22,14 +22,17 @@ d18n supports a new feature about data file lint. Check data format use `--lint`
 ## Use
 
 ```shell
-% d18n --lint --file test/TestCSVLint.wrong.csv
+$ d18n --lint --file test/actor.csv
+ok
+
+$ d18n --lint --file test/TestCSVLint.wrong.csv
 Line: 1, Column: 14, ERROR: First line in file can't be used as column names.
 
-% d18n --lint --file test/TestXLSXLint.wrong.xlsx
+$ d18n --lint --file test/TestXLSXLint.wrong.xlsx
 Line: 1, Column: 2, ERROR: First line in file can't be used as column names.
 Line: 1, Column: 7, ERROR: Column names aren't unique.
 
-% d18n --lint --file test/TestJSONLint.wrong.json
+$ d18n --lint --file test/TestJSONLint.wrong.json
 Line: 1, Column: 4, ERROR: Column names aren't unique.
 Line: 1, Column: 1, ERROR: First line in file can't be used as column names.
 
@@ -38,20 +41,22 @@ Line: 1, Column: 1, ERROR: First line in file can't be used as column names.
 You can also use the `--verbose` flag to see more information
 
 ```shell
-% d18n --lint --file test/TestCSVLint.wrong.csv --verbose
+$ d18n --lint --file test/TestCSVLint.wrong.csv --verbose
+
+$ d18n --lint --file test/TestCSVLint.wrong.csv --verbose
 Line: 1, Column: 14, ERROR: First line in file can't be used as column names.
 
 File Size: 469
 Row Count(Include Header): 3 Cell Count: 15 Error Count: 1 Time Cost: 172µs
 
-% d18n --lint --file test/TestXLSXLint.wrong.xlsx --verbose
+$ d18n --lint --file test/TestXLSXLint.wrong.xlsx --verbose
 Line: 1, Column: 7, ERROR: Column names aren't unique.
 Line: 1, Column: 1, ERROR: First line in file can't be used as column names.
 
 File Size: 5888
 Row Count(Include Header): 2 Cell Count: 11 Error Count: 2 Time Cost: 3.134ms
 
-% d18n --lint --file test/TestJSONLint.wrong.json --verbose
+$ d18n --lint --file test/TestJSONLint.wrong.json --verbose
 Line: 1, Column: 2, ERROR: First line in file can't be used as column names.
 Line: 1, Column: 4, ERROR: Column names aren't unique.
 
@@ -77,7 +82,7 @@ We are also trying to make it support more formats
 
 `--max-buffer-size`: If your row data is too large, it may cause bufio overflow. Please consider adding `--max-buffer-size`,defalut:64k
 
-`--noHeader`: You can use it to skip the header check
+`--no-header`: You can use it to skip the header check
 
 `--comments`: You can use it to customize your comments symbols
 

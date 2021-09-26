@@ -139,7 +139,7 @@ VALUES (value1, value2, value3, ...);
 ~ $ d18n --defaults-extra-file test/my.cnf --server mysql --query "select * from actor" --database sakila --replace --file actor.replace.sql
 ```
 
-Notice: d18n not support `--extended-insert` flag like mysqldump. It means that d18n will save SQL one by one, without values merge. File size will be larger than mysqldump, because lots of insert prefix clause. Import speed also slower than mysqldump file, because each time only import one row.
+Notice: d18n support `--extended-insert` flag like mysqldump. d18n will save SQL one by one by default, without values merge. Use `--extended-insert` flag can merge multi values into one SQL, which will decrease file size, and make import speed faster.
 
 If `--extended-insert` too large will cause bufio overflow. Please consider increasing `--max-buffer-size`.
 
@@ -161,7 +161,9 @@ Primary keys after `--update` flag should join with a comma(`,`). Column names a
 ~ $ d18n --defaults-extra-file test/my.cnf --server mysql --query "select * from actor" --database sakila --update actor_id --file actor.update.sql
 ```
 
-## Schema
+## Load Schema
+
+When d18n import plan data into database, it need columns name and columns data type. So give a schema file can help d18n determine column order and which column is which data type. If no `--schema` flag specified it will use table original columns order import data.
 
 `--schema` flag will load the schema config file. This config file contains only one table schema info, which can be `CREATE TABLE` SQL or plain text config. Schema support MySQL, Oracle, PostgreSQL, SQL Server ...
 

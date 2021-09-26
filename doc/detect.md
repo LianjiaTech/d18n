@@ -78,6 +78,7 @@ A full table scan will cost a long time.
 ## jq filter
 
 ```bash
+# show all sensitive columns and type
 ~ $ d18n ... | jq -r 'del(.[] | select(. == null))'
 {
   "address": [
@@ -100,6 +101,14 @@ A full table scan will cost a long time.
   ]
 }
 
+# only show column name
+~ $ d18n ... | jq -r 'del(.[] | select(. == null)) | keys | .[]'
+address
+address2
+address_id
+city_id
+location
+phone
 ```
 
 ## NLP base sensitive detection
@@ -124,3 +133,7 @@ GSE("我住在北京市大兴区庞各庄镇") => address
 ```
 
 ## Corpus
+
+Add new file into `detect/corpus` directory, file format please reference `gse.address.zh_CN`, first column is keyword, second column is score, third column is type.
+
+Notice: file should not be too large, it will build into d18n binary file. remove no used corpus should be nice.

@@ -118,6 +118,7 @@ func emportJSON(e *EmportStruct, conn *sql.DB) error {
 	if sql != "" {
 		err = executeSQL(sql, conn)
 	}
+	e.Status.Rows = sqlCounter
 
 	return err
 }

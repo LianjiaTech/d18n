@@ -1,0 +1,40 @@
+{
+    "name": "d18n devcontainer",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "settings": {
+        "go.toolsManagement.checkForUpdates": "local",
+        "go.useLanguageServer": true,
+        "go.gopath": "/go",
+        "go.goroot": "/usr/local/go",
+
+        "[go]": {
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.organizeImports": true,
+            },
+            "editor.snippetSuggestions": "none",
+        },
+        "[go.mod]": {
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.organizeImports": true,
+            },
+        },
+        "gopls": {
+            "usePlaceholders": true,
+            "staticcheck": false,
+        },
+        "go.toolsEnvVars": {
+            "GO111MODULE": "on"
+        }
+    },
+    "postCreateCommand": "go env -w GOPROXY=https://goproxy.cn,https://goproxy.io,direct",
+    "extensions": [
+        "golang.go",
+        "davidanson.vscode-markdownlint",
+        "shardulm94.trailing-spaces",
+        "IBM.output-colorizer"
+    ]
+}
