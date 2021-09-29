@@ -89,3 +89,17 @@ func ExampleTableTemplate() {
 	// [{actor_id  int} {first_name  VARCHAR} {last_name  VARCHAR} {last_update  DATETIME}] <nil>
 	Cfg = org
 }
+
+// This test case will cause actor.xlsx modify every time, event if no content change.
+// If you need test SetXlsxWatermark use `make test-mysql`
+// func ExampleSetXlsxWatermark() {
+// 	fmt.Println(SetXlsxWatermark(TestPath+"/test/actor.xlsx", "watermark text"))
+// 	// Output:
+// 	// <nil>
+// }
+
+func ExampleGetXlsxWatermark() {
+	fmt.Println(GetXlsxWatermark(TestPath + "/test/actor.xlsx"))
+	// Output:
+	// watermark text <nil>
+}

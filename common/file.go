@@ -429,3 +429,17 @@ func SetXlsxWatermark(filename string, watermark string) error {
 	}
 	return fd.Save()
 }
+
+func GetXlsxWatermark(filename string) (string, error) {
+	var watermark string
+	fd, err := xlsx.OpenFile(filename)
+	if err != nil {
+		return watermark, err
+	}
+	attr, err := fd.GetDocProps()
+	if err != nil {
+		return watermark, err
+	}
+	watermark = attr.Title
+	return watermark, err
+}

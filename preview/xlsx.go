@@ -16,6 +16,8 @@ package preview
 import (
 	"fmt"
 
+	"d18n/common"
+
 	"github.com/tealeg/xlsx/v3"
 )
 
@@ -41,6 +43,13 @@ func previewXlsx(p *PreviewStruct) error {
 				fmt.Print(row.GetCell(j), "\t")
 			}
 			fmt.Println() // add line feed
+		}
+	}
+
+	if p.CommonConfig.Verbose {
+		watermark, err := common.GetXlsxWatermark(p.CommonConfig.File)
+		if err == nil && watermark != "" {
+			println("\nWatermark:", watermark)
 		}
 	}
 	return nil

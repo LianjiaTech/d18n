@@ -256,6 +256,11 @@ test-mysql: build
 	-f test/watermark.xlsx \
 	--watermark "watermark text"
 
+	# preview xlsx watermark
+	@./bin/d18n --preview 1 \
+	--verbose \
+	--file test/watermark.xlsx >/dev/null
+
 	# test ignore-columns
 	@./bin/d18n --defaults-extra-file=test/my.cnf \
 	--database sakila \
