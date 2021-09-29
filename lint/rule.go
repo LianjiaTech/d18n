@@ -28,12 +28,9 @@ type LintCode struct {
 	Func      lintFunc // lint rule function
 }
 
-var lintRules map[string]LintCode
+func (l *LintStruct) initLintRules() {
 
-func init() {
-	lintRules = make(map[string]LintCode)
-
-	lintRules = map[string]LintCode{
+	l.Rules = map[string]LintCode{
 		"OK": {
 			Name:    "OK",
 			Message: "OK.",
@@ -50,42 +47,42 @@ func init() {
 			LintLevel: "line",
 			Level:     "ERROR",
 			Message:   "Line breaks are not the same as define.",
-			Func:      lintCSVLineBreaks,
+			Func:      l.lintCSVLineBreaks,
 		},
 		"RaggedRows": {
 			Name:      "RaggedRows",
 			LintLevel: "cell",
 			Level:     "ERROR",
 			Message:   "Rows in the file doesn't have the same number of columns.",
-			Func:      lintCellRaggedRows,
+			Func:      l.lintCellRaggedRows,
 		},
 		"UnMatchHeader": {
 			Name:      "UnMatchHeader",
 			LintLevel: "cell",
 			Level:     "ERROR",
 			Message:   "Header number not match value number.",
-			Func:      lintCellUnMatchHeader,
+			Func:      l.lintCellUnMatchHeader,
 		},
 		"UndeclaredHeader": {
 			Name:      "UndeclaredHeader",
 			LintLevel: "cell",
 			Level:     "ERROR",
 			Message:   "First line in file can't be used as column names.",
-			Func:      lintCellUndeclaredHeader,
+			Func:      l.lintCellUndeclaredHeader,
 		},
 		"DupColumnName": {
 			Name:      "DuplicateColumnName",
 			LintLevel: "cell",
 			Level:     "ERROR",
 			Message:   "Column names aren't unique.",
-			Func:      lintCellDupColumnName,
+			Func:      l.lintCellDupColumnName,
 		},
 		"UnclosedQuote": {
 			Name:      "UnclosedQuote",
 			LintLevel: "line",
 			Level:     "ERROR",
 			Message:   "There are any unclosed quotes in line.",
-			Func:      lintCSVUnclosedQuote,
+			Func:      l.lintCSVUnclosedQuote,
 		},
 		// --------------------------------- WARN -----------------------------------
 		"CheckOptions": {
@@ -93,42 +90,42 @@ func init() {
 			LintLevel: "cell",
 			Level:     "WARN",
 			Message:   "Cells less or equal than 1 .",
-			Func:      lintCellCheckOptions,
+			Func:      l.lintCellCheckOptions,
 		},
 		"LeadingSpace": {
 			Name:      "LeadingSpace",
 			LintLevel: "line",
 			Level:     "WARN",
 			Message:   "Line leading with space.",
-			Func:      lintCSVLeadingSpace,
+			Func:      l.lintCSVLeadingSpace,
 		},
 		"CellSpace": {
 			Name:      "CellSpace",
 			LintLevel: "cell",
 			Level:     "WARN",
 			Message:   "Cell leading or ending with space.",
-			Func:      lintCSVCellSpace,
+			Func:      l.lintCSVCellSpace,
 		},
 		"BlankRows": {
 			Name:      "BlankRows",
 			Level:     "WARN",
 			LintLevel: "line",
 			Message:   "There are any blank rows.",
-			Func:      lintCSVBlankRows,
+			Func:      l.lintCSVBlankRows,
 		},
 		"Whitespace": {
 			Name:      "Whitespace",
 			LintLevel: "line",
 			Level:     "WARN",
 			Message:   "There is any whitespace between commas and double quotes around cells.",
-			Func:      lintCSVWhitespace,
+			Func:      l.lintCSVWhitespace,
 		},
 		"CommentRows": {
 			Name:      "CommentRows",
 			LintLevel: "line",
 			Level:     "WARN",
 			Message:   "There are any comment rows.",
-			Func:      lintCSVCommentRows,
+			Func:      l.lintCSVCommentRows,
 		},
 
 		// --------------------------------- INFO -----------------------------------

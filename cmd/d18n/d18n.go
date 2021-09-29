@@ -99,11 +99,16 @@ func saveRows() error {
 }
 
 func lintFile() error {
+	l, err := lint.NewLintStruct(common.Cfg)
+	if err != nil {
+		return err
+	}
+
 	// check file format
-	common.PanicIfError(lint.Lint())
+	common.PanicIfError(l.Lint())
 
 	// show lint status
-	return lint.ShowStatus()
+	return l.ShowStatus()
 }
 
 func emportFile() error {

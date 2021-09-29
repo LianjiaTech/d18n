@@ -15,25 +15,26 @@ package lint
 
 import (
 	"d18n/common"
-	"github.com/kr/pretty"
 	"testing"
+
+	"github.com/kr/pretty"
 )
 
 func TestLintHTML(t *testing.T) {
 	orgCfg := common.Cfg
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestHTMLLint.right.html"
-	err := lintHTML()
+	l, _ := NewLintStruct(common.Cfg)
+	err := l.lintHTML()
 	if err != nil {
 		t.Error(err)
 	}
 
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestHTMLLint.wrong.html"
-	err = lintHTML()
+	l, _ = NewLintStruct(common.Cfg)
+	err = l.lintHTML()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 	common.Cfg = orgCfg
 }

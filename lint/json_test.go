@@ -27,21 +27,21 @@ func TestLintJSON(t *testing.T) {
 	lintLevels = []string{"FATAL", "ERROR"}
 	common.Cfg.NoHeader = true
 
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestJSONLint.right.json"
-	err := lintJSON()
+	l, _ := NewLintStruct(common.Cfg)
+	err := l.lintJSON()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestJSONLint.wrong.json"
-	err = lintJSON()
+	l, _ = NewLintStruct(common.Cfg)
+	err = l.lintJSON()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	lintLevels = levels
 	common.Cfg = orgCfg

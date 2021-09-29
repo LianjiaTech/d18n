@@ -26,21 +26,21 @@ func init() {
 
 func TestLintCSV(t *testing.T) {
 	orgCfg := common.Cfg
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestCSVLint.wrong.csv"
-	err := lintFile(0, []string{})
+	l, _ := NewLintStruct(common.Cfg)
+	err := l.lintFile(0, []string{})
 	if err != nil {
 		t.Error(err.Error())
 		return
 	}
-	err = lintCSV()
+	err = l.lintCSV()
 	if err == nil {
 		t.Error("here must have error")
 	}
 
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestCSVLint.right.csv"
-	err = lintCSV()
+	l, _ = NewLintStruct(common.Cfg)
+	err = l.lintCSV()
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -59,14 +59,16 @@ func TestLintCSVUnclosedQuote(t *testing.T) {
 		{`"abc"","112223"`},
 	}
 	for _, raw := range raws[:4] {
-		column, wrong := lintCSVUnclosedQuote(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVUnclosedQuote(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[4:] {
-		column, wrong := lintCSVUnclosedQuote(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVUnclosedQuote(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -79,12 +81,14 @@ func TestLintCSVLineBreaks(t *testing.T) {
 	crlf := `"crlf"` + "\r\n"
 	lf := `"lf"` + "\n"
 
-	column, wrong := lintCSVLineBreaks(1, []string{crlf})
+	l, _ := NewLintStruct(common.Cfg)
+	column, wrong := l.lintCSVLineBreaks(1, []string{crlf})
 	if wrong {
 		t.Error(fmt.Sprintf("column: %d", column), crlf)
 	}
 
-	column, wrong = lintCSVLineBreaks(1, []string{lf})
+	l, _ = NewLintStruct(common.Cfg)
+	column, wrong = l.lintCSVLineBreaks(1, []string{lf})
 	if !wrong {
 		t.Error(fmt.Sprintf("column: %d", column), lf)
 	}
@@ -102,14 +106,16 @@ func TestLintCSVBlankRows(t *testing.T) {
 		{"\r\n"},
 	}
 	for _, raw := range raws[:1] {
-		column, wrong := lintCSVBlankRows(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVBlankRows(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[1:] {
-		column, wrong := lintCSVBlankRows(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVBlankRows(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -119,7 +125,8 @@ func TestLintCSVBlankRows(t *testing.T) {
 func TestLintCSVCommentRows(t *testing.T) {
 	orgCfg := common.Cfg
 	// no comment
-	_, wrong := lintCSVCommentRows(1, []string{"abc\n"})
+	l, _ := NewLintStruct(common.Cfg)
+	_, wrong := l.lintCSVCommentRows(1, []string{"abc\n"})
 	if wrong {
 		t.Error("without comment line")
 	}
@@ -134,7 +141,8 @@ func TestLintCSVCommentRows(t *testing.T) {
 		{"#abc\r\n"},
 	}
 	for _, raw := range raws {
-		column, wrong := lintCSVCommentRows(1, []string{string([]byte("//abc\n"))})
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVCommentRows(1, []string{string([]byte("//abc\n"))})
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -157,14 +165,16 @@ func TestLintCSVCellSpace(t *testing.T) {
 	}
 
 	for _, raw := range raws[:2] {
-		column, wrong := lintCSVCellSpace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVCellSpace(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[2:] {
-		column, wrong := lintCSVCellSpace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVCellSpace(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -186,14 +196,16 @@ func TestLintCSVLeadingSpace(t *testing.T) {
 	}
 
 	for _, raw := range raws[:4] {
-		column, wrong := lintCSVLeadingSpace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVLeadingSpace(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[4:] {
-		column, wrong := lintCSVLeadingSpace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVLeadingSpace(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -232,14 +244,16 @@ func TestLintCSVWhitespace(t *testing.T) {
 	}
 
 	for _, raw := range raws[:14] {
-		column, wrong := lintCSVWhitespace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVWhitespace(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[14:] {
-		column, wrong := lintCSVWhitespace(1, raw)
+		l, _ := NewLintStruct(common.Cfg)
+		column, wrong := l.lintCSVWhitespace(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}

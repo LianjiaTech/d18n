@@ -27,27 +27,27 @@ import (
 	_ "github.com/pingcap/tidb/types/parser_driver"
 )
 
-func lintSQL() error {
+func (l *LintStruct) lintSQL() error {
 	var err error
-	f, err := os.Open(common.Cfg.File)
+	f, err := os.Open(l.CommonConfig.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, common.Cfg.MaxBufferSize)
+	s.Buffer([]byte{}, l.CommonConfig.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	// new sql parser
 	p := parser.New()
-	if common.Cfg.ANSIQuotes {
+	if l.CommonConfig.ANSIQuotes {
 		mode, _ := mysql.GetSQLMode("ANSI_QUOTES")
 		p.SetSQLMode(mode)
 	}
 
 	for s.Scan() {
-		lintStatus.RowCount++
+		l.Status.RowCount++
 
 		stmt, err := p.ParseOneStmt(s.Text(), mysql.DefaultCharset, mysql.DefaultCollationName)
 		if err != nil {
@@ -62,16 +62,16 @@ func lintSQL() error {
 			}
 
 			// get header, table name & columns list
-			if lintStatus.RowCount == 1 && !common.Cfg.NoHeader {
+			if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
 				for _, col := range stmtNode.Columns {
-					lintStatus.Header = append(lintStatus.Header, col.String())
+					l.Status.Header = append(l.Status.Header, col.String())
 				}
 
-				if common.Cfg.Table == "" {
+				if l.CommonConfig.Table == "" {
 					switch node := stmtNode.Table.TableRefs.Left.(type) {
 					case *ast.TableSource:
 						if n, ok := node.Source.(*ast.TableName); ok {
-							common.Cfg.Table = n.Name.O
+							l.CommonConfig.Table = n.Name.O
 						}
 					}
 				}
@@ -83,13 +83,13 @@ func lintSQL() error {
 				for _, cell := range r {
 					var buf bytes.Buffer
 					cell.Format(&buf)
-					if common.Cfg.ANSIQuotes && strings.HasPrefix(buf.String(), "`") {
+					if l.CommonConfig.ANSIQuotes && strings.HasPrefix(buf.String(), "`") {
 						return fmt.Errorf(common.WrongQuotesValue)
 					}
 					row = append(row, buf.String())
 				}
 
-				err = lintCell(lintStatus.RowCount, row)
+				err = l.lintCell(l.Status.RowCount, row)
 				if err != nil {
 					return err
 				}
@@ -100,7 +100,7 @@ func lintSQL() error {
 	}
 	if s.Err() != nil {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes or error comment
-		return fmt.Errorf("line: %d, %s", lintStatus.CellCount+1, s.Err().Error())
+		return fmt.Errorf("line: %d, %s", l.Status.CellCount+1, s.Err().Error())
 	}
 	return err
 }

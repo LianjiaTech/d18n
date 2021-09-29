@@ -24,7 +24,7 @@ import (
 )
 
 // jsonLintRow callback function of json-interator
-func jsonLintRow(iter *json.Iterator) bool {
+func (l *LintStruct) jsonLintRow(iter *json.Iterator) bool {
 	var err error
 	var row []string
 	if ok := iter.ReadArrayCB(func(i *json.Iterator) bool {
@@ -34,14 +34,14 @@ func jsonLintRow(iter *json.Iterator) bool {
 		return true
 	}); ok {
 
-		lintStatus.RowCount++
+		l.Status.RowCount++
 		// add header
-		if lintStatus.RowCount == 1 && !common.Cfg.NoHeader {
-			lintStatus.Header = row
+		if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+			l.Status.Header = row
 		}
 
 		// cell validation
-		err = lintCell(lintStatus.RowCount, row)
+		err = l.lintCell(l.Status.RowCount, row)
 		if err != nil {
 			iter.Error = err
 			return false
@@ -52,8 +52,8 @@ func jsonLintRow(iter *json.Iterator) bool {
 }
 
 // lintJSON lint JSON file
-func lintJSON() error {
-	f, err := os.Open(common.Cfg.File)
+func (l *LintStruct) lintJSON() error {
+	f, err := os.Open(l.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func lintJSON() error {
 	switch iter.WhatIsNext() {
 	case json.ArrayValue:
 		if iter.WhatIsNext() == json.ArrayValue {
-			if iter.ReadArrayCB(jsonLintRow); iter.Error != nil {
+			if iter.ReadArrayCB(l.jsonLintRow); iter.Error != nil {
 				return iter.Error
 			}
 		} else {

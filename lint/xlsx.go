@@ -22,8 +22,8 @@ import (
 )
 
 // lintXlsx lint excel file
-func lintXlsx() error {
-	f, err := xlsx.OpenFile(common.Cfg.File)
+func (l *LintStruct) lintXlsx() error {
+	f, err := xlsx.OpenFile(l.CommonConfig.File)
 	if err != nil {
 		return err
 	}
@@ -41,20 +41,20 @@ func lintXlsx() error {
 			if err != nil {
 				return err
 			}
-			lintStatus.RowCount++
+			l.Status.RowCount++
 
 			// add header
-			if lintStatus.RowCount == 1 && !common.Cfg.NoHeader {
-				lintStatus.Header = row
+			if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+				l.Status.Header = row
 			}
 
 			// line validation, check empty line
-			if len(row) == 0 && !common.Cfg.IgnoreBlank {
-				return fmt.Errorf("common.WrongColumnsCnt")
+			if len(row) == 0 && !l.CommonConfig.IgnoreBlank {
+				return fmt.Errorf(common.WrongColumnsCnt)
 			}
 
 			// cell validation
-			err = lintCell(lintStatus.RowCount, row)
+			err = l.lintCell(l.Status.RowCount, row)
 			if err != nil {
 				return err
 			}

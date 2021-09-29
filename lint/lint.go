@@ -39,53 +39,69 @@ type LintStatus struct {
 	TimeCost int64 // total time cost
 }
 
-var lintStatus LintStatus
-
 var lintLevels = []string{"FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
 
-// Lint lint file one time for one file only
-func Lint() error {
-	lintStartTime := time.Now().UnixNano()
+type LintStruct struct {
+	CommonConfig common.Config
+	Levels       []string
+	Rules        map[string]LintCode
+	Status       LintStatus
+}
 
-	lintStatus = LintStatus{}
-	for i, l := range lintLevels {
-		if strings.ToUpper(common.Cfg.LintLevel) == l {
-			lintLevels = lintLevels[:i]
+func NewLintStruct(c common.Config) (*LintStruct, error) {
+	var l = &LintStruct{
+		CommonConfig: c,
+		Status:       LintStatus{},
+		Rules:        make(map[string]LintCode),
+	}
+
+	for i, level := range lintLevels {
+		if strings.ToUpper(c.LintLevel) == level {
+			l.Levels = lintLevels[:i]
 			break
 		}
 	}
 
+	l.initLintRules()
+
+	return l, nil
+}
+
+// Lint lint file one time for one file only
+func (l *LintStruct) Lint() error {
+	lintStartTime := time.Now().UnixNano()
+
 	// run all lint rules about file
-	err := lintFile(0, []string{})
+	err := l.lintFile(0, []string{})
 	if err != nil {
 		return err
 	}
 
 	// run all lint rules about lines && cells
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.CommonConfig.File), "."))
 	switch suffix {
 	case "csv":
-		common.Cfg.Comma = ','
-		err = lintCSV()
+		l.CommonConfig.Comma = ','
+		err = l.lintCSV()
 	case "psv":
-		common.Cfg.Comma = '|'
-		err = lintCSV()
+		l.CommonConfig.Comma = '|'
+		err = l.lintCSV()
 	case "tsv":
-		delete(lintRules, "Whitespace") // tsv not check white space after closed quote
-		common.Cfg.Comma = '\t'
-		err = lintCSV()
+		delete(l.Rules, "Whitespace") // tsv not check white space after closed quote
+		l.CommonConfig.Comma = '\t'
+		err = l.lintCSV()
 	case "txt":
-		delete(lintRules, "Whitespace") // txt not check white space after closed quote
-		common.Cfg.Comma = ' '
-		err = lintCSV()
+		delete(l.Rules, "Whitespace") // txt not check white space after closed quote
+		l.CommonConfig.Comma = ' '
+		err = l.lintCSV()
 	case "xlsx":
-		err = lintXlsx()
+		err = l.lintXlsx()
 	case "sql":
-		err = lintSQL()
+		err = l.lintSQL()
 	case "json":
-		err = lintJSON()
+		err = l.lintJSON()
 	case "html":
-		err = lintHTML()
+		err = l.lintHTML()
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
@@ -94,33 +110,33 @@ func Lint() error {
 	}
 
 	lintEndTime := time.Now().UnixNano()
-	lintStatus.TimeCost = lintEndTime - lintStartTime
+	l.Status.TimeCost = lintEndTime - lintStartTime
 	return err
 }
 
 // lintFile ...
 // line int64: always 0, no need
 // raw []string: always empty, no need
-func lintFile(line int64, raw []string) error {
+func (l *LintStruct) lintFile(line int64, raw []string) error {
 
 	// test file exist
-	info, err := os.Stat(common.Cfg.File)
+	info, err := os.Stat(l.CommonConfig.File)
 	if err != nil {
 		return err
 	}
-	lintStatus.Size = info.Size()
+	l.Status.Size = info.Size()
 
 	// zero, empty
-	if lintStatus.Size == 0 {
-		return fmt.Errorf("%s file size: 0", common.Cfg.File)
+	if l.Status.Size == 0 {
+		return fmt.Errorf("%s file size: 0", l.CommonConfig.File)
 	}
 
 	// check file size and suffix
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.CommonConfig.File), "."))
 	switch suffix {
 	case "xlsx":
-		if lintStatus.Size > int64(common.Cfg.ExcelMaxFileSize) {
-			err = fmt.Errorf("%s file size: %d, too large", common.Cfg.File, lintStatus.Size)
+		if l.Status.Size > int64(l.CommonConfig.ExcelMaxFileSize) {
+			err = fmt.Errorf("%s file size: %d, too large", l.CommonConfig.File, l.Status.Size)
 		}
 	case "csv", "txt", "tsv", "psv", "html", "json", "sql":
 	default:
@@ -131,17 +147,17 @@ func lintFile(line int64, raw []string) error {
 }
 
 // lintLine ...
-func lintLine(line int64, raw []string) error {
-	for _, r := range lintRules {
+func (l *LintStruct) lintLine(line int64, raw []string) error {
+	for _, r := range l.Rules {
 		switch r.LintLevel {
 		case "line":
 			column, err := r.Func(line, raw)
 			if err {
-				lintStatus.ErrorCount++
-				l := r
-				l.Line = line
-				l.Column = column
-				lintStatus.Lint = append(lintStatus.Lint, r)
+				l.Status.ErrorCount++
+				rule := r
+				rule.Line = line
+				rule.Column = column
+				l.Status.Lint = append(l.Status.Lint, rule)
 				if checkLevelBreak(r) {
 					return fmt.Errorf(r.Message)
 				}
@@ -152,17 +168,17 @@ func lintLine(line int64, raw []string) error {
 }
 
 // lintCell ...
-func lintCell(line int64, raw []string) error {
-	for _, r := range lintRules {
+func (l *LintStruct) lintCell(line int64, raw []string) error {
+	for _, r := range l.Rules {
 		switch r.LintLevel {
 		case "cell":
 			column, err := r.Func(line, raw)
 			if err {
-				lintStatus.ErrorCount++
-				l := r
-				l.Line = line
-				l.Column = column
-				lintStatus.Lint = append(lintStatus.Lint, l)
+				l.Status.ErrorCount++
+				rule := r
+				rule.Line = line
+				rule.Column = column
+				l.Status.Lint = append(l.Status.Lint, rule)
 				if checkLevelBreak(r) {
 					return fmt.Errorf(r.Message)
 				}
@@ -173,46 +189,46 @@ func lintCell(line int64, raw []string) error {
 }
 
 // ShowStatus check lint status
-func ShowStatus() error {
+func (l *LintStruct) ShowStatus() error {
 	var err error
 
-	if len(lintStatus.Lint) == 0 {
+	if len(l.Status.Lint) == 0 {
 		fmt.Println("ok")
 	}
 
 	// format lint status
-	for _, l := range lintStatus.Lint {
-		fmt.Printf("Line: %d, Column: %d, %s: %s\n", l.Line, l.Column, l.Level, l.Message)
+	for _, s := range l.Status.Lint {
+		fmt.Printf("Line: %d, Column: %d, %s: %s\n", s.Line, s.Column, s.Level, s.Message)
 	}
 
 	// verbose mode print
-	if !common.Cfg.Verbose {
+	if !l.CommonConfig.Verbose {
 		return err
 	}
 	println("")
-	println("File Size:", lintStatus.Size)
+	println("File Size:", l.Status.Size)
 
-	println("Row Count(Include Header):", lintStatus.RowCount,
-		"Cell Count:", lintStatus.CellCount,
-		"Error Count:", lintStatus.ErrorCount,
-		"Time Cost:", fmt.Sprint(time.Duration(lintStatus.TimeCost)*time.Nanosecond))
+	println("Row Count(Include Header):", l.Status.RowCount,
+		"Cell Count:", l.Status.CellCount,
+		"Error Count:", l.Status.ErrorCount,
+		"Time Cost:", fmt.Sprint(time.Duration(l.Status.TimeCost)*time.Nanosecond))
 	return err
 }
 
 // lintCellRaggedRows ...
-func lintCellRaggedRows(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCellRaggedRows(line int64, raw []string) (column int, wrong bool) {
 	// lintstatus total column num
-	if lintStatus.CellCount == 0 && line == 1 {
-		lintStatus.CellCount = len(raw)
+	if l.Status.CellCount == 0 && line == 1 {
+		l.Status.CellCount = len(raw)
 	}
-	if len(raw) != lintStatus.CellCount {
+	if len(raw) != l.Status.CellCount {
 		return 0, true
 	}
 	return 0, wrong
 }
 
 // lintCellCheckOptions cells less or equal than 1, this may be wrong comma option
-func lintCellCheckOptions(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCellCheckOptions(line int64, raw []string) (column int, wrong bool) {
 	if len(raw) <= 1 {
 		return 0, true
 	}
@@ -220,21 +236,21 @@ func lintCellCheckOptions(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCellUndeclaredHeader ...
-func lintCellUndeclaredHeader(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column int, wrong bool) {
 	// fix for sql file
-	if line == 1 && !common.Cfg.NoHeader {
-		//raw = lintStatus.Header
-		if len(lintStatus.Header) == 0 {
+	if line == 1 && !l.CommonConfig.NoHeader {
+		//raw = l.Status.Header
+		if len(l.Status.Header) == 0 {
 			return 0, true
 		}
-		for k, c := range lintStatus.Header {
+		for k, c := range l.Status.Header {
 			// empty column name
 			if len(c) == 0 {
 				return k + 1, true
 			}
 
 			// check column name length
-			switch common.Cfg.Server {
+			switch l.CommonConfig.Server {
 			case "mysql":
 				if len(c) > 64 {
 					return k + 1, true
@@ -264,15 +280,15 @@ func lintCellUndeclaredHeader(line int64, raw []string) (column int, wrong bool)
 }
 
 // lintCellUnMatchHeader ...
-func lintCellUnMatchHeader(line int64, raw []string) (column int, wrong bool) {
-	if !common.Cfg.NoHeader {
-		return 0, len(raw) != len(lintStatus.Header)
+func (l *LintStruct) lintCellUnMatchHeader(line int64, raw []string) (column int, wrong bool) {
+	if !l.CommonConfig.NoHeader {
+		return 0, len(raw) != len(l.Status.Header)
 	}
 	return 0, wrong
 }
 
 // lintCellDupColumnName...
-func lintCellDupColumnName(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCellDupColumnName(line int64, raw []string) (column int, wrong bool) {
 	if line == 1 {
 		sort.Strings(raw)
 		for k, c := range raw {
@@ -286,8 +302,8 @@ func lintCellDupColumnName(line int64, raw []string) (column int, wrong bool) {
 
 // checkLevelBreak ...
 func checkLevelBreak(r LintCode) (br bool) {
-	for _, l := range lintLevels {
-		if l == r.Level {
+	for _, level := range lintLevels {
+		if level == r.Level {
 			br = true
 			break
 		}

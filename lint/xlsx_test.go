@@ -26,22 +26,22 @@ func TestLintXlsx(t *testing.T) {
 	levels := lintLevels
 	lintLevels = []string{"FATAL", "ERROR"}
 	// right
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestXLSXLint.right.xlsx"
-	err := lintXlsx()
+	l, _ := NewLintStruct(common.Cfg)
+	err := l.lintXlsx()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	// wrong
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestXLSXLint.wrong.xlsx"
-	err = lintXlsx()
+	l, _ = NewLintStruct(common.Cfg)
+	err = l.lintXlsx()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	lintLevels = levels
 	common.Cfg = orgCfg

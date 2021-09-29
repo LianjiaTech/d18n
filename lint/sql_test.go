@@ -24,23 +24,23 @@ import (
 func TestLintSQLByPingcap(t *testing.T) {
 	orgCfg := common.Cfg
 	common.Cfg.ANSIQuotes = false
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestSQLLint.right.sql"
-	err := lintSQL()
+	l, _ := NewLintStruct(common.Cfg)
+	err := l.lintSQL()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
-	lintStatus = LintStatus{}
 	common.Cfg.File = common.TestPath + "/test/TestSQLLint.wrong.sql"
-	err = lintSQL()
+	l, _ = NewLintStruct(common.Cfg)
+	err = l.lintSQL()
 	if err == nil {
 		t.Errorf("here should report an error")
 	} else {
 		pretty.Println(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	common.Cfg = orgCfg
 }
