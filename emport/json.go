@@ -27,13 +27,13 @@ import (
 func emportJSON(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
-	fd, err := os.Open(e.CommonConfig.File)
+	fd, err := os.Open(e.Config.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParseHeaderColumn(e.Status.Header))
+	insertPrefix, err := e.Config.SQLInsertPrefix(e.Config.DBParseHeaderColumn(e.Status.Header))
 	if err != nil {
 		return err
 	}
@@ -59,21 +59,21 @@ func emportJSON(e *EmportStruct, conn *sql.DB) error {
 						e.Status.Lines++
 
 						// skip header line
-						if e.Status.Lines == 1 && !e.CommonConfig.NoHeader {
+						if e.Status.Lines == 1 && !e.Config.NoHeader {
 							return true
 						}
 
 						// SkipLines
-						if e.Status.Lines <= e.CommonConfig.SkipLines {
+						if e.Status.Lines <= e.Config.SkipLines {
 							return true
 						}
-						if e.CommonConfig.Limit > 0 &&
-							(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
+						if e.Config.Limit > 0 &&
+							(e.Status.Lines-e.Config.SkipLines) > e.Config.Limit {
 							return false
 						}
 
 						// ignore blank lines
-						if e.CommonConfig.IgnoreBlank && len(row) == 0 {
+						if e.Config.IgnoreBlank && len(row) == 0 {
 							return true
 						}
 
@@ -84,7 +84,7 @@ func emportJSON(e *EmportStruct, conn *sql.DB) error {
 							return false
 						}
 
-						values, err := common.SQLInsertValues(e.Status.Header, common.DBParseNullString(e.Status.Header, row))
+						values, err := e.Config.SQLInsertValues(e.Status.Header, e.Config.DBParseNullString(e.Status.Header, row))
 						if err != nil {
 							iterator.Error = err
 							return false
@@ -92,9 +92,9 @@ func emportJSON(e *EmportStruct, conn *sql.DB) error {
 
 						// extended-insert
 						sqlCounter++
-						sql += common.SQLMultiValues(sqlCounter, insertPrefix, values)
-						if e.CommonConfig.ExtendedInsert <= 1 || sqlCounter%e.CommonConfig.ExtendedInsert == 0 {
-							err = executeSQL(sql, conn)
+						sql += e.Config.SQLMultiValues(sqlCounter, insertPrefix, values)
+						if e.Config.ExtendedInsert <= 1 || sqlCounter%e.Config.ExtendedInsert == 0 {
+							err = e.executeSQL(sql, conn)
 							if err != nil {
 								iterator.Error = err
 								return false
@@ -116,7 +116,7 @@ func emportJSON(e *EmportStruct, conn *sql.DB) error {
 
 	// execute last SQL
 	if sql != "" {
-		err = executeSQL(sql, conn)
+		err = e.executeSQL(sql, conn)
 	}
 	e.Status.Rows = sqlCounter
 

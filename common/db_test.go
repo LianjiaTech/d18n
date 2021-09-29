@@ -19,8 +19,8 @@ import (
 )
 
 func TestQueryRows(t *testing.T) {
-	orgCfg := Cfg
-	fmt.Println(Cfg)
+	orgCfg := TestConfig
+	fmt.Println(TestConfig)
 	sqls := [][]string{
 		// wrong cases
 		{
@@ -38,8 +38,8 @@ func TestQueryRows(t *testing.T) {
 
 	// wrong cases
 	for _, sql := range sqls[0] {
-		Cfg.Query = sql
-		rows, err := QueryRows()
+		TestConfig.Query = sql
+		rows, err := TestConfig.QueryRows()
 		if rows != nil {
 			rows.Next()
 			err = rows.Err()
@@ -52,18 +52,18 @@ func TestQueryRows(t *testing.T) {
 
 	// right cases
 	for _, sql := range sqls[1] {
-		Cfg.Query = sql
-		_, err := QueryRows()
+		TestConfig.Query = sql
+		_, err := TestConfig.QueryRows()
 		if err != nil {
 			t.Error(err.Error())
 		}
 	}
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func TestExecResult(t *testing.T) {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
 	sqls := [][]string{
 		{
@@ -78,8 +78,8 @@ func TestExecResult(t *testing.T) {
 
 	// wrong cases
 	for _, sql := range sqls[0] {
-		Cfg.Query = sql
-		_, err := ExecResult()
+		TestConfig.Query = sql
+		_, err := TestConfig.ExecResult()
 		if err == nil {
 			t.Error("show get error")
 		}
@@ -87,41 +87,41 @@ func TestExecResult(t *testing.T) {
 
 	// right cases
 	for _, sql := range sqls[1] {
-		Cfg.Query = sql
-		_, err := ExecResult()
+		TestConfig.Query = sql
+		_, err := TestConfig.ExecResult()
 		if err != nil {
 			t.Error(err.Error())
 		}
 	}
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func ExampleDBParseNullString() {
 	var columns = Row{"abc", "", "NULL", "null"}
 	header := make([]HeaderColumn, len(columns))
-	fmt.Println(DBParseNullString(header, columns))
+	fmt.Println(TestConfig.DBParseNullString(header, columns))
 	// Output:
 	// [{abc true} { true} {NULL false} {null true}]
 }
 
 func TestSetForeignKeyChecks(t *testing.T) {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
-	conn, err := NewConnection()
+	conn, err := TestConfig.NewConnection()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	err = SetForeignKeyChecks(true, conn, "actor")
+	err = TestConfig.SetForeignKeyChecks(true, conn, "actor")
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func TestNewConnection(t *testing.T) {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
 	servers := []string{
 		"mysql",
@@ -134,15 +134,15 @@ func TestNewConnection(t *testing.T) {
 		"presto",
 	}
 	for _, s := range servers {
-		Cfg.Server = s
-		conn, err := NewConnection()
+		TestConfig.Server = s
+		conn, err := TestConfig.NewConnection()
 		if err != nil {
 			t.Error(err.Error())
 		}
 		fmt.Println(s, conn)
 	}
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func ExampleEscape() {
@@ -160,19 +160,19 @@ func ExampleEscape() {
 }
 
 func ExampleQuoteString() {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
-	fmt.Println(QuoteString("abc"))
-	fmt.Println(QuoteString(`abc"`))
-	fmt.Println(QuoteString(`abc'`))
-	Cfg.Server = "oracle"
-	fmt.Println(QuoteString("oracle"))
-	fmt.Println(QuoteString(`abc"`))
-	fmt.Println(QuoteString(`abc'`))
-	Cfg.Server = "postgres"
-	fmt.Println(QuoteString("postgres"))
-	fmt.Println(QuoteString(`abc"`))
-	fmt.Println(QuoteString(`abc'`))
+	fmt.Println(TestConfig.QuoteString("abc"))
+	fmt.Println(TestConfig.QuoteString(`abc"`))
+	fmt.Println(TestConfig.QuoteString(`abc'`))
+	TestConfig.Server = "oracle"
+	fmt.Println(TestConfig.QuoteString("oracle"))
+	fmt.Println(TestConfig.QuoteString(`abc"`))
+	fmt.Println(TestConfig.QuoteString(`abc'`))
+	TestConfig.Server = "postgres"
+	fmt.Println(TestConfig.QuoteString("postgres"))
+	fmt.Println(TestConfig.QuoteString(`abc"`))
+	fmt.Println(TestConfig.QuoteString(`abc'`))
 	// Output:
 	// "abc"
 	// "abc\""
@@ -184,22 +184,22 @@ func ExampleQuoteString() {
 	// 'abc"'
 	// 'abc'''
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func ExampleQuoteKey() {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
-	fmt.Println(QuoteKey("abc"))
-	fmt.Println(QuoteKey(`abc"`))
-	fmt.Println(QuoteKey(`abc'`))
-	Cfg.Server = "oracle"
-	fmt.Println(QuoteKey("abc"))
+	fmt.Println(TestConfig.QuoteKey("abc"))
+	fmt.Println(TestConfig.QuoteKey(`abc"`))
+	fmt.Println(TestConfig.QuoteKey(`abc'`))
+	TestConfig.Server = "oracle"
+	fmt.Println(TestConfig.QuoteKey("abc"))
 	// Output:
 	// `abc`
 	// `abc"`
 	// `abc'`
 	// "abc"
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }

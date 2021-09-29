@@ -23,52 +23,57 @@ import (
 	"d18n/save"
 )
 
+var c common.Config
+
 func main() {
+	var err error
+
 	// limit cpu 1 core, memory 2GB
 	common.PanicIfError(common.ResourceLimit(1, 2*1024*1024*1024))
 
 	// parse config
 	// common.PanicIfError(common.ParseFlag())
-	common.PanicIfError(common.ParseFlags())
+	c, err = common.ParseFlags()
+	common.PanicIfError(err)
 
 	// parse cipher config
-	common.PanicIfError(mask.ParseCipherConfig(common.Cfg.Cipher))
+	common.PanicIfError(mask.ParseCipherConfig(c.Cipher))
 
 	// print cipher
-	if common.Cfg.PrintCipher {
+	if c.PrintCipher {
 		mask.PrintCipher()
 		return
 	}
 
 	// print config
-	if common.Cfg.PrintConfig {
-		common.PrintConfig()
+	if c.PrintConfig {
+		common.PrintConfig(c)
 		return
 	}
 
 	// preview file
-	if common.Cfg.Preview > 0 {
+	if c.Preview > 0 {
 		common.PanicIfError(previewFile())
 		return
 	}
 
 	// lint file
-	if common.Cfg.Lint {
+	if c.Lint {
 		common.PanicIfError(lintFile())
 		return
 	}
 
 	// detect sensitive info
-	if common.Cfg.Detect {
+	if c.Detect {
 		common.PanicIfError(detectRows())
 		return
 	}
 
 	// init mask corpus
-	common.PanicIfError(mask.InitMaskCorpus(common.Cfg.RandSeed))
+	common.PanicIfError(mask.InitMaskCorpus(c.RandSeed))
 
 	// import file
-	if common.Cfg.Import {
+	if c.Import {
 		common.PanicIfError(emportFile())
 		return
 	}
@@ -77,7 +82,7 @@ func main() {
 }
 
 func previewFile() error {
-	p, err := preview.NewPreviewStruct(common.Cfg)
+	p, err := preview.NewPreviewStruct(c)
 	if err != nil {
 		return err
 	}
@@ -86,7 +91,7 @@ func previewFile() error {
 
 func saveRows() error {
 	// new save struct
-	s, err := save.NewSaveStruct(common.Cfg)
+	s, err := save.NewSaveStruct(c)
 	if err != nil {
 		return err
 	}
@@ -99,7 +104,7 @@ func saveRows() error {
 }
 
 func lintFile() error {
-	l, err := lint.NewLintStruct(common.Cfg)
+	l, err := lint.NewLintStruct(c)
 	if err != nil {
 		return err
 	}
@@ -112,7 +117,7 @@ func lintFile() error {
 }
 
 func emportFile() error {
-	e, err := emport.NewEmportStruct(common.Cfg)
+	e, err := emport.NewEmportStruct(c)
 	if err != nil {
 		return err
 	}
@@ -124,7 +129,7 @@ func emportFile() error {
 }
 
 func detectRows() error {
-	d, err := detect.NewDetectStruct(common.Cfg)
+	d, err := detect.NewDetectStruct(c)
 	if err != nil {
 		return err
 	}

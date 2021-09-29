@@ -131,7 +131,7 @@ func Example_fakePassword() {
 	var fakeData string
 	var err error
 
-	InitFaker(common.Cfg.RandSeed)
+	InitFaker(common.TestConfig.RandSeed)
 	// default policy and length
 	fakeData, err = Fake("password")
 	fmt.Println(fakeData, err)

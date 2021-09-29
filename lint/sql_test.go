@@ -22,18 +22,18 @@ import (
 )
 
 func TestLintSQLByPingcap(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.ANSIQuotes = false
-	common.Cfg.File = common.TestPath + "/test/TestSQLLint.right.sql"
-	l, _ := NewLintStruct(common.Cfg)
+	orgCfg := common.TestConfig
+	common.TestConfig.ANSIQuotes = false
+	common.TestConfig.File = common.TestPath + "/test/TestSQLLint.right.sql"
+	l, _ := NewLintStruct(common.TestConfig)
 	err := l.lintSQL()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	pretty.Println(l.Status)
 
-	common.Cfg.File = common.TestPath + "/test/TestSQLLint.wrong.sql"
-	l, _ = NewLintStruct(common.Cfg)
+	common.TestConfig.File = common.TestPath + "/test/TestSQLLint.wrong.sql"
+	l, _ = NewLintStruct(common.TestConfig)
 	err = l.lintSQL()
 	if err == nil {
 		t.Errorf("here should report an error")
@@ -42,5 +42,5 @@ func TestLintSQLByPingcap(t *testing.T) {
 	}
 	pretty.Println(l.Status)
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

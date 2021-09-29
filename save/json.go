@@ -16,13 +16,9 @@ package save
 import (
 	"database/sql"
 	"fmt"
-
-	json "github.com/json-iterator/go"
-
-	//"encoding/json"
 	"os"
 
-	"d18n/common"
+	json "github.com/json-iterator/go"
 )
 
 // JSON limit
@@ -31,7 +27,7 @@ import (
 
 // saveRows2JSON save rows result into JSON format file
 func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
-	file, err := os.Create(s.CommonConfig.File)
+	file, err := os.Create(s.Config.File)
 	if err != nil {
 		return err
 	}
@@ -42,8 +38,8 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 	stream.WriteArrayStart() // [
 
 	// key names as json list first element
-	if !s.CommonConfig.NoHeader {
-		buf, err := json.Marshal(common.DBParserColumnNames(s.Status.Header))
+	if !s.Config.NoHeader {
+		buf, err := json.Marshal(s.Config.DBParserColumnNames(s.Status.Header))
 		if err != nil {
 			return err
 		}
@@ -67,7 +63,7 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 	for rows.Next() {
 		s.Status.Lines++
 		// limit return rows
-		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
+		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
 			break
 		}
 
@@ -79,13 +75,13 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = s.CommonConfig.NULLString
+				values[j] = s.Config.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
 					values[j] = string(col.([]byte))
 				case []string:
-					values[j] = common.ParseArray(col.([]string))
+					values[j] = s.Config.ParseArray(col.([]string))
 				default:
 					values[j] = fmt.Sprint(col)
 				}
@@ -97,7 +93,7 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
+				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
 			}
 		}
 
@@ -108,7 +104,7 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 		}
 
 		// add comma
-		if s.CommonConfig.NoHeader && s.Status.Lines == 1 {
+		if s.Config.NoHeader && s.Status.Lines == 1 {
 			// -no-header and first line don't add comma
 		} else {
 			stream.WriteMore() // ,

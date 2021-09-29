@@ -25,14 +25,14 @@ func (d *DetectStruct) detectCSV() error {
 
 	var err error
 
-	fd, err := os.Open(d.CommonConfig.File)
+	fd, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
 	r := csv.NewReader(fd)
-	r.Comma = d.CommonConfig.Comma
+	r.Comma = d.Config.Comma
 	for {
 		d.Status.Lines++
 
@@ -46,23 +46,23 @@ func (d *DetectStruct) detectCSV() error {
 
 		// check column names
 		if d.Status.Lines == 1 {
-			if !d.CommonConfig.NoHeader && d.CommonConfig.Schema == "" {
+			if !d.Config.NoHeader && d.Config.Schema == "" {
 				for _, r := range row {
 					d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 				}
 			}
 			d.checkHeader()
-			if !d.CommonConfig.NoHeader {
+			if !d.Config.NoHeader {
 				continue
 			}
 		}
 
 		// SkipLines
-		if d.Status.Lines <= d.CommonConfig.SkipLines {
+		if d.Status.Lines <= d.Config.SkipLines {
 			continue
 		}
-		if d.CommonConfig.Limit > 0 &&
-			(d.Status.Lines-d.CommonConfig.SkipLines) > d.CommonConfig.Limit {
+		if d.Config.Limit > 0 &&
+			(d.Status.Lines-d.Config.SkipLines) > d.Config.Limit {
 			break
 		}
 

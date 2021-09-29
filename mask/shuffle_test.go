@@ -31,7 +31,7 @@ var shuffleTestCases = []interface{}{
 }
 
 func ExampleShuffle() {
-	InitShuffle(common.Cfg.RandSeed)
+	InitShuffle(common.TestConfig.RandSeed)
 	for _, c := range shuffleTestCases {
 		r, err := Shuffle(c)
 		fmt.Println(r, err)

@@ -23,18 +23,18 @@ import (
 
 // PreviewXlsx ...
 func previewXlsx(p *PreviewStruct) error {
-	if p.CommonConfig.Preview == 0 {
+	if p.Config.Preview == 0 {
 		return nil
 	}
 
-	opts := xlsx.RowLimit(p.CommonConfig.Preview)
-	wb, err := xlsx.OpenFile(p.CommonConfig.File, opts)
+	opts := xlsx.RowLimit(p.Config.Preview)
+	wb, err := xlsx.OpenFile(p.Config.File, opts)
 	if err != nil {
 		return err
 	}
 
 	if len(wb.Sheets) > 0 {
-		for i := 0; i < p.CommonConfig.Preview && i < wb.Sheets[0].MaxRow; i++ {
+		for i := 0; i < p.Config.Preview && i < wb.Sheets[0].MaxRow; i++ {
 			row, err := wb.Sheets[0].Row(i)
 			if err != nil {
 				return err
@@ -46,8 +46,8 @@ func previewXlsx(p *PreviewStruct) error {
 		}
 	}
 
-	if p.CommonConfig.Verbose {
-		watermark, err := common.GetXlsxWatermark(p.CommonConfig.File)
+	if p.Config.Verbose {
+		watermark, err := common.GetXlsxWatermark(p.Config.File)
 		if err == nil && watermark != "" {
 			println("\nWatermark:", watermark)
 		}

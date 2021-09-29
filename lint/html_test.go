@@ -21,20 +21,20 @@ import (
 )
 
 func TestLintHTML(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestHTMLLint.right.html"
-	l, _ := NewLintStruct(common.Cfg)
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestHTMLLint.right.html"
+	l, _ := NewLintStruct(common.TestConfig)
 	err := l.lintHTML()
 	if err != nil {
 		t.Error(err)
 	}
 
-	common.Cfg.File = common.TestPath + "/test/TestHTMLLint.wrong.html"
-	l, _ = NewLintStruct(common.Cfg)
+	common.TestConfig.File = common.TestPath + "/test/TestHTMLLint.wrong.html"
+	l, _ = NewLintStruct(common.TestConfig)
 	err = l.lintHTML()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
 	pretty.Println(l.Status)
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

@@ -24,23 +24,23 @@ import (
 //go:embed sensitive.yaml
 var defaultSensitiveConfig []byte
 
-// Config sensitive config
-type Config map[string]BasicDetect
+// sensitiveConfig ...
+type sensitiveConfig map[string]BasicDetect
 
 func (d *DetectStruct) parseConfig() error {
 	// load sensitive config
-	buf, err := ioutil.ReadFile(d.CommonConfig.Sensitive)
+	buf, err := ioutil.ReadFile(d.Config.Sensitive)
 	if err == nil {
 		defaultSensitiveConfig = buf
 	}
 
-	err = yaml.Unmarshal(defaultSensitiveConfig, &d.SensitiveConfig)
+	err = yaml.Unmarshal(defaultSensitiveConfig, &d.Sensitive)
 	if err != nil {
 		return err
 	}
 
 	// check config regexp valid
-	for _, v := range d.SensitiveConfig {
+	for _, v := range d.Sensitive {
 		for _, r := range v.Key {
 			_, err = regexp.Compile(r)
 			if err != nil {

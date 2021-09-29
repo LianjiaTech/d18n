@@ -20,11 +20,11 @@ import (
 )
 
 func previewCSV(p *PreviewStruct) error {
-	if p.CommonConfig.Preview == 0 {
+	if p.Config.Preview == 0 {
 		return nil
 	}
 
-	fd, err := os.Open(p.CommonConfig.File)
+	fd, err := os.Open(p.Config.File)
 	if err != nil {
 		return err
 	}
@@ -32,10 +32,10 @@ func previewCSV(p *PreviewStruct) error {
 
 	var line int
 	s := bufio.NewScanner(fd)
-	s.Buffer([]byte{}, p.CommonConfig.MaxBufferSize)
+	s.Buffer([]byte{}, p.Config.MaxBufferSize)
 
 	for s.Scan() {
-		if line >= p.CommonConfig.Preview {
+		if line >= p.Config.Preview {
 			break
 		}
 		fmt.Println(s.Text())

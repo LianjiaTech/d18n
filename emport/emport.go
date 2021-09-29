@@ -32,9 +32,9 @@ type emportStatus struct {
 }
 
 type EmportStruct struct {
-	Status       emportStatus     // emport status
-	Masker       *mask.MaskStruct // masker
-	CommonConfig common.Config    //
+	Status emportStatus     // emport status
+	Masker *mask.MaskStruct // masker
+	Config common.Config    //
 }
 
 func NewEmportStruct(c common.Config) (*EmportStruct, error) {
@@ -45,8 +45,8 @@ func NewEmportStruct(c common.Config) (*EmportStruct, error) {
 	}
 
 	e = &EmportStruct{
-		Masker:       m,
-		CommonConfig: c,
+		Masker: m,
+		Config: c,
 	}
 	return e, nil
 }
@@ -54,7 +54,7 @@ func NewEmportStruct(c common.Config) (*EmportStruct, error) {
 func (e *EmportStruct) Emport() error {
 	emportStartTime := time.Now().UnixNano()
 	// new *sql.DB, by pass error
-	conn, _ := common.NewConnection()
+	conn, _ := e.Config.NewConnection()
 
 	err := emportRows(e, conn)
 	if err != nil {
@@ -70,7 +70,7 @@ func (e *EmportStruct) Emport() error {
 func emportRows(e *EmportStruct, conn *sql.DB) error {
 	var err error
 	// get Header
-	e.Status.Header, err = common.ParseSchema()
+	e.Status.Header, err = e.Config.ParseSchema()
 	if err != nil {
 		return err
 	}
@@ -82,19 +82,19 @@ func emportRows(e *EmportStruct, conn *sql.DB) error {
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(e.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(e.Config.File), "."))
 	switch suffix {
 	case "tsv": // tab-separated values
-		e.CommonConfig.Comma = '\t'
+		e.Config.Comma = '\t'
 		err = emportCSV(e, conn)
 	case "txt": // space-separated values
-		e.CommonConfig.Comma = ' '
+		e.Config.Comma = ' '
 		err = emportCSV(e, conn)
 	case "psv": // pipe-separated values
-		e.CommonConfig.Comma = '|'
+		e.Config.Comma = '|'
 		err = emportCSV(e, conn)
 	case "csv": // comma-separated values
-		e.CommonConfig.Comma = ','
+		e.Config.Comma = ','
 		err = emportCSV(e, conn)
 	case "xlsx": // microsoft office excel
 		err = emportXlsx(e, conn)
@@ -121,8 +121,8 @@ func emportPrefixExec(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	// change foreign key checks
-	if e.CommonConfig.DisableForeignKeyChecks {
-		err = common.SetForeignKeyChecks(!e.CommonConfig.DisableForeignKeyChecks, conn, e.CommonConfig.Table)
+	if e.Config.DisableForeignKeyChecks {
+		err = e.Config.SetForeignKeyChecks(!e.Config.DisableForeignKeyChecks, conn, e.Config.Table)
 	}
 
 	return err
@@ -132,18 +132,18 @@ func emportSuffixExec(e *EmportStruct, conn *sql.DB) error {
 	var err error
 
 	// change foreign key checks
-	if e.CommonConfig.DisableForeignKeyChecks {
-		err = common.SetForeignKeyChecks(e.CommonConfig.DisableForeignKeyChecks, conn, e.CommonConfig.Table)
+	if e.Config.DisableForeignKeyChecks {
+		err = e.Config.SetForeignKeyChecks(e.Config.DisableForeignKeyChecks, conn, e.Config.Table)
 	}
 
 	return err
 }
 
 // executeSQL ...
-func executeSQL(sql string, conn *sql.DB) error {
+func (e *EmportStruct) executeSQL(sql string, conn *sql.DB) error {
 	var err error
 
-	if common.DBAvailable(conn) {
+	if e.Config.DBAvailable(conn) {
 		_, err = conn.Exec(sql)
 	} else {
 		fmt.Print(sql)
@@ -155,12 +155,12 @@ func executeSQL(sql string, conn *sql.DB) error {
 func (e *EmportStruct) ShowStatus() error {
 	var err error
 
-	if e.CommonConfig.SkipLines > 0 {
-		println("Skip Lines:", e.CommonConfig.SkipLines)
+	if e.Config.SkipLines > 0 {
+		println("Skip Lines:", e.Config.SkipLines)
 	}
 
 	// verbose mode print
-	if !e.CommonConfig.Verbose {
+	if !e.Config.Verbose {
 		return err
 	}
 	println(

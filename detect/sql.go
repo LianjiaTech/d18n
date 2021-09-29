@@ -29,19 +29,19 @@ import (
 
 func (d *DetectStruct) detectSQL() error {
 	var err error
-	f, err := os.Open(d.CommonConfig.File)
+	f, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, d.CommonConfig.MaxBufferSize)
+	s.Buffer([]byte{}, d.Config.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	// new sql parser
 	p := parser.New()
-	if d.CommonConfig.ANSIQuotes {
+	if d.Config.ANSIQuotes {
 		mode, _ := mysql.GetSQLMode("ANSI_QUOTES")
 		p.SetSQLMode(mode)
 	}
@@ -67,7 +67,7 @@ func (d *DetectStruct) detectSQL() error {
 
 			// check column names
 			if d.Status.Lines == 1 {
-				if !d.CommonConfig.NoHeader && d.CommonConfig.Schema == "" {
+				if !d.Config.NoHeader && d.Config.Schema == "" {
 					for _, col := range stmtNode.Columns {
 						d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: col.String()})
 					}

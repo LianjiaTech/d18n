@@ -27,10 +27,10 @@ import (
 func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 	var err error
 	var file *os.File
-	if strings.EqualFold(s.CommonConfig.File, "stdout") {
+	if strings.EqualFold(s.Config.File, "stdout") {
 		file = os.Stdout
 	} else {
-		file, err = os.Create(s.CommonConfig.File)
+		file, err = os.Create(s.Config.File)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 	// windows 环境下导出的 csv 文件默认添加 UTF8 BOM。
 	// 添加 BOM 对 less, awk 等 *nix 系统命令并不友好，因此仅对特定的文件名生效。
 	// Linux 环境删除文件 UTF8 BOM 头命令：dos2unix xxx.csv
-	if s.CommonConfig.BOM {
+	if s.Config.BOM {
 		_, err = file.WriteString(common.UTF8BOM)
 		if err != nil {
 			return err
@@ -49,12 +49,12 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	w := csv.NewWriter(file)
-	w.Comma = s.CommonConfig.Comma
+	w.Comma = s.Config.Comma
 	defer w.Flush()
 
 	// set table header with column name
-	if !s.CommonConfig.NoHeader {
-		err = w.Write(common.DBParserColumnNames(s.Status.Header))
+	if !s.Config.NoHeader {
+		err = w.Write(s.Config.DBParserColumnNames(s.Status.Header))
 		if err != nil {
 			return err
 		}
@@ -71,7 +71,7 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 	for rows.Next() {
 		s.Status.Lines++
 		// limit return rows
-		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
+		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
 			break
 		}
 
@@ -83,13 +83,13 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = s.CommonConfig.NULLString
+				values[j] = s.Config.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
 					values[j] = string(col.([]byte))
 				case []string:
-					values[j] = common.ParseArray(col.([]string))
+					values[j] = s.Config.ParseArray(col.([]string))
 				default:
 					values[j] = fmt.Sprint(col)
 				}
@@ -101,7 +101,7 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
+				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
 			}
 		}
 

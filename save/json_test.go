@@ -20,11 +20,11 @@ import (
 )
 
 func TestSaveRows2JSON(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2JSON.json"
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2JSON.json"
 
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -33,5 +33,5 @@ func TestSaveRows2JSON(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

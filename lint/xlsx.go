@@ -23,7 +23,7 @@ import (
 
 // lintXlsx lint excel file
 func (l *LintStruct) lintXlsx() error {
-	f, err := xlsx.OpenFile(l.CommonConfig.File)
+	f, err := xlsx.OpenFile(l.Config.File)
 	if err != nil {
 		return err
 	}
@@ -44,12 +44,12 @@ func (l *LintStruct) lintXlsx() error {
 			l.Status.RowCount++
 
 			// add header
-			if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+			if l.Status.RowCount == 1 && !l.Config.NoHeader {
 				l.Status.Header = row
 			}
 
 			// line validation, check empty line
-			if len(row) == 0 && !l.CommonConfig.IgnoreBlank {
+			if len(row) == 0 && !l.Config.IgnoreBlank {
 				return fmt.Errorf(common.WrongColumnsCnt)
 			}
 

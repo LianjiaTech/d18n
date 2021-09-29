@@ -20,13 +20,13 @@ import (
 )
 
 func TestPreviewXlsxFile(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2ELSX.xlsx"
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2ELSX.xlsx"
 
-	p, _ := NewPreviewStruct(common.Cfg)
+	p, _ := NewPreviewStruct(common.TestConfig)
 	err := previewXlsx(p)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

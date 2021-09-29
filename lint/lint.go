@@ -42,17 +42,17 @@ type LintStatus struct {
 var lintLevels = []string{"FATAL", "ERROR", "WARN", "INFO", "DEBUG"}
 
 type LintStruct struct {
-	CommonConfig common.Config
-	Levels       []string
-	Rules        map[string]LintCode
-	Status       LintStatus
+	Config common.Config
+	Levels []string
+	Rules  map[string]LintCode
+	Status LintStatus
 }
 
 func NewLintStruct(c common.Config) (*LintStruct, error) {
 	var l = &LintStruct{
-		CommonConfig: c,
-		Status:       LintStatus{},
-		Rules:        make(map[string]LintCode),
+		Config: c,
+		Status: LintStatus{},
+		Rules:  make(map[string]LintCode),
 	}
 
 	for i, level := range lintLevels {
@@ -78,21 +78,21 @@ func (l *LintStruct) Lint() error {
 	}
 
 	// run all lint rules about lines && cells
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.Config.File), "."))
 	switch suffix {
 	case "csv":
-		l.CommonConfig.Comma = ','
+		l.Config.Comma = ','
 		err = l.lintCSV()
 	case "psv":
-		l.CommonConfig.Comma = '|'
+		l.Config.Comma = '|'
 		err = l.lintCSV()
 	case "tsv":
 		delete(l.Rules, "Whitespace") // tsv not check white space after closed quote
-		l.CommonConfig.Comma = '\t'
+		l.Config.Comma = '\t'
 		err = l.lintCSV()
 	case "txt":
 		delete(l.Rules, "Whitespace") // txt not check white space after closed quote
-		l.CommonConfig.Comma = ' '
+		l.Config.Comma = ' '
 		err = l.lintCSV()
 	case "xlsx":
 		err = l.lintXlsx()
@@ -120,7 +120,7 @@ func (l *LintStruct) Lint() error {
 func (l *LintStruct) lintFile(line int64, raw []string) error {
 
 	// test file exist
-	info, err := os.Stat(l.CommonConfig.File)
+	info, err := os.Stat(l.Config.File)
 	if err != nil {
 		return err
 	}
@@ -128,15 +128,15 @@ func (l *LintStruct) lintFile(line int64, raw []string) error {
 
 	// zero, empty
 	if l.Status.Size == 0 {
-		return fmt.Errorf("%s file size: 0", l.CommonConfig.File)
+		return fmt.Errorf("%s file size: 0", l.Config.File)
 	}
 
 	// check file size and suffix
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(l.Config.File), "."))
 	switch suffix {
 	case "xlsx":
-		if l.Status.Size > int64(l.CommonConfig.ExcelMaxFileSize) {
-			err = fmt.Errorf("%s file size: %d, too large", l.CommonConfig.File, l.Status.Size)
+		if l.Status.Size > int64(l.Config.ExcelMaxFileSize) {
+			err = fmt.Errorf("%s file size: %d, too large", l.Config.File, l.Status.Size)
 		}
 	case "csv", "txt", "tsv", "psv", "html", "json", "sql":
 	default:
@@ -202,7 +202,7 @@ func (l *LintStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !l.CommonConfig.Verbose {
+	if !l.Config.Verbose {
 		return err
 	}
 	println("")
@@ -238,7 +238,7 @@ func (l *LintStruct) lintCellCheckOptions(line int64, raw []string) (column int,
 // lintCellUndeclaredHeader ...
 func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column int, wrong bool) {
 	// fix for sql file
-	if line == 1 && !l.CommonConfig.NoHeader {
+	if line == 1 && !l.Config.NoHeader {
 		//raw = l.Status.Header
 		if len(l.Status.Header) == 0 {
 			return 0, true
@@ -250,7 +250,7 @@ func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column 
 			}
 
 			// check column name length
-			switch l.CommonConfig.Server {
+			switch l.Config.Server {
 			case "mysql":
 				if len(c) > 64 {
 					return k + 1, true
@@ -281,7 +281,7 @@ func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column 
 
 // lintCellUnMatchHeader ...
 func (l *LintStruct) lintCellUnMatchHeader(line int64, raw []string) (column int, wrong bool) {
-	if !l.CommonConfig.NoHeader {
+	if !l.Config.NoHeader {
 		return 0, len(raw) != len(l.Status.Header)
 	}
 	return 0, wrong

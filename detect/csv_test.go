@@ -26,9 +26,9 @@ func init() {
 	var err error
 	common.InitTestEnv()
 
-	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
+	common.TestConfig.Schema = common.TestPath + "/test/schema.txt"
 
-	detectTestStatus.Header, err = common.ParseSchema()
+	detectTestStatus.Header, err = common.TestConfig.ParseSchema()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -36,13 +36,13 @@ func init() {
 }
 
 func TestDetectCSV(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.csv"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
-	common.Cfg.Comma = ','
-	d, err := NewDetectStruct(common.Cfg)
+	common.TestConfig.File = common.TestPath + "/test/actor.csv"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
+	common.TestConfig.Comma = ','
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -53,5 +53,5 @@ func TestDetectCSV(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

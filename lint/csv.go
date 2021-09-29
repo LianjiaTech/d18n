@@ -51,16 +51,16 @@ func (l *LintStruct) closedQuoteLineBreak(data []byte) (int, error) {
 					case '"':
 						// ""
 						head++
-					case l.CommonConfig.Comma:
+					case l.Config.Comma:
 						// ",
 						closed = !closed
 					default:
 						head++
 						for ; head < tail; head++ {
-							if !unicode.IsSpace(rune(data[head])) && rune(data[head]) != l.CommonConfig.Comma {
+							if !unicode.IsSpace(rune(data[head])) && rune(data[head]) != l.Config.Comma {
 								return head, fmt.Errorf("column: %d, have quote error", head-1)
 							}
-							if rune(data[head]) == '\n' || rune(data[head]) == l.CommonConfig.Comma {
+							if rune(data[head]) == '\n' || rune(data[head]) == l.Config.Comma {
 								closed = !closed
 								break
 							}
@@ -105,7 +105,7 @@ func (l *LintStruct) csvReadLine(data []byte, atEOF bool) (advance int, token []
 // csvReadRow convert raw line into cells list, reuse csv Reader
 func (l *LintStruct) csvReadRow(line string) ([][]string, error) {
 	r := csv.NewReader(strings.NewReader(line))
-	r.Comma = l.CommonConfig.Comma
+	r.Comma = l.Config.Comma
 	return r.ReadAll()
 }
 
@@ -113,14 +113,14 @@ func (l *LintStruct) csvReadRow(line string) ([][]string, error) {
 func (l *LintStruct) lintCSV() error {
 	var err error
 	//var line int64
-	f, err := os.Open(l.CommonConfig.File)
+	f, err := os.Open(l.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, l.CommonConfig.MaxBufferSize)
+	s.Buffer([]byte{}, l.Config.MaxBufferSize)
 	s.Split(l.csvReadLine)
 
 	for s.Scan() {
@@ -144,7 +144,7 @@ func (l *LintStruct) lintCSV() error {
 
 		// cell validation
 		for _, row := range rows {
-			if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+			if l.Status.RowCount == 1 && !l.Config.NoHeader {
 				l.Status.Header = row
 			}
 			err = l.lintCell(l.Status.RowCount, row)
@@ -164,7 +164,7 @@ func (l *LintStruct) lintCSV() error {
 
 // lintCSVLineBreaks ...
 func (l *LintStruct) lintCSVLineBreaks(line int64, raw []string) (column int, wrong bool) {
-	lineBreakLen := len(l.CommonConfig.LineBreak)
+	lineBreakLen := len(l.Config.LineBreak)
 	if lineBreakLen == 0 {
 		return 0, wrong
 	}
@@ -172,7 +172,7 @@ func (l *LintStruct) lintCSVLineBreaks(line int64, raw []string) (column int, wr
 	for _, buf := range raw {
 		rawLen := len(buf)
 		if rawLen >= lineBreakLen &&
-			buf[rawLen-lineBreakLen:rawLen] != string(l.CommonConfig.LineBreak) {
+			buf[rawLen-lineBreakLen:rawLen] != string(l.Config.LineBreak) {
 			return rawLen - lineBreakLen, true
 		}
 	}
@@ -230,7 +230,7 @@ func (l *LintStruct) lintCSVWhitespace(line int64, raw []string) (column int, wr
 
 // lintCommentRows ...
 func (l *LintStruct) lintCSVCommentRows(line int64, raw []string) (column int, wrong bool) {
-	for _, commentChars := range l.CommonConfig.Comments {
+	for _, commentChars := range l.Config.Comments {
 		for _, buf := range raw {
 			commentLen := len(commentChars)
 			if len(buf) >= commentLen && commentLen > 0 &&

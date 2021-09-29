@@ -20,13 +20,13 @@ import (
 )
 
 func TestSaveRows2CSV(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2CSV.csv"
-	common.Cfg.Comma = ','
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2CSV.csv"
+	common.TestConfig.Comma = ','
 
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -35,5 +35,5 @@ func TestSaveRows2CSV(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

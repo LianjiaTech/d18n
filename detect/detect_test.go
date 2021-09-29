@@ -22,19 +22,19 @@ import (
 
 func TestParseSensitiveConfig(t *testing.T) {
 	// new test detect struct
-	d, err := NewDetectStruct(common.Cfg)
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 	d.parseConfig()
 
-	pretty.Println(d.SensitiveConfig["mac"])
+	pretty.Println(d.Sensitive["mac"])
 }
 
 func TestCheckHeader(t *testing.T) {
 
 	// new test detect struct
-	d, err := NewDetectStruct(common.Cfg)
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -82,7 +82,7 @@ func TestCheckHeader(t *testing.T) {
 }
 func TestCheckValue(t *testing.T) {
 	// new test detect struct
-	d, err := NewDetectStruct(common.Cfg)
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -113,12 +113,12 @@ func TestCheckValue(t *testing.T) {
 }
 
 func TestDetectQuery(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.Query = "select * from address limit 10"
-	common.Cfg.Database = "sakila"
+	common.TestConfig.Query = "select * from address limit 10"
+	common.TestConfig.Database = "sakila"
 
-	d, err := NewDetectStruct(common.Cfg)
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -128,11 +128,11 @@ func TestDetectQuery(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestDetectFile(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	files := []string{
 		"actor.csv",
 		"actor.xlsx",
@@ -144,12 +144,12 @@ func TestDetectFile(t *testing.T) {
 	}
 
 	for _, f := range files {
-		common.Cfg.File = common.TestPath + "/test/" + f
-		d, _ := NewDetectStruct(common.Cfg)
+		common.TestConfig.File = common.TestPath + "/test/" + f
+		d, _ := NewDetectStruct(common.TestConfig)
 		err := d.DetectFile()
 		if err != nil {
 			t.Error(f, err.Error())
 		}
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

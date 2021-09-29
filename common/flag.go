@@ -30,8 +30,9 @@ import (
 
 // https://darjun.github.io/2020/01/10/godailylib/go-flags/
 
-func ParseFlags() error {
+func ParseFlags() (Config, error) {
 	var err error
+	var c Config
 
 	type option struct {
 		Verbose bool         `short:"v" long:"verbose" required:"false" description:"verbose mode"`
@@ -108,7 +109,7 @@ func ParseFlags() error {
 
 	if len(os.Args) == 1 {
 		opt.Help()
-		return fmt.Errorf("")
+		return c, fmt.Errorf("")
 	}
 
 	if opt.MaxBufferSize == 0 {
@@ -122,33 +123,33 @@ func ParseFlags() error {
 	}
 
 	if opt.DefaultsExtraFile != "" {
-		err := parseDefaultsExtraFile(opt.DefaultsExtraFile)
+		err := parseDefaultsExtraFile(opt.DefaultsExtraFile, &c)
 		if err != nil {
-			return err
+			return c, err
 		}
 	}
 
-	if Cfg.User != "" {
-		opt.User = Cfg.User
+	if c.User != "" {
+		opt.User = c.User
 	}
-	if Cfg.Password != "" {
-		opt.Password = Cfg.Password
+	if c.Password != "" {
+		opt.Password = c.Password
 	}
-	if Cfg.Charset != "" {
-		opt.Charset = Cfg.Charset
+	if c.Charset != "" {
+		opt.Charset = c.Charset
 	}
-	if Cfg.Host != "" {
-		opt.Host = Cfg.Host
+	if c.Host != "" {
+		opt.Host = c.Host
 	}
-	if Cfg.Port != "" {
-		opt.Port, err = strconv.Atoi(Cfg.Port)
+	if c.Port != "" {
+		opt.Port, err = strconv.Atoi(c.Port)
 		if err != nil {
 			println(err.Error())
 			os.Exit(1)
 		}
 	}
-	if Cfg.Database != "" {
-		opt.Database = Cfg.Database
+	if c.Database != "" {
+		opt.Database = c.Database
 	}
 
 	if len(opt.Comma) > 1 || opt.Comma == "" {
@@ -164,7 +165,7 @@ func ParseFlags() error {
 		fmt.Print("Password:")
 		password, err := gopass.GetPasswd()
 		if err != nil {
-			return err
+			return c, err
 		}
 		opt.Password = strings.TrimSpace(string(password))
 	}
@@ -173,11 +174,11 @@ func ParseFlags() error {
 	if opt.InteractiveQuery {
 		// allow line separator, sql end with ';'
 		fmt.Println("Query (end with '; + <Enter>'):")
-		reader := bufio.NewReaderSize(os.Stdin, Cfg.MaxBufferSize)
+		reader := bufio.NewReaderSize(os.Stdin, c.MaxBufferSize)
 		for {
 			line, err := reader.ReadString('\n')
 			if err != nil {
-				return err
+				return c, err
 			}
 			opt.Query = opt.Query + line
 			line = strings.TrimSpace(line)
@@ -190,17 +191,17 @@ func ParseFlags() error {
 	// --query is empty and -table not empty generate full select query
 	if opt.Table != "" && opt.Query == "" {
 		if opt.Limit != 0 {
-			Cfg.Server = opt.Server
+			c.Server = opt.Server
 			switch strings.ToLower(opt.Server) {
 			case "oracle":
-				opt.Query = fmt.Sprintf("SELECT * FROM %s WHERE ROWNUM <= %d", QuoteKey(opt.Table), opt.Limit)
+				opt.Query = fmt.Sprintf("SELECT * FROM %s WHERE ROWNUM <= %d", c.QuoteKey(opt.Table), opt.Limit)
 			case "sqlserver":
-				opt.Query = fmt.Sprintf("SELECT TOP %d * FROM %s", opt.Limit, QuoteKey(opt.Table))
+				opt.Query = fmt.Sprintf("SELECT TOP %d * FROM %s", opt.Limit, c.QuoteKey(opt.Table))
 			default:
-				opt.Query = fmt.Sprintf("SELECT * FROM %s LIMIT %d", QuoteKey(opt.Table), opt.Limit)
+				opt.Query = fmt.Sprintf("SELECT * FROM %s LIMIT %d", c.QuoteKey(opt.Table), opt.Limit)
 			}
 		} else {
-			opt.Query = fmt.Sprintf("SELECT * FROM %s", QuoteKey(opt.Table))
+			opt.Query = fmt.Sprintf("SELECT * FROM %s", c.QuoteKey(opt.Table))
 		}
 	}
 
@@ -215,14 +216,14 @@ func ParseFlags() error {
 	// use abs path
 	pwd, err := os.Getwd()
 	if err != nil {
-		return err
+		return c, err
 	}
 	if !filepath.IsAbs(opt.File) &&
 		(opt.File != "" && opt.File != "stdout") {
 		opt.File = filepath.Join(pwd, opt.File)
 	}
 
-	Cfg = Config{
+	c = Config{
 		Server:   opt.Server,
 		User:     opt.User,
 		Password: opt.Password,
@@ -278,15 +279,15 @@ func ParseFlags() error {
 	}
 
 	// get table name from file prefix
-	if Cfg.Table == "" {
-		Cfg.Table = strings.Split(filepath.Base(Cfg.File), ".")[0]
+	if c.Table == "" {
+		c.Table = strings.Split(filepath.Base(c.File), ".")[0]
 	}
 
-	if Cfg.Server == "sqlite" &&
-		Cfg.Database == "" && Cfg.DSN == "" {
+	if c.Server == "sqlite" &&
+		c.Database == "" && c.DSN == "" {
 		println("sqlite should specified `--database DATA_FILE` arg")
 		os.Exit(1)
 	}
 
-	return err
+	return c, err
 }

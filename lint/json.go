@@ -36,7 +36,7 @@ func (l *LintStruct) jsonLintRow(iter *json.Iterator) bool {
 
 		l.Status.RowCount++
 		// add header
-		if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+		if l.Status.RowCount == 1 && !l.Config.NoHeader {
 			l.Status.Header = row
 		}
 
@@ -53,7 +53,7 @@ func (l *LintStruct) jsonLintRow(iter *json.Iterator) bool {
 
 // lintJSON lint JSON file
 func (l *LintStruct) lintJSON() error {
-	f, err := os.Open(l.CommonConfig.File)
+	f, err := os.Open(l.Config.File)
 	if err != nil {
 		return err
 	}

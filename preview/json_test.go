@@ -20,14 +20,14 @@ import (
 )
 
 func TestPreviewJSON(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2JSON.json"
-	common.Cfg.Preview = 10
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2JSON.json"
+	common.TestConfig.Preview = 10
 
-	p, _ := NewPreviewStruct(common.Cfg)
+	p, _ := NewPreviewStruct(common.TestConfig)
 	err := previewJSON(p)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

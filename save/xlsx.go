@@ -44,7 +44,7 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// set table header with column name
-	if !s.CommonConfig.NoHeader {
+	if !s.Config.NoHeader {
 		sheetHeader := sheet.AddRow()
 		sheetHeader.SetHeight(12.5) // https://github.com/tealeg/xlsx/issues/647
 		for _, header := range s.Status.Header {
@@ -68,12 +68,12 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 		if s.Status.Lines > ExcelMaxRows {
 			return fmt.Errorf("excel max rows(%d) exceeded", ExcelMaxRows)
 		}
-		if bufSize > s.CommonConfig.ExcelMaxFileSize {
-			return fmt.Errorf("excel max file size(%d) exceeded", s.CommonConfig.ExcelMaxFileSize)
+		if bufSize > s.Config.ExcelMaxFileSize {
+			return fmt.Errorf("excel max file size(%d) exceeded", s.Config.ExcelMaxFileSize)
 		}
 
 		// limit return rows
-		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
+		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
 			break
 		}
 
@@ -85,13 +85,13 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = s.CommonConfig.NULLString
+				values[j] = s.Config.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
 					values[j] = string(col.([]byte))
 				case []string:
-					values[j] = common.ParseArray(col.([]string))
+					values[j] = s.Config.ParseArray(col.([]string))
 				default:
 					values[j] = fmt.Sprint(col)
 				}
@@ -103,7 +103,7 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
+				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
 			}
 		}
 
@@ -125,13 +125,13 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// save to file
-	err = file.Save(s.CommonConfig.File)
+	err = file.Save(s.Config.File)
 	if err != nil {
 		return err
 	}
 
-	if s.CommonConfig.Watermark != "" {
-		err = common.SetXlsxWatermark(s.CommonConfig.File, s.CommonConfig.Watermark)
+	if s.Config.Watermark != "" {
+		err = common.SetXlsxWatermark(s.Config.File, s.Config.Watermark)
 	}
 
 	return err

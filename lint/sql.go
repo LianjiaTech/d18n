@@ -29,19 +29,19 @@ import (
 
 func (l *LintStruct) lintSQL() error {
 	var err error
-	f, err := os.Open(l.CommonConfig.File)
+	f, err := os.Open(l.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, l.CommonConfig.MaxBufferSize)
+	s.Buffer([]byte{}, l.Config.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	// new sql parser
 	p := parser.New()
-	if l.CommonConfig.ANSIQuotes {
+	if l.Config.ANSIQuotes {
 		mode, _ := mysql.GetSQLMode("ANSI_QUOTES")
 		p.SetSQLMode(mode)
 	}
@@ -62,16 +62,16 @@ func (l *LintStruct) lintSQL() error {
 			}
 
 			// get header, table name & columns list
-			if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+			if l.Status.RowCount == 1 && !l.Config.NoHeader {
 				for _, col := range stmtNode.Columns {
 					l.Status.Header = append(l.Status.Header, col.String())
 				}
 
-				if l.CommonConfig.Table == "" {
+				if l.Config.Table == "" {
 					switch node := stmtNode.Table.TableRefs.Left.(type) {
 					case *ast.TableSource:
 						if n, ok := node.Source.(*ast.TableName); ok {
-							l.CommonConfig.Table = n.Name.O
+							l.Config.Table = n.Name.O
 						}
 					}
 				}
@@ -83,7 +83,7 @@ func (l *LintStruct) lintSQL() error {
 				for _, cell := range r {
 					var buf bytes.Buffer
 					cell.Format(&buf)
-					if l.CommonConfig.ANSIQuotes && strings.HasPrefix(buf.String(), "`") {
+					if l.Config.ANSIQuotes && strings.HasPrefix(buf.String(), "`") {
 						return fmt.Errorf(common.WrongQuotesValue)
 					}
 					row = append(row, buf.String())

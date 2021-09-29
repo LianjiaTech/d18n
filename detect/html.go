@@ -25,13 +25,13 @@ import (
 func (d *DetectStruct) detectHTML() error {
 	var err error
 
-	fd, err := os.Open(d.CommonConfig.File)
+	fd, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	r := bufio.NewReaderSize(fd, d.CommonConfig.MaxBufferSize)
+	r := bufio.NewReaderSize(fd, d.Config.MaxBufferSize)
 	token := html.NewTokenizer(r)
 
 	var row []string
@@ -57,7 +57,7 @@ func (d *DetectStruct) detectHTML() error {
 			case "tr":
 				// check column names
 				if d.Status.Lines == 1 {
-					if !d.CommonConfig.NoHeader && d.CommonConfig.Schema == "" {
+					if !d.Config.NoHeader && d.Config.Schema == "" {
 						for _, r := range row {
 							d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 						}
@@ -67,7 +67,7 @@ func (d *DetectStruct) detectHTML() error {
 					// truncate row after new line
 					row = []string{}
 
-					if !d.CommonConfig.NoHeader {
+					if !d.Config.NoHeader {
 						continue
 					}
 				}
@@ -83,11 +83,11 @@ func (d *DetectStruct) detectHTML() error {
 		}
 
 		// SkipLines
-		if d.Status.Lines <= d.CommonConfig.SkipLines {
+		if d.Status.Lines <= d.Config.SkipLines {
 			continue
 		}
-		if d.CommonConfig.Limit > 0 &&
-			(d.Status.Lines-d.CommonConfig.SkipLines) > d.CommonConfig.Limit {
+		if d.Config.Limit > 0 &&
+			(d.Status.Lines-d.Config.SkipLines) > d.Config.Limit {
 			break
 		}
 

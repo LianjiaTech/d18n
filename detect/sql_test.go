@@ -20,14 +20,14 @@ import (
 )
 
 func TestDetectSQL(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.sql"
-	common.Cfg.ANSIQuotes = true
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
+	common.TestConfig.File = common.TestPath + "/test/actor.sql"
+	common.TestConfig.ANSIQuotes = true
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
 
-	d, err := NewDetectStruct(common.Cfg)
+	d, err := NewDetectStruct(common.TestConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -38,5 +38,5 @@ func TestDetectSQL(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

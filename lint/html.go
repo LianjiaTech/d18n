@@ -24,13 +24,13 @@ import (
 
 func (l *LintStruct) lintHTML() error {
 	var err error
-	fd, err := os.Open(l.CommonConfig.File)
+	fd, err := os.Open(l.Config.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	r := bufio.NewReaderSize(fd, l.CommonConfig.MaxBufferSize)
+	r := bufio.NewReaderSize(fd, l.Config.MaxBufferSize)
 	token := html.NewTokenizer(r)
 	// max depth is 2 in table tag
 	var depth int
@@ -60,7 +60,7 @@ func (l *LintStruct) lintHTML() error {
 				// <tr> 、<th> 、<td>  depth +1
 				if t == html.StartTagToken && (string(tag) == "tr" || string(tag) == "th" || string(tag) == "td") {
 					if string(tag) == "th" {
-						l.CommonConfig.NoHeader = false
+						l.Config.NoHeader = false
 					}
 					depth++
 				}
@@ -89,7 +89,7 @@ func (l *LintStruct) lintHTML() error {
 				}
 				if depth == 0 && string(tag) != "table" && t != html.TextToken {
 					l.Status.RowCount++
-					if l.Status.RowCount == 1 && !l.CommonConfig.NoHeader {
+					if l.Status.RowCount == 1 && !l.Config.NoHeader {
 						l.Status.Header = row
 					}
 					err = l.lintCell(l.Status.RowCount, row)

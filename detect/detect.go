@@ -41,14 +41,14 @@ type DetectStatus struct {
 }
 
 type DetectStruct struct {
-	CommonConfig    common.Config
-	SensitiveConfig Config
-	Status          DetectStatus
+	Config    common.Config
+	Sensitive sensitiveConfig
+	Status    DetectStatus
 }
 
 func NewDetectStruct(c common.Config) (*DetectStruct, error) {
 	var d = &DetectStruct{
-		CommonConfig: c,
+		Config: c,
 		Status: DetectStatus{
 			Columns: make(map[string][]string),
 		},
@@ -69,9 +69,9 @@ func (d *DetectStruct) Detect() error {
 
 	d.Status.Columns = make(map[string][]string)
 
-	switch d.CommonConfig.File {
+	switch d.Config.File {
 	case "stdout", "":
-		if d.CommonConfig.Query != "" {
+		if d.Config.Query != "" {
 			err = d.DetectQuery()
 		} else {
 			return fmt.Errorf("no data source or file to check")
@@ -89,7 +89,7 @@ func (d *DetectStruct) Detect() error {
 // DetectQuery check data from query result
 func (d *DetectStruct) DetectQuery() error {
 
-	rows, err := common.QueryRows()
+	rows, err := d.Config.QueryRows()
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (d *DetectStruct) DetectQuery() error {
 	if err != nil {
 		return err
 	}
-	d.Status.Header = common.DBParseColumnTypes(header)
+	d.Status.Header = d.Config.DBParseColumnTypes(header)
 
 	// check column names
 	d.checkHeader()
@@ -109,7 +109,7 @@ func (d *DetectStruct) DetectQuery() error {
 	for rows.Next() {
 		d.Status.Lines++
 		// limit return rows
-		if d.CommonConfig.Limit != 0 && d.Status.Lines > d.CommonConfig.Limit {
+		if d.Config.Limit != 0 && d.Status.Lines > d.Config.Limit {
 			break
 		}
 
@@ -142,27 +142,27 @@ func (d *DetectStruct) DetectFile() error {
 	var err error
 
 	// get column header
-	if d.CommonConfig.Schema != "" {
-		d.Status.Header, err = common.TableTemplate()
+	if d.Config.Schema != "" {
+		d.Status.Header, err = d.Config.TableTemplate()
 		if err != nil {
 			return err
 		}
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(d.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(d.Config.File), "."))
 	switch suffix {
 	case "tsv": // tab-separated values
-		d.CommonConfig.Comma = '\t'
+		d.Config.Comma = '\t'
 		err = d.detectCSV()
 	case "txt": // space-separated values
-		d.CommonConfig.Comma = ' '
+		d.Config.Comma = ' '
 		err = d.detectCSV()
 	case "psv": // pipe-separated values
-		d.CommonConfig.Comma = '|'
+		d.Config.Comma = '|'
 		err = d.detectCSV()
 	case "csv": // comma-separated values
-		d.CommonConfig.Comma = ','
+		d.Config.Comma = ','
 		err = d.detectCSV()
 	case "xlsx": // microsoft office excel
 		err = d.detectXlsx()
@@ -186,7 +186,7 @@ func (d *DetectStruct) checkHeader() {
 		var types []string
 
 		// sensitive key word check
-		for t, rule := range d.SensitiveConfig {
+		for t, rule := range d.Sensitive {
 			for _, k := range rule.Key {
 				r := regexp.MustCompile(k)
 				if r.MatchString(key) {
@@ -210,7 +210,7 @@ func (d *DetectStruct) checkValue(value string) []string {
 	}
 
 	// regexp
-	for t, rule := range d.SensitiveConfig {
+	for t, rule := range d.Sensitive {
 		for _, k := range rule.Value {
 			r := regexp.MustCompile(k)
 			if r.MatchString(value) {
@@ -241,7 +241,7 @@ func (d *DetectStruct) ShowStatus() error {
 	fmt.Println(string(s))
 
 	// verbose mode
-	if !d.CommonConfig.Verbose {
+	if !d.Config.Verbose {
 		return nil
 	}
 
