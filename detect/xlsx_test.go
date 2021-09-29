@@ -17,8 +17,6 @@ import (
 	"testing"
 
 	"d18n/common"
-
-	"github.com/kr/pretty"
 )
 
 func TestEmportXLSX(t *testing.T) {
@@ -28,13 +26,16 @@ func TestEmportXLSX(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	d, _ := NewDetectStruct(common.Cfg)
-	d.Status = detectStatus
-	err := d.detectXlsx()
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectXlsx()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(detectStatus)
 
 	common.Cfg = orgCfg
 }

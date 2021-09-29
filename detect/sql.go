@@ -72,7 +72,7 @@ func (d *DetectStruct) detectSQL() error {
 						d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: col.String()})
 					}
 				}
-				checkFileHeader(d.Status, d.Status.Header)
+				d.checkHeader()
 			}
 
 			// check value
@@ -85,7 +85,7 @@ func (d *DetectStruct) detectSQL() error {
 				}
 
 				for j, value := range row {
-					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], checkValue(value)...)
+					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 				}
 			}
 		default:

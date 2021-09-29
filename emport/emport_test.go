@@ -83,7 +83,7 @@ func TestCheckStatus(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	err = e.CheckStatus()
+	err = e.ShowStatus()
 	if err != nil {
 		t.Error(err.Error())
 	}

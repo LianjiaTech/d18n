@@ -20,19 +20,30 @@ import (
 	"github.com/kr/pretty"
 )
 
-func init() {
-	ParseSensitiveConfig("")
-}
-
 func TestParseSensitiveConfig(t *testing.T) {
-	_, err := NewDetectStruct(common.Cfg)
+	// new test detect struct
+	d, err := NewDetectStruct(common.Cfg)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(sensitiveConfig["mac"])
+	d.parseConfig()
+
+	pretty.Println(d.SensitiveConfig["mac"])
 }
 
-func TestCheckFileHeader(t *testing.T) {
+func TestCheckHeader(t *testing.T) {
+
+	// new test detect struct
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.parseConfig()
+
+	// only detect header, reset all columns info
+	d.Status.Columns = make(map[string][]string)
+
+	// cases
 	var cases = []string{
 		"name",
 		"birthday",
@@ -60,16 +71,24 @@ func TestCheckFileHeader(t *testing.T) {
 	for _, v := range cases {
 		headers = append(headers, common.HeaderColumn{Name: v})
 	}
-	// only detect header
-	detectStatus.Columns = make(map[string][]string)
-	checkFileHeader(detectStatus, headers)
-	for k, v := range detectStatus.Columns {
+	d.Status.Header = headers
+
+	d.checkHeader()
+	for k, v := range d.Status.Columns {
 		if len(v) > 1 || len(v) == 0 {
 			t.Error("get wrong types return", k, v)
 		}
 	}
 }
 func TestCheckValue(t *testing.T) {
+	// new test detect struct
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.parseConfig()
+
+	// cases
 	var cases = []map[string][]string{
 		{
 			"phone":   []string{"13123385678"},
@@ -80,7 +99,7 @@ func TestCheckValue(t *testing.T) {
 	for _, c := range cases {
 		for k := range c {
 			for _, v := range c[k] {
-				types := checkValue(v)
+				types := d.checkValue(v)
 				if len(types) == 0 {
 					t.Error("get wrong types return", v, types)
 					return
@@ -93,7 +112,26 @@ func TestCheckValue(t *testing.T) {
 	}
 }
 
-func TestDetectFromFile(t *testing.T) {
+func TestDetectQuery(t *testing.T) {
+	orgCfg := common.Cfg
+
+	common.Cfg.Query = "select * from address limit 10"
+	common.Cfg.Database = "sakila"
+
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = d.DetectQuery()
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	common.Cfg = orgCfg
+}
+
+func TestDetectFile(t *testing.T) {
 	orgCfg := common.Cfg
 	files := []string{
 		"actor.csv",

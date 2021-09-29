@@ -17,8 +17,6 @@ import (
 	"testing"
 
 	"d18n/common"
-
-	"github.com/kr/pretty"
 )
 
 func TestEmportJSON(t *testing.T) {
@@ -28,14 +26,16 @@ func TestEmportJSON(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	d, _ := NewDetectStruct(common.Cfg)
-	d.Status = detectStatus
-	err := d.detectJSON()
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectJSON()
 	if err != nil {
 		t.Error(err.Error())
 	}
-
-	pretty.Println(detectStatus)
 
 	common.Cfg = orgCfg
 

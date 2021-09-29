@@ -94,16 +94,16 @@ func saveRows() error {
 	// query and save result
 	common.PanicIfError(s.Save())
 
-	// check save status
-	return s.CheckStatus()
+	// show save status
+	return s.ShowStatus()
 }
 
 func lintFile() error {
 	// check file format
 	common.PanicIfError(lint.Lint())
 
-	// check lint status
-	return lint.CheckStatus()
+	// show lint status
+	return lint.ShowStatus()
 }
 
 func emportFile() error {
@@ -114,8 +114,8 @@ func emportFile() error {
 	// import file into database
 	common.PanicIfError(e.Emport())
 
-	// check emport status
-	return e.CheckStatus()
+	// show emport status
+	return e.ShowStatus()
 }
 
 func detectRows() error {
@@ -123,14 +123,10 @@ func detectRows() error {
 	if err != nil {
 		return err
 	}
-	//err = detect.ParseSensitiveConfig(common.Cfg.Sensitive)
-	//if err != nil {
-	//	return err
-	//}
 
 	// detect sensitive data
 	common.PanicIfError(d.Detect())
 
-	// check detect status
-	return d.CheckStatus()
+	// show detect status
+	return d.ShowStatus()
 }

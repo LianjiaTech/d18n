@@ -61,7 +61,7 @@ func TestCheckStatus(t *testing.T) {
 	}
 
 	common.Cfg.Verbose = true
-	err := s.CheckStatus()
+	err := s.ShowStatus()
 	if err != nil {
 		t.Error(err.Error())
 	}

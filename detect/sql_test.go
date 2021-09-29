@@ -17,8 +17,6 @@ import (
 	"testing"
 
 	"d18n/common"
-
-	"github.com/kr/pretty"
 )
 
 func TestDetectSQL(t *testing.T) {
@@ -29,13 +27,16 @@ func TestDetectSQL(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	d, _ := NewDetectStruct(common.Cfg)
-	d.Status = detectStatus
-	err := d.detectSQL()
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectSQL()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(detectStatus)
 
 	common.Cfg = orgCfg
 }

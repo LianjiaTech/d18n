@@ -26,7 +26,7 @@ func TestEmportHTML(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 	d, _ := NewDetectStruct(common.Cfg)
-	d.Status = detectStatus
+	d.Status = detectTestStatus
 	err := d.detectHTML()
 	if err != nil {
 		t.Error(err.Error())

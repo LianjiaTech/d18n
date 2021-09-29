@@ -172,8 +172,8 @@ func lintCell(line int64, raw []string) error {
 	return nil
 }
 
-// CheckStatus check lint status
-func CheckStatus() error {
+// ShowStatus check lint status
+func ShowStatus() error {
 	var err error
 
 	if len(lintStatus.Lint) == 0 {

@@ -69,7 +69,7 @@ func (d *DetectStruct) jsonDetectRow(iterator *json.Iterator) bool {
 					d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 				}
 			}
-			checkFileHeader(d.Status, d.Status.Header)
+			d.checkHeader()
 			if !d.CommonConfig.NoHeader {
 				return true
 			}
@@ -86,7 +86,7 @@ func (d *DetectStruct) jsonDetectRow(iterator *json.Iterator) bool {
 
 		// check value
 		for j, value := range row {
-			d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], checkValue(value)...)
+			d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 		}
 	}
 	return true

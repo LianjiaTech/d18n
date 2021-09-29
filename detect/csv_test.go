@@ -19,7 +19,8 @@ import (
 	"d18n/common"
 )
 
-var detectStatus DetectStatus
+// test detect status for Header， Columns init
+var detectTestStatus DetectStatus
 
 func init() {
 	var err error
@@ -27,13 +28,11 @@ func init() {
 
 	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
 
-	detectStatus.Header, err = common.ParseSchema()
+	detectTestStatus.Header, err = common.ParseSchema()
 	if err != nil {
 		panic(err.Error())
 	}
-
-	detectStatus.Columns = make(map[string][]string, len(detectStatus.Header))
-
+	detectTestStatus.Columns = make(map[string][]string, len(detectTestStatus.Header))
 }
 
 func TestDetectCSV(t *testing.T) {
@@ -43,14 +42,16 @@ func TestDetectCSV(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 	common.Cfg.Comma = ','
-	d, _ := NewDetectStruct(common.Cfg)
-	d.Status = detectStatus
+	d, err := NewDetectStruct(common.Cfg)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
 
-	err := d.detectCSV()
+	err = d.detectCSV()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
 	common.Cfg = orgCfg
-
 }

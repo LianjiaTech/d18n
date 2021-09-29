@@ -62,7 +62,7 @@ func (d *DetectStruct) detectHTML() error {
 							d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 						}
 					}
-					checkFileHeader(d.Status, d.Status.Header)
+					d.checkHeader()
 
 					// truncate row after new line
 					row = []string{}
@@ -74,7 +74,7 @@ func (d *DetectStruct) detectHTML() error {
 
 				// check value
 				for j, value := range row {
-					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], checkValue(value)...)
+					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 				}
 
 				// truncate row after new line

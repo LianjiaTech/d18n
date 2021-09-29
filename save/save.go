@@ -126,8 +126,8 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	return err
 }
 
-// CheckStatus check SaveRows status at last
-func (s *SaveStruct) CheckStatus() error {
+// ShowStatus check SaveRows status at last
+func (s *SaveStruct) ShowStatus() error {
 	var err error
 
 	// like QueryRow, should get result, but return empty set raise error

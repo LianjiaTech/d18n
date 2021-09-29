@@ -152,7 +152,7 @@ func executeSQL(sql string, conn *sql.DB) error {
 	return err
 }
 
-func (e *EmportStruct) CheckStatus() error {
+func (e *EmportStruct) ShowStatus() error {
 	var err error
 
 	if e.CommonConfig.SkipLines > 0 {
