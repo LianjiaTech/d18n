@@ -16,7 +16,7 @@ package preview
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestPreviewHTML(t *testing.T) {

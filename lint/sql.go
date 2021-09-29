@@ -16,10 +16,11 @@ package lint
 import (
 	"bufio"
 	"bytes"
-	"d18n/common"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"

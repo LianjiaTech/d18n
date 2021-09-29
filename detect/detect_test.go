@@ -14,8 +14,9 @@
 package detect
 
 import (
-	"d18n/common"
 	"testing"
+
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/kr/pretty"
 )

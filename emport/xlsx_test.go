@@ -18,7 +18,7 @@ import (
 
 	"github.com/kr/pretty"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportXLSX(t *testing.T) {

@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // emportSQL import sql file into database

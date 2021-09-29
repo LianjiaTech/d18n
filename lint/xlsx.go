@@ -16,7 +16,7 @@ package lint
 import (
 	"fmt"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	xlsx "github.com/360EntSecGroup-Skylar/excelize/v2"
 )

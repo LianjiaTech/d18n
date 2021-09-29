@@ -17,7 +17,7 @@ import (
 	"embed"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/go-ego/gse"
 )

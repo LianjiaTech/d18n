@@ -16,7 +16,7 @@ package emport
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportHTML(t *testing.T) {

@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/google/differential-privacy/go/noise"
 )

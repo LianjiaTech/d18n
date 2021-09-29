@@ -16,7 +16,7 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportXLSX(t *testing.T) {

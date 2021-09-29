@@ -26,7 +26,7 @@ import (
 	"strings"
 	"unicode"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 type mangleCorpus [255][]string

@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // LintStatus returns information about an  record check result

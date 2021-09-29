@@ -17,7 +17,7 @@ import (
 	"bufio"
 	"os"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"golang.org/x/net/html"
 )

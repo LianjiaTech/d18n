@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // saveRows2CSV save rows result into csv format file

@@ -14,13 +14,13 @@
 package main
 
 import (
-	"d18n/common"
-	"d18n/detect"
-	"d18n/emport"
-	"d18n/lint"
-	"d18n/mask"
-	"d18n/preview"
-	"d18n/save"
+	"github.com/LianjiaTech/d18n/common"
+	"github.com/LianjiaTech/d18n/detect"
+	"github.com/LianjiaTech/d18n/emport"
+	"github.com/LianjiaTech/d18n/lint"
+	"github.com/LianjiaTech/d18n/mask"
+	"github.com/LianjiaTech/d18n/preview"
+	"github.com/LianjiaTech/d18n/save"
 )
 
 var c common.Config

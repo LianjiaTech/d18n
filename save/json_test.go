@@ -16,7 +16,7 @@ package save
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestSaveRows2JSON(t *testing.T) {

@@ -22,7 +22,7 @@ import (
 	"strings"
 	"time"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // BasicDetect basic sensitive data detection regexp check rules

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"os"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	json "github.com/json-iterator/go"
 )

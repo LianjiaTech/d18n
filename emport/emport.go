@@ -20,8 +20,8 @@ import (
 	"strings"
 	"time"
 
-	"d18n/common"
-	"d18n/mask"
+	"github.com/LianjiaTech/d18n/common"
+	"github.com/LianjiaTech/d18n/mask"
 )
 
 type emportStatus struct {

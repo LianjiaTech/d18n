@@ -17,7 +17,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/tealeg/xlsx/v3"
 )

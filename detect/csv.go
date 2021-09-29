@@ -18,7 +18,7 @@ import (
 	"io"
 	"os"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func (d *DetectStruct) detectCSV() error {

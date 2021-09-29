@@ -14,9 +14,10 @@
 package mask
 
 import (
-	"d18n/common"
 	"fmt"
 	"testing"
+
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestFakeName(t *testing.T) {

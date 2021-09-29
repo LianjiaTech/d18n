@@ -23,7 +23,7 @@ For more details and latest updates, see [doc](./doc/toc.md) and [release](https
 d18n develop with [Golang](https://golang.org/) 1.16+, please install first.
 
 ```bash
-git clone github.com/LianjiaTech/d18n
+git clone https://github.com/LianjiaTech/d18n
 cd d18n
 
 # Mac or Linux
