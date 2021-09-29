@@ -26,6 +26,11 @@ type DetectStruct struct {
 
 func NewDetectStruct(c common.Config) (*DetectStruct, error) {
 	var d *DetectStruct
+	err := ParseSensitiveConfig(common.Cfg.Sensitive)
+	if err != nil {
+		return d, err
+	}
+
 	d = &DetectStruct{
 		CommonConfig: c,
 		Status: DetectStatus{
@@ -88,7 +93,7 @@ func (d *DetectStruct) DetectQuery() error {
 
 func checkQueryHeader(d *DetectStruct) {
 
-	detectStatus.Columns = make(map[string][]string, len(d.Status.Header))
+	d.Status.Columns = make(map[string][]string, len(d.Status.Header))
 
 	for _, h := range d.Status.Header {
 		key := h.Name

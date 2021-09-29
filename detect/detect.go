@@ -52,11 +52,9 @@ type DetectStatus struct {
 	TimeCost      int64                 // time cost
 }
 
-var detectStatus DetectStatus
-
-func ParseSensitiveConfig() error {
+func ParseSensitiveConfig(file string) error {
 	// load sensitive config
-	buf, err := ioutil.ReadFile(common.Cfg.Sensitive)
+	buf, err := ioutil.ReadFile(file)
 	if err == nil {
 		defaultSensitiveConfig = buf
 	}
@@ -86,77 +84,76 @@ func ParseSensitiveConfig() error {
 }
 
 // Detect sensitive data detection
-func Detect() error {
+func (d *DetectStruct) Detect() error {
 	var err error
 	detectStartTime := time.Now().UnixNano()
 
-	detectStatus.Columns = make(map[string][]string)
+	d.Status.Columns = make(map[string][]string)
 
-	switch common.Cfg.File {
+	switch d.CommonConfig.File {
 	case "stdout", "":
-		if common.Cfg.Query != "" {
-			d, err := NewDetectStruct(common.Cfg)
-			if err != nil {
-				return err
-			}
+		if d.CommonConfig.Query != "" {
+			//d, err := NewDetectStruct(d.CommonConfig)
+			//if err != nil {
+			//	return err
+			//}
 			err = d.DetectQuery()
-			detectStatus = d.Status
+			//d.Status = d.Status
 		} else {
 			return fmt.Errorf("no data source or file to check")
 		}
 	default:
-		err = DetectFile()
+		err = d.DetectFile()
 	}
 
 	detectEndTime := time.Now().UnixNano()
-	detectStatus.TimeCost = detectEndTime - detectStartTime
+	d.Status.TimeCost = detectEndTime - detectStartTime
 
 	return err
 }
 
 // DetectFile check data from file
-func DetectFile() error {
+func (d *DetectStruct) DetectFile() error {
 	var err error
 
 	// get column header
-	if common.Cfg.Schema != "" {
-		detectStatus.Header, err = common.TableTemplate()
+	if d.CommonConfig.Schema != "" {
+		d.Status.Header, err = common.TableTemplate()
 		if err != nil {
 			return err
 		}
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(d.CommonConfig.File), "."))
 	switch suffix {
 	case "tsv": // tab-separated values
-		common.Cfg.Comma = '\t'
-		err = detectCSV()
+		d.CommonConfig.Comma = '\t'
+		err = d.detectCSV()
 	case "txt": // space-separated values
-		common.Cfg.Comma = ' '
-		err = detectCSV()
+		d.CommonConfig.Comma = ' '
+		err = d.detectCSV()
 	case "psv": // pipe-separated values
-		common.Cfg.Comma = '|'
-		err = detectCSV()
+		d.CommonConfig.Comma = '|'
+		err = d.detectCSV()
 	case "csv": // comma-separated values
-		common.Cfg.Comma = ','
-		err = detectCSV()
+		d.CommonConfig.Comma = ','
+		err = d.detectCSV()
 	case "xlsx": // microsoft office excel
-		err = detectXlsx()
+		err = d.detectXlsx()
 	case "html": // html format
-		err = detectHTML()
+		err = d.detectHTML()
 	case "sql": // sql file
-		err = detectSQL()
+		err = d.detectSQL()
 	case "json": // json file
-		err = detectJSON()
+		err = d.detectJSON()
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
 	return err
 }
 
-func checkFileHeader(header []common.HeaderColumn) {
-
+func checkFileHeader(detectStatus DetectStatus, header []common.HeaderColumn) {
 	detectStatus.Columns = make(map[string][]string, len(header))
 
 	for _, h := range header {
@@ -207,24 +204,24 @@ func checkValue(value string) []string {
 }
 
 // CheckStatus print detect status
-func CheckStatus() error {
-	for k, v := range detectStatus.Columns {
-		detectStatus.Columns[k] = common.StringUnique(v)
+func (d *DetectStruct) CheckStatus() error {
+	for k, v := range d.Status.Columns {
+		d.Status.Columns[k] = common.StringUnique(v)
 	}
 
-	s, err := json.MarshalIndent(detectStatus.Columns, "", "  ")
+	s, err := json.MarshalIndent(d.Status.Columns, "", "  ")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(s))
 
 	// verbose mode
-	if !common.Cfg.Verbose {
+	if !d.CommonConfig.Verbose {
 		return nil
 	}
 
 	println(
-		"Detect Rows:", detectStatus.Lines, "Total Cost:", fmt.Sprint(time.Duration(detectStatus.TimeCost)*time.Nanosecond),
+		"Detect Rows:", d.Status.Lines, "Total Cost:", fmt.Sprint(time.Duration(d.Status.TimeCost)*time.Nanosecond),
 	)
 	return nil
 }

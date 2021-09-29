@@ -28,7 +28,9 @@ func TestEmportXLSX(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	err := detectXlsx()
+	d, _ := NewDetectStruct(common.Cfg)
+	d.Status = detectStatus
+	err := d.detectXlsx()
 	if err != nil {
 		t.Error(err.Error())
 	}

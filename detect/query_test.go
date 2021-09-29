@@ -28,6 +28,7 @@ func TestDetectQuery(t *testing.T) {
 	common.Cfg.Database = "sakila"
 
 	d, _ := NewDetectStruct(common.Cfg)
+	d.Status = detectStatus
 	err := d.DetectQuery()
 	if err != nil {
 		t.Error(err.Error())

@@ -21,18 +21,18 @@ import (
 )
 
 func init() {
-	ParseSensitiveConfig()
+	ParseSensitiveConfig("")
 }
 
 func TestParseSensitiveConfig(t *testing.T) {
-	err := ParseSensitiveConfig()
+	_, err := NewDetectStruct(common.Cfg)
 	if err != nil {
-		t.Error(err.Error())
+		t.Errorf(err.Error())
 	}
 	pretty.Println(sensitiveConfig["mac"])
 }
 
-func TestcheckFileHeader(t *testing.T) {
+func TestCheckFileHeader(t *testing.T) {
 	var cases = []string{
 		"name",
 		"birthday",
@@ -60,7 +60,9 @@ func TestcheckFileHeader(t *testing.T) {
 	for _, v := range cases {
 		headers = append(headers, common.HeaderColumn{Name: v})
 	}
-	checkFileHeader(headers)
+	// only detect header
+	detectStatus.Columns = make(map[string][]string)
+	checkFileHeader(detectStatus, headers)
 	for k, v := range detectStatus.Columns {
 		if len(v) > 1 || len(v) == 0 {
 			t.Error("get wrong types return", k, v)
@@ -105,7 +107,8 @@ func TestDetectFromFile(t *testing.T) {
 
 	for _, f := range files {
 		common.Cfg.File = common.TestPath + "/test/" + f
-		err := DetectFile()
+		d, _ := NewDetectStruct(common.Cfg)
+		err := d.DetectFile()
 		if err != nil {
 			t.Error(f, err.Error())
 		}

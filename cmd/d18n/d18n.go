@@ -119,13 +119,18 @@ func emportFile() error {
 }
 
 func detectRows() error {
-	err := detect.ParseSensitiveConfig()
+	d, err := detect.NewDetectStruct(common.Cfg)
 	if err != nil {
 		return err
 	}
+	//err = detect.ParseSensitiveConfig(common.Cfg.Sensitive)
+	//if err != nil {
+	//	return err
+	//}
 
-	common.PanicIfError(detect.Detect())
+	// detect sensitive data
+	common.PanicIfError(d.Detect())
 
 	// check detect status
-	return detect.CheckStatus()
+	return d.CheckStatus()
 }

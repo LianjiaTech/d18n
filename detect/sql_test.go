@@ -29,7 +29,9 @@ func TestDetectSQL(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	err := detectSQL()
+	d, _ := NewDetectStruct(common.Cfg)
+	d.Status = detectStatus
+	err := d.detectSQL()
 	if err != nil {
 		t.Error(err.Error())
 	}

@@ -28,7 +28,9 @@ func TestEmportJSON(t *testing.T) {
 	common.Cfg.User = ""
 	common.Cfg.Limit = 10
 
-	err := detectJSON()
+	d, _ := NewDetectStruct(common.Cfg)
+	d.Status = detectStatus
+	err := d.detectJSON()
 	if err != nil {
 		t.Error(err.Error())
 	}
