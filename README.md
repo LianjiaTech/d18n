@@ -2,7 +2,7 @@
 
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 
-![logo](./logo_64x64.png)
+![logo](./doc/images/logo_64x64.png)
 
 `d18n` is a [numeronym](https://en.wikipedia.org/wiki/Numeronym) short for "data-desensitization", sounds like "d-eighteen-n".
 
