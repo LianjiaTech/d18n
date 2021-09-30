@@ -16,31 +16,31 @@ package lint
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/kr/pretty"
 )
 
 func TestLintSQLByPingcap(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.ANSIQuotes = false
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestSQLLint.right.sql"
-	err := lintSQL()
+	orgCfg := common.TestConfig
+	common.TestConfig.ANSIQuotes = false
+	common.TestConfig.File = common.TestPath + "/test/TestSQLLint.right.sql"
+	l, _ := NewLintStruct(common.TestConfig)
+	err := l.lintSQL()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestSQLLint.wrong.sql"
-	err = lintSQL()
+	common.TestConfig.File = common.TestPath + "/test/TestSQLLint.wrong.sql"
+	l, _ = NewLintStruct(common.TestConfig)
+	err = l.lintSQL()
 	if err == nil {
 		t.Errorf("here should report an error")
 	} else {
 		pretty.Println(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

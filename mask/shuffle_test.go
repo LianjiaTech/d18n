@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 var shuffleTestCases = []interface{}{
@@ -31,7 +31,7 @@ var shuffleTestCases = []interface{}{
 }
 
 func ExampleShuffle() {
-	InitShuffle(common.Cfg.RandSeed)
+	InitShuffle(common.TestConfig.RandSeed)
 	for _, c := range shuffleTestCases {
 		r, err := Shuffle(c)
 		fmt.Println(r, err)

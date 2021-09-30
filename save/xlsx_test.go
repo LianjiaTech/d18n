@@ -16,15 +16,15 @@ package save
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestSaveRows2ELSX(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2ELSX.xlsx"
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2ELSX.xlsx"
 
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -33,5 +33,5 @@ func TestSaveRows2ELSX(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

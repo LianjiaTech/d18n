@@ -14,9 +14,10 @@
 package mask
 
 import (
-	"d18n/common"
 	"fmt"
 	"testing"
+
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestFakeName(t *testing.T) {
@@ -131,7 +132,7 @@ func Example_fakePassword() {
 	var fakeData string
 	var err error
 
-	InitFaker(common.Cfg.RandSeed)
+	InitFaker(common.TestConfig.RandSeed)
 	// default policy and length
 	fakeData, err = Fake("password")
 	fmt.Println(fakeData, err)

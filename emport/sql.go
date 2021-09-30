@@ -20,20 +20,20 @@ import (
 	"os"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // emportSQL import sql file into database
 func emportSQL(e *EmportStruct, conn *sql.DB) error {
 	var err error
-	f, err := os.Open(e.CommonConfig.File)
+	f, err := os.Open(e.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, e.CommonConfig.MaxBufferSize)
+	s.Buffer([]byte{}, e.Config.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	var sqlCounter int
@@ -44,22 +44,22 @@ func emportSQL(e *EmportStruct, conn *sql.DB) error {
 		sqlString := strings.TrimSpace(s.Text())
 
 		// SkipLines
-		if e.Status.Lines <= e.CommonConfig.SkipLines {
+		if e.Status.Lines <= e.Config.SkipLines {
 			continue
 		}
-		if e.CommonConfig.Limit > 0 &&
-			(e.Status.Lines-e.CommonConfig.SkipLines) > e.CommonConfig.Limit {
+		if e.Config.Limit > 0 &&
+			(e.Status.Lines-e.Config.SkipLines) > e.Config.Limit {
 			break
 		}
 
 		// ignore blank lines
-		if e.CommonConfig.IgnoreBlank && strings.TrimSpace(sqlString) == "" {
+		if e.Config.IgnoreBlank && strings.TrimSpace(sqlString) == "" {
 			continue
 		}
 
 		// execute SQL
 		sqlCounter++
-		err = executeSQL(sqlString, conn)
+		err = e.executeSQL(sqlString, conn)
 		if err != nil {
 			return err
 		}

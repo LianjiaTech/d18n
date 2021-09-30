@@ -16,11 +16,11 @@ package save
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestSave(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	// check all format file
 	files := []string{
 		"",
@@ -33,13 +33,13 @@ func TestSave(t *testing.T) {
 		// common.TestPath + "/test/TestSaveRows.json",
 		// common.TestPath + "/test/TestSaveRows.xlsx",
 	}
-	common.Cfg.Table = "TestSaveRows"
+	common.TestConfig.Table = "TestSaveRows"
 
 	for _, file := range files {
-		common.Cfg.File = file
+		common.TestConfig.File = file
 
 		// new save struct
-		s, err := NewSaveStruct(common.Cfg)
+		s, err := NewSaveStruct(common.TestConfig)
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -48,11 +48,11 @@ func TestSave(t *testing.T) {
 			t.Error(err.Error())
 		}
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestCheckStatus(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	s := &SaveStruct{
 		Status: saveStatus{
 			Lines:    100,
@@ -60,10 +60,10 @@ func TestCheckStatus(t *testing.T) {
 		},
 	}
 
-	common.Cfg.Verbose = true
-	err := s.CheckStatus()
+	common.TestConfig.Verbose = true
+	err := s.ShowStatus()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

@@ -18,7 +18,7 @@ phone: # classify name
 ## select sensitive data detect
 
 ```bash
-~ $ d18n --defaults-extra-file test/my.cnf --database sakila --table 'select * from address limit 10' -detect
+~ $ d18n --defaults-extra-file test/my.cnf --database sakila --query 'select * from address limit 10' -detect
 {
   "address": [
     "address"

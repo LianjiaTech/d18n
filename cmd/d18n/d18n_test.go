@@ -17,7 +17,7 @@ import (
 	"os"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func init() {
@@ -25,20 +25,20 @@ func init() {
 }
 
 func TestMainSave(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--defaults-extra-file", common.TestPath + "/test/my.cnf",
-		"--query", common.Cfg.Query,
+		"--query", common.TestConfig.Query,
 	}
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestMainEmport(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--file", common.TestPath + "/test/actor.csv", "--import",
@@ -52,11 +52,11 @@ func TestMainEmport(t *testing.T) {
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func Example_lint() {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--file", common.TestPath + "/test/actor.csv", "--lint",
@@ -64,25 +64,26 @@ func Example_lint() {
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 	// Output:
 	// ok
 }
 
 func TestMainDetect(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
+		"--defaults-extra-file", common.TestPath + "/test/my.cnf",
 		"--query", `select * from sakila.actor limit 10`, "--detect",
 	}
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestMainPrintConfig(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--print-config",
@@ -90,11 +91,11 @@ func TestMainPrintConfig(t *testing.T) {
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestMainPrintCipher(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--print-cipher",
@@ -102,11 +103,11 @@ func TestMainPrintCipher(t *testing.T) {
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func Example_preview() {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	orgArgs := os.Args
 	args := []string{
 		"--preview", "2",
@@ -115,7 +116,7 @@ func Example_preview() {
 	os.Args = append(os.Args[:1], args...)
 	main()
 	os.Args = orgArgs
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 	// Output:
 	// actor_id,first_name,last_name,last_update
 	// 1,PENELOPE,GUINESS,2006-02-15 04:34:33

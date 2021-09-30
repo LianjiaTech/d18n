@@ -24,7 +24,7 @@ import (
 	"hash/crc32"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // this file if for decryptable function

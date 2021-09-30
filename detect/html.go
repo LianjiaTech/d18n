@@ -17,21 +17,21 @@ import (
 	"bufio"
 	"os"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"golang.org/x/net/html"
 )
 
-func detectHTML() error {
+func (d *DetectStruct) detectHTML() error {
 	var err error
 
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
 	defer fd.Close()
 
-	r := bufio.NewReaderSize(fd, common.Cfg.MaxBufferSize)
+	r := bufio.NewReaderSize(fd, d.Config.MaxBufferSize)
 	token := html.NewTokenizer(r)
 
 	var row []string
@@ -50,31 +50,31 @@ func detectHTML() error {
 				token.Next()
 				row = append(row, html.UnescapeString(string(token.Raw())))
 			case "tr":
-				detectStatus.Lines++
+				d.Status.Lines++
 			}
 		case html.EndTagToken:
 			switch string(tag) {
 			case "tr":
 				// check column names
-				if detectStatus.Lines == 1 {
-					if !common.Cfg.NoHeader && common.Cfg.Schema == "" {
+				if d.Status.Lines == 1 {
+					if !d.Config.NoHeader && d.Config.Schema == "" {
 						for _, r := range row {
-							detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: r})
+							d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 						}
 					}
-					checkFileHeader(detectStatus.Header)
+					d.checkHeader()
 
 					// truncate row after new line
 					row = []string{}
 
-					if !common.Cfg.NoHeader {
+					if !d.Config.NoHeader {
 						continue
 					}
 				}
 
 				// check value
 				for j, value := range row {
-					detectStatus.Columns[detectStatus.Header[j].Name] = append(detectStatus.Columns[detectStatus.Header[j].Name], checkValue(value)...)
+					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 				}
 
 				// truncate row after new line
@@ -83,11 +83,11 @@ func detectHTML() error {
 		}
 
 		// SkipLines
-		if detectStatus.Lines <= common.Cfg.SkipLines {
+		if d.Status.Lines <= d.Config.SkipLines {
 			continue
 		}
-		if common.Cfg.Limit > 0 &&
-			(detectStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+		if d.Config.Limit > 0 &&
+			(d.Status.Lines-d.Config.SkipLines) > d.Config.Limit {
 			break
 		}
 

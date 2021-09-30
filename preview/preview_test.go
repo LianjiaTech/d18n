@@ -17,11 +17,11 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestPreview(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	files := [][]string{
 		{
 			common.TestPath + "/test/TestSaveRows.csv",
@@ -38,11 +38,11 @@ func TestPreview(t *testing.T) {
 	}
 
 	// preview files
-	common.Cfg.Preview = 10
+	common.TestConfig.Preview = 10
 	for _, file := range files[0] {
-		common.Cfg.File = file
-		fmt.Println("# Preview: ", common.Cfg.File)
-		p, _ := NewPreviewStruct(common.Cfg)
+		common.TestConfig.File = file
+		fmt.Println("# Preview: ", common.TestConfig.File)
+		p, _ := NewPreviewStruct(common.TestConfig)
 		err := p.Preview()
 		if err != nil {
 			t.Error(err.Error())
@@ -50,13 +50,13 @@ func TestPreview(t *testing.T) {
 	}
 
 	for _, file := range files[1] {
-		common.Cfg.File = file
-		fmt.Println("# Preview: ", common.Cfg.File)
-		p, _ := NewPreviewStruct(common.Cfg)
+		common.TestConfig.File = file
+		fmt.Println("# Preview: ", common.TestConfig.File)
+		p, _ := NewPreviewStruct(common.TestConfig)
 		err := p.Preview()
 		if err == nil {
 			t.Error(err.Error())
 		}
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

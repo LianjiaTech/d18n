@@ -14,30 +14,31 @@
 package emport
 
 import (
-	"github.com/kr/pretty"
 	"testing"
 
-	"d18n/common"
+	"github.com/kr/pretty"
+
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportXLSX(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.xlsx"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 12
-	common.Cfg.SkipLines = 1
-	common.Cfg.Table = "actor_xlsx"
-	common.Cfg.Database = "sakila"
-	common.Cfg.Replace = false
-	testES.CommonConfig = common.Cfg
+	common.TestConfig.File = common.TestPath + "/test/actor.xlsx"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 12
+	common.TestConfig.SkipLines = 1
+	common.TestConfig.Table = "actor_xlsx"
+	common.TestConfig.Database = "sakila"
+	common.TestConfig.Replace = false
+	testES.Config = common.TestConfig
 
-	conn, _ := common.NewConnection()
+	conn, _ := common.TestConfig.NewConnection()
 	err := emportXlsx(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
 	pretty.Println(testES.Status)
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 
 }

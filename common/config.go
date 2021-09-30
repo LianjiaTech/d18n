@@ -90,9 +90,6 @@ type Config struct {
 	IgnoreColumns  []string // ignore column list
 }
 
-// Cfg global config
-var Cfg Config
-
 func parseCommaFlag(update string) []string {
 	var primary []string
 	update = strings.TrimSpace(update)
@@ -107,44 +104,44 @@ func parseCommaFlag(update string) []string {
 }
 
 // parseDefaultsExtraFile parse --defaults-extra-file file
-func parseDefaultsExtraFile(file string) error {
-	c, err := ini.Load(file)
+func parseDefaultsExtraFile(file string, c *Config) error {
+	config, err := ini.Load(file)
 	if err != nil {
 		return err
 	}
 
 	// get config from [client] section
-	Cfg.User = c.Section("client").Key("user").String()
-	Cfg.Password = c.Section("client").Key("password").String()
-	Cfg.Database = c.Section("client").Key("database").String()
-	Cfg.Host = c.Section("client").Key("host").String()
-	Cfg.Port = c.Section("client").Key("port").String()
-	Cfg.Charset = c.Section("client").Key("default-character-set").String()
+	c.User = config.Section("client").Key("user").String()
+	c.Password = config.Section("client").Key("password").String()
+	c.Database = config.Section("client").Key("database").String()
+	c.Host = config.Section("client").Key("host").String()
+	c.Port = config.Section("client").Key("port").String()
+	c.Charset = config.Section("client").Key("default-character-set").String()
 
 	return err
 }
 
-func ParseSchema() (header []HeaderColumn, err error) {
-	if Cfg.Schema != "" {
+func (c Config) ParseSchema() (header []HeaderColumn, err error) {
+	if c.Schema != "" {
 		// 1. TableTemplate
-		header, err = TableTemplate()
+		header, err = c.TableTemplate()
 		if err != nil {
 			return
 		}
 	} else {
 		// 2. GetColumnTypes -> DBParserColumnNames
 		var columns []*sql.ColumnType
-		columns, err = GetColumnTypes()
+		columns, err = c.GetColumnTypes()
 		if err != nil {
 			return
 		}
-		header = DBParseColumnTypes(columns)
+		header = c.DBParseColumnTypes(columns)
 	}
 	return
 }
 
-func PrintConfig() {
-	buf, err := yaml.Marshal(Cfg)
+func PrintConfig(c Config) {
+	buf, err := yaml.Marshal(c)
 	if err != nil {
 		println(err.Error())
 	}

@@ -16,18 +16,18 @@ package preview
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestPreviewHTML(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.Preview = 2
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2HTML.html"
+	orgCfg := common.TestConfig
+	common.TestConfig.Preview = 2
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2HTML.html"
 
-	p, _ := NewPreviewStruct(common.Cfg)
+	p, _ := NewPreviewStruct(common.TestConfig)
 	err := previewHTML(p)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

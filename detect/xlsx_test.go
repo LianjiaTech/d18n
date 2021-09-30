@@ -16,23 +16,26 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
-
-	"github.com/kr/pretty"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportXLSX(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.xlsx"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
+	common.TestConfig.File = common.TestPath + "/test/actor.xlsx"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
 
-	err := detectXlsx()
+	d, err := NewDetectStruct(common.TestConfig)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectXlsx()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(detectStatus)
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

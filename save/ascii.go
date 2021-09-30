@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 
-	"d18n/common"
-
 	"github.com/olekukonko/tablewriter"
 )
 
@@ -30,8 +28,8 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	// set table header
-	if !s.CommonConfig.NoHeader {
-		table.SetHeader(common.DBParserColumnNames(s.Status.Header))
+	if !s.Config.NoHeader {
+		table.SetHeader(s.Config.DBParserColumnNames(s.Status.Header))
 	}
 
 	// init columns
@@ -45,12 +43,12 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	for rows.Next() {
 		s.Status.Lines++
 		// preview only show first N lines
-		if s.CommonConfig.Preview != 0 && s.Status.Lines > s.CommonConfig.Preview {
+		if s.Config.Preview != 0 && s.Status.Lines > s.Config.Preview {
 			break
 		}
 
 		// limit return rows
-		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
+		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
 			break
 		}
 
@@ -62,13 +60,13 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 		values := make([]string, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = s.CommonConfig.NULLString
+				values[j] = s.Config.NULLString
 			} else {
 				switch col.(type) {
 				case []byte:
 					values[j] = string(col.([]byte))
 				case []string:
-					values[j] = common.ParseArray(col.([]string))
+					values[j] = s.Config.ParseArray(col.([]string))
 				default:
 					values[j] = fmt.Sprint(col)
 				}
@@ -80,7 +78,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// hex-blob
-				values[j], _ = common.HexBLOB(s.Status.Header[j].Name(), values[j])
+				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
 			}
 		}
 		table.Append(values)

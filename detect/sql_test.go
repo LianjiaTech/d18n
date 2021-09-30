@@ -16,24 +16,27 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
-
-	"github.com/kr/pretty"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestDetectSQL(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.sql"
-	common.Cfg.ANSIQuotes = true
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
+	common.TestConfig.File = common.TestPath + "/test/actor.sql"
+	common.TestConfig.ANSIQuotes = true
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
 
-	err := detectSQL()
+	d, err := NewDetectStruct(common.TestConfig)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectSQL()
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(detectStatus)
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

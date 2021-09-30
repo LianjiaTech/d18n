@@ -17,11 +17,11 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestLint(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	// check all format file
 	files := [][]string{
 		// right
@@ -52,8 +52,9 @@ func TestLint(t *testing.T) {
 
 	// right
 	for _, file := range files[0] {
-		common.Cfg.File = file
-		err := Lint()
+		common.TestConfig.File = file
+		l, _ := NewLintStruct(common.TestConfig)
+		err := l.Lint()
 		if err != nil {
 			t.Error(file, err.Error())
 		}
@@ -61,13 +62,14 @@ func TestLint(t *testing.T) {
 
 	// wrong
 	for _, file := range files[1] {
-		common.Cfg.File = file
-		err := Lint()
+		common.TestConfig.File = file
+		l, _ := NewLintStruct(common.TestConfig)
+		err := l.Lint()
 		if err == nil {
 			t.Error(file, "should wrong")
 		}
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestLintLine(t *testing.T) {
@@ -81,14 +83,16 @@ func TestLintLine(t *testing.T) {
 		{`"abc`}, // unclosed quote
 	}
 	for _, raw := range raws[:1] {
-		err := lintLine(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		err := l.lintLine(1, raw)
 		if err != nil {
 			t.Error(err.Error())
 		}
 	}
 
 	for _, raw := range raws[1:] {
-		err := lintLine(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		err := l.lintLine(1, raw)
 		if err == nil {
 			t.Error("should get error")
 		}
@@ -97,24 +101,25 @@ func TestLintLine(t *testing.T) {
 
 func TestLintCellRaggedRows(t *testing.T) {
 	raw := []string{`"abc`, `"abcc"`, `"112223"`}
-	lintStatus.CellCount = 0
-	column, wrong := lintCellRaggedRows(1, raw)
+	l, _ := NewLintStruct(common.TestConfig)
+	l.Status.CellCount = 0
+	column, wrong := l.lintCellRaggedRows(1, raw)
 	if wrong {
 		t.Error(fmt.Sprintf("column: %d", column), raw)
 	}
 
-	column, wrong = lintCellRaggedRows(2, raw)
+	column, wrong = l.lintCellRaggedRows(2, raw)
 	if wrong {
 		t.Error(fmt.Sprintf("column: %d", column), raw)
 	}
 
-	lintStatus.CellCount = 2
-	column, wrong = lintCellRaggedRows(3, raw)
+	l.Status.CellCount = 2
+	column, wrong = l.lintCellRaggedRows(3, raw)
 	if !wrong {
 		t.Error(fmt.Sprintf("column: %d", column), raw)
 	}
 
-	lintStatus.CellCount = 0
+	l.Status.CellCount = 0
 }
 
 func TestLintCellCheckOptions(t *testing.T) {
@@ -127,14 +132,16 @@ func TestLintCellCheckOptions(t *testing.T) {
 		{},
 	}
 	for _, raw := range raws[:1] {
-		column, wrong := lintCellCheckOptions(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		column, wrong := l.lintCellCheckOptions(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 
 	for _, raw := range raws[1:] {
-		column, wrong := lintCellCheckOptions(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		column, wrong := l.lintCellCheckOptions(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -159,17 +166,19 @@ func TestLintCellUndeclaredHeader(t *testing.T) {
 
 	// right
 	for _, raw := range raws[:2] {
-		lintStatus.Header = raws[0]
-		column, wrong := lintCellUndeclaredHeader(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		l.Status.Header = raws[0]
+		column, wrong := l.lintCellUndeclaredHeader(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
 	}
 	// wrong
 	for _, raw := range raws[2:] {
-		lintStatus.Header = raws[2]
-		lintStatus.Header = []string{"112223"}
-		column, wrong := lintCellUndeclaredHeader(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		l.Status.Header = raws[2]
+		l.Status.Header = []string{"112223"}
+		column, wrong := l.lintCellUndeclaredHeader(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -188,7 +197,8 @@ func TestLintCellDupColumnName(t *testing.T) {
 
 	// right
 	for _, raw := range raws[:1] {
-		column, wrong := lintCellDupColumnName(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		column, wrong := l.lintCellDupColumnName(1, raw)
 		if wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}
@@ -196,7 +206,8 @@ func TestLintCellDupColumnName(t *testing.T) {
 
 	// wrong
 	for _, raw := range raws[1:] {
-		column, wrong := lintCellDupColumnName(1, raw)
+		l, _ := NewLintStruct(common.TestConfig)
+		column, wrong := l.lintCellDupColumnName(1, raw)
 		if !wrong {
 			t.Error(fmt.Sprintf("column: %d", column), raw)
 		}

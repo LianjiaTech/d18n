@@ -22,12 +22,12 @@ import (
 )
 
 func previewJSON(p *PreviewStruct) error {
-	if p.CommonConfig.Preview == 0 {
+	if p.Config.Preview == 0 {
 		return nil
 	}
 
 	// use iterator to reader
-	fd, err := os.Open(p.CommonConfig.File)
+	fd, err := os.Open(p.Config.File)
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func previewJSON(p *PreviewStruct) error {
 
 	// read line
 	var records []interface{}
-	iter := json.Parse(json.ConfigDefault, fd, p.CommonConfig.MaxBufferSize)
+	iter := json.Parse(json.ConfigDefault, fd, p.Config.MaxBufferSize)
 	if iter.WhatIsNext() == json.ArrayValue {
-		for count := 0; iter.ReadArray() && count < p.CommonConfig.Preview; count++ {
+		for count := 0; iter.ReadArray() && count < p.Config.Preview; count++ {
 			ret := iter.Read()
 			if iter.Error != nil {
 				return iter.Error

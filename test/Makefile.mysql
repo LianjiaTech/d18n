@@ -256,8 +256,15 @@ test-mysql: build
 	-f test/watermark.xlsx \
 	--watermark "watermark text"
 
+	# preview xlsx watermark
+	@./bin/d18n --preview 1 \
+	--verbose \
+	--file test/watermark.xlsx >/dev/null
+
 	# test ignore-columns
 	@./bin/d18n --defaults-extra-file=test/my.cnf \
 	--database sakila \
 	--query "select * from actor limit 1" \
-	--ignore-columns first_name,last_udpate
+	--ignore-columns first_name,last_update \
+	--complete-insert \
+	--file test/actor.ignore-columns.sql

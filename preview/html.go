@@ -22,22 +22,22 @@ import (
 )
 
 func previewHTML(p *PreviewStruct) error {
-	if p.CommonConfig.Preview == 0 {
+	if p.Config.Preview == 0 {
 		return nil
 	}
 
-	file, err := os.Open(p.CommonConfig.File)
+	file, err := os.Open(p.Config.File)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	r := bufio.NewReaderSize(file, p.CommonConfig.MaxBufferSize)
+	r := bufio.NewReaderSize(file, p.Config.MaxBufferSize)
 	token := html.NewTokenizer(r)
 
 	var line int
 	for {
-		if line >= p.CommonConfig.Preview {
+		if line >= p.Config.Preview {
 			break
 		}
 

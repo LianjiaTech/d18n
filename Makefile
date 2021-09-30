@@ -1,3 +1,5 @@
+default: build
+
 include test/Makefile.mysql
 include test/Makefile.postgres
 include test/Makefile.oracle

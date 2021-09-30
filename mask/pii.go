@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // Phone phone default desensitize method

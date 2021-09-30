@@ -16,25 +16,27 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
-
-	"github.com/kr/pretty"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportJSON(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.json"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
+	common.TestConfig.File = common.TestPath + "/test/actor.json"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
 
-	err := detectJSON()
+	d, err := NewDetectStruct(common.TestConfig)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
+
+	err = d.detectJSON()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	pretty.Println(detectStatus)
-
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 
 }

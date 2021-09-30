@@ -27,7 +27,7 @@ func InitTestEnv() {
 	_, filename, _, _ := runtime.Caller(0)
 	TestPath = filepath.Dir(filepath.Dir(filename))
 
-	Cfg = Config{
+	TestConfig = Config{
 		Server:   "mysql",
 		User:     "root",
 		Password: "",

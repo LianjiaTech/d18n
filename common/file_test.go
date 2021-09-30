@@ -19,16 +19,16 @@ import (
 )
 
 func ExampleSQLInsertPrefix() {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 	var header = Row{"a", "b", "c", "d"}
-	Cfg.Table = "tab"
-	fmt.Println(SQLInsertPrefix(header))
-	Cfg.CompleteInsert = true
-	fmt.Println(SQLInsertPrefix(header))
+	TestConfig.Table = "tab"
+	fmt.Println(TestConfig.SQLInsertPrefix(header))
+	TestConfig.CompleteInsert = true
+	fmt.Println(TestConfig.SQLInsertPrefix(header))
 	// Output:
 	// INSERT INTO `tab`  VALUES  <nil>
 	// INSERT INTO `tab` (`a`, `b`, `c`, `d`) VALUES  <nil>
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }
 
 func ExampleSQLInsertValues() {
@@ -61,13 +61,13 @@ func ExampleSQLInsertValues() {
 		{ScanType: "int"},
 		{ScanType: "int"},
 	}
-	fmt.Println(SQLInsertValues(header, columns))
+	fmt.Println(TestConfig.SQLInsertValues(header, columns))
 	// Output:
 	// (NULL, "", NULL, "NULL", "ABC", "abc", 1, 1.0, 0.1, -1, 1e+2, 1E+2) <nil>
 }
 
 func ExampleTableTemplate() {
-	org := Cfg
+	org := TestConfig
 	schemas := []string{
 		TestPath + "/test/schema.txt",
 		TestPath + "/test/mysql.schema.sql",
@@ -77,8 +77,8 @@ func ExampleTableTemplate() {
 		TestPath + "/test/sqlserver.schema.sql",
 	}
 	for _, schema := range schemas {
-		Cfg.Schema = schema
-		fmt.Println(TableTemplate())
+		TestConfig.Schema = schema
+		fmt.Println(TestConfig.TableTemplate())
 	}
 	// Output:
 	// [{actor_id  SMALLINT} {first_name  VARCHAR} {last_name  VARCHAR} {last_update  TIMESTAMP}] <nil>
@@ -87,5 +87,19 @@ func ExampleTableTemplate() {
 	// [{actor_id  integer} {first_name  character} {last_name  character} {last_update  timestamp}] <nil>
 	// [{actor_id  numeric} {first_name  VARCHAR} {last_name  VARCHAR} {last_update  TIMESTAMP}] <nil>
 	// [{actor_id  int} {first_name  VARCHAR} {last_name  VARCHAR} {last_update  DATETIME}] <nil>
-	Cfg = org
+	TestConfig = org
+}
+
+// This test case will cause actor.xlsx modify every time, event if no content change.
+// If you need test SetXlsxWatermark use `make test-mysql`
+// func ExampleSetXlsxWatermark() {
+// 	fmt.Println(SetXlsxWatermark(TestPath+"/test/actor.xlsx", "watermark text"))
+// 	// Output:
+// 	// <nil>
+// }
+
+func ExampleGetXlsxWatermark() {
+	fmt.Println(GetXlsxWatermark(TestPath + "/test/actor.xlsx"))
+	// Output:
+	// watermark text <nil>
 }

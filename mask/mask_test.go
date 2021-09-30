@@ -17,12 +17,12 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 // TestMask test FakeXXXX
 func TestMask(t *testing.T) {
-	m, err := NewMaskStruct(common.Cfg.Mask)
+	m, err := NewMaskStruct(common.TestConfig.Mask)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -54,7 +54,7 @@ func TestMask(t *testing.T) {
 }
 
 func ExampleMask() {
-	m, _ := NewMaskStruct(common.Cfg.Mask)
+	m, _ := NewMaskStruct(common.TestConfig.Mask)
 	m.Config = map[string]maskRule{
 		"col1": {
 			MaskFunc: "crc32",

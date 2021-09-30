@@ -17,11 +17,11 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportRows(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	// check all format file
 	files := []string{
 		common.TestPath + "/test/actor.csv",
@@ -33,33 +33,33 @@ func TestEmportRows(t *testing.T) {
 		common.TestPath + "/test/actor.html",
 	}
 
-	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 2
-	common.Cfg.Replace = true
-	common.Cfg.Table = "actor"
-	common.Cfg.Database = "sakila"
+	common.TestConfig.Schema = common.TestPath + "/test/schema.txt"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 2
+	common.TestConfig.Replace = true
+	common.TestConfig.Table = "actor"
+	common.TestConfig.Database = "sakila"
 
-	conn, err := common.NewConnection()
+	conn, err := common.TestConfig.NewConnection()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
 	for i, file := range files {
-		common.Cfg.File = file
+		common.TestConfig.File = file
 		switch i {
 		case 0:
-			common.Cfg.Comma = ','
+			common.TestConfig.Comma = ','
 		case 1:
-			common.Cfg.Comma = '\t'
+			common.TestConfig.Comma = '\t'
 		case 2:
-			common.Cfg.Comma = ' '
+			common.TestConfig.Comma = ' '
 		case 3:
-			common.Cfg.Comma = '|'
+			common.TestConfig.Comma = '|'
 		}
-		fmt.Println(common.Cfg.File)
+		fmt.Println(common.TestConfig.File)
 
-		e, err := NewEmportStruct(common.Cfg)
+		e, err := NewEmportStruct(common.TestConfig)
 		if err != nil {
 			t.Error(err.Error())
 		}
@@ -71,22 +71,22 @@ func TestEmportRows(t *testing.T) {
 		}
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }
 
 func TestCheckStatus(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.Verbose = true
+	orgCfg := common.TestConfig
+	common.TestConfig.Verbose = true
 
-	e, err := NewEmportStruct(common.Cfg)
+	e, err := NewEmportStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	err = e.CheckStatus()
+	err = e.ShowStatus()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

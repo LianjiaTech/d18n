@@ -16,35 +16,42 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
+
+// test detect status for Header， Columns init
+var detectTestStatus DetectStatus
 
 func init() {
 	var err error
 	common.InitTestEnv()
 
-	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
-	detectStatus.Header, err = common.ParseSchema()
+	common.TestConfig.Schema = common.TestPath + "/test/schema.txt"
+
+	detectTestStatus.Header, err = common.TestConfig.ParseSchema()
 	if err != nil {
 		panic(err.Error())
 	}
-
-	detectStatus.Columns = make(map[string][]string, len(detectStatus.Header))
+	detectTestStatus.Columns = make(map[string][]string, len(detectTestStatus.Header))
 }
 
 func TestDetectCSV(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.csv"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
-	common.Cfg.Comma = ','
+	common.TestConfig.File = common.TestPath + "/test/actor.csv"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
+	common.TestConfig.Comma = ','
+	d, err := NewDetectStruct(common.TestConfig)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	d.Status = detectTestStatus
 
-	err := detectCSV()
+	err = d.detectCSV()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
-
+	common.TestConfig = orgCfg
 }

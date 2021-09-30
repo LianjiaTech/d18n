@@ -16,33 +16,33 @@ package lint
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/kr/pretty"
 )
 
 func TestLintJSON(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	levels := lintLevels
 	lintLevels = []string{"FATAL", "ERROR"}
-	common.Cfg.NoHeader = true
+	common.TestConfig.NoHeader = true
 
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestJSONLint.right.json"
-	err := lintJSON()
+	common.TestConfig.File = common.TestPath + "/test/TestJSONLint.right.json"
+	l, _ := NewLintStruct(common.TestConfig)
+	err := l.lintJSON()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestJSONLint.wrong.json"
-	err = lintJSON()
+	common.TestConfig.File = common.TestPath + "/test/TestJSONLint.wrong.json"
+	l, _ = NewLintStruct(common.TestConfig)
+	err = l.lintJSON()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	lintLevels = levels
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

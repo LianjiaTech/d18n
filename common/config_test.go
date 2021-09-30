@@ -21,13 +21,13 @@ import (
 )
 
 func TestParseDefaultsExtraFile(t *testing.T) {
-	orgCfg := Cfg
-	err := parseDefaultsExtraFile(TestPath + "/test/my.cnf")
+	orgCfg := TestConfig
+	err := parseDefaultsExtraFile(TestPath+"/test/my.cnf", &TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
-	pretty.Println(Cfg.User, Cfg.Password, Cfg.Charset)
-	Cfg = orgCfg
+	pretty.Println(TestConfig.User, TestConfig.Password, TestConfig.Charset)
+	TestConfig = orgCfg
 }
 
 func Example_parseCommaFlag() {
@@ -43,13 +43,13 @@ func Example_parseCommaFlag() {
 }
 
 func ExampleParseSchema() {
-	orgCfg := Cfg
+	orgCfg := TestConfig
 
-	Cfg.Database = "sakila"
-	Cfg.Table = "actor"
-	fmt.Println(ParseSchema())
+	TestConfig.Database = "sakila"
+	TestConfig.Table = "actor"
+	fmt.Println(TestConfig.ParseSchema())
 	// Output:
 	// [{actor_id uint16 SMALLINT} {first_name RawBytes VARCHAR} {last_name RawBytes VARCHAR} {last_update NullTime TIMESTAMP}] <nil>
 
-	Cfg = orgCfg
+	TestConfig = orgCfg
 }

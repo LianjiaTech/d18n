@@ -17,7 +17,7 @@ import (
 	"database/sql"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func init() {
@@ -26,7 +26,7 @@ func init() {
 
 func TestSaveRows2ASCII(t *testing.T) {
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -40,7 +40,7 @@ func TestSaveRows2ASCII(t *testing.T) {
 
 func testQueryRows(s *SaveStruct) (*sql.Rows, error) {
 	// QueryRows
-	rows, err := common.QueryRows()
+	rows, err := s.Config.QueryRows()
 	if err != nil {
 		return rows, err
 	}

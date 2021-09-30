@@ -14,34 +14,22 @@
 package detect
 
 import (
-	_ "embed"
+	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
-	"d18n/common"
-
-	"gopkg.in/yaml.v2"
+	"github.com/LianjiaTech/d18n/common"
 )
-
-//go:embed sensitive.yaml
-var defaultSensitiveConfig []byte
 
 // BasicDetect basic sensitive data detection regexp check rules
 type BasicDetect struct {
 	Key   []string `yaml:"key"`   // check column name by regexp
 	Value []string `yaml:"value"` // check column value by regexp
 }
-
-// Config sensitive config
-type Config map[string]BasicDetect
-
-// sensitiveConfig ...
-var sensitiveConfig Config
 
 // DetectStatus ...
 type DetectStatus struct {
@@ -52,119 +40,153 @@ type DetectStatus struct {
 	TimeCost      int64                 // time cost
 }
 
-var detectStatus DetectStatus
+type DetectStruct struct {
+	Config    common.Config
+	Sensitive sensitiveConfig
+	Status    DetectStatus
+}
 
-func ParseSensitiveConfig() error {
-	// load sensitive config
-	buf, err := ioutil.ReadFile(common.Cfg.Sensitive)
-	if err == nil {
-		defaultSensitiveConfig = buf
+func NewDetectStruct(c common.Config) (*DetectStruct, error) {
+	var d = &DetectStruct{
+		Config: c,
+		Status: DetectStatus{
+			Columns: make(map[string][]string),
+		},
 	}
 
-	err = yaml.Unmarshal(defaultSensitiveConfig, &sensitiveConfig)
+	err := d.parseConfig()
 	if err != nil {
-		return err
+		return d, err
 	}
 
-	// check config regexp valid
-	for _, v := range sensitiveConfig {
-		for _, r := range v.Key {
-			_, err = regexp.Compile(r)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, r := range v.Value {
-			_, err = regexp.Compile(r)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return err
+	return d, nil
 }
 
 // Detect sensitive data detection
-func Detect() error {
+func (d *DetectStruct) Detect() error {
 	var err error
 	detectStartTime := time.Now().UnixNano()
 
-	detectStatus.Columns = make(map[string][]string)
+	d.Status.Columns = make(map[string][]string)
 
-	switch common.Cfg.File {
+	switch d.Config.File {
 	case "stdout", "":
-		if common.Cfg.Query != "" {
-			d, err := NewDetectStruct(common.Cfg)
-			if err != nil {
-				return err
-			}
+		if d.Config.Query != "" {
 			err = d.DetectQuery()
-			detectStatus = d.Status
 		} else {
 			return fmt.Errorf("no data source or file to check")
 		}
 	default:
-		err = DetectFile()
+		err = d.DetectFile()
 	}
 
 	detectEndTime := time.Now().UnixNano()
-	detectStatus.TimeCost = detectEndTime - detectStartTime
+	d.Status.TimeCost = detectEndTime - detectStartTime
+
+	return err
+}
+
+// DetectQuery check data from query result
+func (d *DetectStruct) DetectQuery() error {
+
+	rows, err := d.Config.QueryRows()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	// get column header
+	header, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+	d.Status.Header = d.Config.DBParseColumnTypes(header)
+
+	// check column names
+	d.checkHeader()
+
+	// check column values
+	for rows.Next() {
+		d.Status.Lines++
+		// limit return rows
+		if d.Config.Limit != 0 && d.Status.Lines > d.Config.Limit {
+			break
+		}
+
+		columns := make([]sql.NullString, len(header))
+		cols := make([]interface{}, len(header))
+		for j := range columns {
+			cols[j] = &columns[j]
+		}
+
+		if err := rows.Scan(cols...); err != nil {
+			return err
+		}
+
+		// check value
+		for j, col := range columns {
+			// pass NULL string
+			if col.Valid {
+				d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(col.String)...)
+			}
+		}
+	}
+
+	err = rows.Err()
 
 	return err
 }
 
 // DetectFile check data from file
-func DetectFile() error {
+func (d *DetectStruct) DetectFile() error {
 	var err error
 
 	// get column header
-	if common.Cfg.Schema != "" {
-		detectStatus.Header, err = common.TableTemplate()
+	if d.Config.Schema != "" {
+		d.Status.Header, err = d.Config.TableTemplate()
 		if err != nil {
 			return err
 		}
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(common.Cfg.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(d.Config.File), "."))
 	switch suffix {
 	case "tsv": // tab-separated values
-		common.Cfg.Comma = '\t'
-		err = detectCSV()
+		d.Config.Comma = '\t'
+		err = d.detectCSV()
 	case "txt": // space-separated values
-		common.Cfg.Comma = ' '
-		err = detectCSV()
+		d.Config.Comma = ' '
+		err = d.detectCSV()
 	case "psv": // pipe-separated values
-		common.Cfg.Comma = '|'
-		err = detectCSV()
+		d.Config.Comma = '|'
+		err = d.detectCSV()
 	case "csv": // comma-separated values
-		common.Cfg.Comma = ','
-		err = detectCSV()
+		d.Config.Comma = ','
+		err = d.detectCSV()
 	case "xlsx": // microsoft office excel
-		err = detectXlsx()
+		err = d.detectXlsx()
 	case "html": // html format
-		err = detectHTML()
+		err = d.detectHTML()
 	case "sql": // sql file
-		err = detectSQL()
+		err = d.detectSQL()
 	case "json": // json file
-		err = detectJSON()
+		err = d.detectJSON()
 	default:
 		err = fmt.Errorf("not support extension: " + suffix)
 	}
 	return err
 }
 
-func checkFileHeader(header []common.HeaderColumn) {
+func (d *DetectStruct) checkHeader() {
+	d.Status.Columns = make(map[string][]string, len(d.Status.Header))
 
-	detectStatus.Columns = make(map[string][]string, len(header))
-
-	for _, h := range header {
+	for _, h := range d.Status.Header {
 		key := h.Name
 		var types []string
 
 		// sensitive key word check
-		for t, rule := range sensitiveConfig {
+		for t, rule := range d.Sensitive {
 			for _, k := range rule.Key {
 				r := regexp.MustCompile(k)
 				if r.MatchString(key) {
@@ -174,12 +196,12 @@ func checkFileHeader(header []common.HeaderColumn) {
 			}
 		}
 
-		// update detectStatus.Columns
-		detectStatus.Columns[key] = types
+		// update d.Status.Columns
+		d.Status.Columns[key] = types
 	}
 }
 
-func checkValue(value string) []string {
+func (d *DetectStruct) checkValue(value string) []string {
 	var types []string
 
 	// only check first 256 bytes, too long sentence may contain any thing
@@ -188,7 +210,7 @@ func checkValue(value string) []string {
 	}
 
 	// regexp
-	for t, rule := range sensitiveConfig {
+	for t, rule := range d.Sensitive {
 		for _, k := range rule.Value {
 			r := regexp.MustCompile(k)
 			if r.MatchString(value) {
@@ -206,25 +228,25 @@ func checkValue(value string) []string {
 	return types
 }
 
-// CheckStatus print detect status
-func CheckStatus() error {
-	for k, v := range detectStatus.Columns {
-		detectStatus.Columns[k] = common.StringUnique(v)
+// ShowStatus print detect status
+func (d *DetectStruct) ShowStatus() error {
+	for k, v := range d.Status.Columns {
+		d.Status.Columns[k] = common.StringUnique(v)
 	}
 
-	s, err := json.MarshalIndent(detectStatus.Columns, "", "  ")
+	s, err := json.MarshalIndent(d.Status.Columns, "", "  ")
 	if err != nil {
 		return err
 	}
 	fmt.Println(string(s))
 
 	// verbose mode
-	if !common.Cfg.Verbose {
+	if !d.Config.Verbose {
 		return nil
 	}
 
 	println(
-		"Detect Rows:", detectStatus.Lines, "Total Cost:", fmt.Sprint(time.Duration(detectStatus.TimeCost)*time.Nanosecond),
+		"Detect Rows:", d.Status.Lines, "Total Cost:", fmt.Sprint(time.Duration(d.Status.TimeCost)*time.Nanosecond),
 	)
 	return nil
 }

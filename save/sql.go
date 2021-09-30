@@ -18,27 +18,25 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-
-	"d18n/common"
 )
 
 // saveRows2SQL save rows result into sql file
 func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 
-	file, err := os.Create(s.CommonConfig.File)
+	file, err := os.Create(s.Config.File)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
 	// insert prefix
-	insertPrefix, err := common.SQLInsertPrefix(common.DBParserColumnNames(s.Status.Header))
+	insertPrefix, err := s.Config.SQLInsertPrefix(s.Config.DBParserColumnNames(s.Status.Header))
 	if err != nil {
 		return err
 	}
 
 	// header & columns
-	headerColumns := common.DBParseColumnTypes(s.Status.Header)
+	headerColumns := s.Config.DBParseColumnTypes(s.Status.Header)
 	columns := make([]interface{}, len(s.Status.Header))
 	cols := make([]interface{}, len(s.Status.Header))
 	for j := range columns {
@@ -46,12 +44,12 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// write every row into sql
-	w := bufio.NewWriterSize(file, s.CommonConfig.MaxBufferSize)
+	w := bufio.NewWriterSize(file, s.Config.MaxBufferSize)
 	var sqlCounter int
 	for rows.Next() {
 		s.Status.Lines++
 		// limit return rows
-		if s.CommonConfig.Limit != 0 && s.Status.Lines > s.CommonConfig.Limit {
+		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
 			break
 		}
 
@@ -64,13 +62,13 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 		values := make([]sql.NullString, len(columns))
 		for j, col := range columns {
 			if col == nil {
-				values[j] = sql.NullString{String: s.CommonConfig.NULLString, Valid: false}
+				values[j] = sql.NullString{String: s.Config.NULLString, Valid: false}
 			} else {
 				switch col.(type) {
 				case []byte:
 					values[j] = sql.NullString{String: string(col.([]byte)), Valid: true}
 				case []string:
-					values[j] = sql.NullString{String: common.ParseArray(col.([]string)), Valid: true}
+					values[j] = sql.NullString{String: s.Config.ParseArray(col.([]string)), Valid: true}
 				default:
 					values[j] = sql.NullString{String: fmt.Sprint(col), Valid: true}
 				}
@@ -84,14 +82,14 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 		}
 
 		// concat values
-		valuesStr, err := common.SQLInsertValues(headerColumns, values)
+		valuesStr, err := s.Config.SQLInsertValues(headerColumns, values)
 		if err != nil {
 			return err
 		}
 
 		// write sql
 		sqlCounter++
-		_, err = w.WriteString(common.SQLMultiValues(sqlCounter, insertPrefix, valuesStr))
+		_, err = w.WriteString(s.Config.SQLMultiValues(sqlCounter, insertPrefix, valuesStr))
 		if err != nil {
 			return err
 		}
@@ -102,7 +100,7 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// last semicolon
-	if s.CommonConfig.ExtendedInsert > 0 && s.Status.Lines > 0 && sqlCounter%s.CommonConfig.ExtendedInsert != 0 {
+	if s.Config.ExtendedInsert > 0 && s.Status.Lines > 0 && sqlCounter%s.Config.ExtendedInsert != 0 {
 		_, err = w.WriteString(";\n")
 		if err != nil {
 			return err

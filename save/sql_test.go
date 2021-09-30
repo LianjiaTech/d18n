@@ -16,16 +16,16 @@ package save
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestSaveRows2SQL(t *testing.T) {
-	orgCfg := common.Cfg
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2SQL.sql"
-	common.Cfg.Table = "TestSaveRows2SQL"
+	orgCfg := common.TestConfig
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2SQL.sql"
+	common.TestConfig.Table = "TestSaveRows2SQL"
 
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -33,5 +33,5 @@ func TestSaveRows2SQL(t *testing.T) {
 	if err := s.Save(); err != nil {
 		t.Error(err.Error())
 	}
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

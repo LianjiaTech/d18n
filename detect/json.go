@@ -18,15 +18,15 @@ import (
 	"fmt"
 	"os"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	json "github.com/json-iterator/go"
 )
 
-func detectJSON() error {
+func (d *DetectStruct) detectJSON() error {
 	var err error
 
-	fd, err := os.Open(common.Cfg.File)
+	fd, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func detectJSON() error {
 	switch iter.WhatIsNext() {
 	case json.ArrayValue:
 		if iter.WhatIsNext() == json.ArrayValue {
-			if iter.ReadArrayCB(jsonDetectRow); iter.Error != nil {
+			if iter.ReadArrayCB(d.jsonDetectRow); iter.Error != nil {
 				return iter.Error
 			}
 		} else {
@@ -50,7 +50,7 @@ func detectJSON() error {
 }
 
 // jsonDetectRow callback function of json-interator
-func jsonDetectRow(iterator *json.Iterator) bool {
+func (d *DetectStruct) jsonDetectRow(iterator *json.Iterator) bool {
 	var row []string
 	if ok := iterator.ReadArrayCB(
 		// callback function parse cell
@@ -60,33 +60,33 @@ func jsonDetectRow(iterator *json.Iterator) bool {
 			row = append(row, elem)
 			return true
 		}); ok {
-		detectStatus.Lines++
+		d.Status.Lines++
 
 		// check column names
-		if detectStatus.Lines == 1 {
-			if !common.Cfg.NoHeader && common.Cfg.Schema == "" {
+		if d.Status.Lines == 1 {
+			if !d.Config.NoHeader && d.Config.Schema == "" {
 				for _, r := range row {
-					detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: r})
+					d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: r})
 				}
 			}
-			checkFileHeader(detectStatus.Header)
-			if !common.Cfg.NoHeader {
+			d.checkHeader()
+			if !d.Config.NoHeader {
 				return true
 			}
 		}
 
 		// skip lines
-		if detectStatus.Lines <= common.Cfg.SkipLines {
+		if d.Status.Lines <= d.Config.SkipLines {
 			return true
 		}
-		if common.Cfg.Limit > 0 &&
-			(detectStatus.Lines-common.Cfg.SkipLines) > common.Cfg.Limit {
+		if d.Config.Limit > 0 &&
+			(d.Status.Lines-d.Config.SkipLines) > d.Config.Limit {
 			return false
 		}
 
 		// check value
 		for j, value := range row {
-			detectStatus.Columns[detectStatus.Header[j].Name] = append(detectStatus.Columns[detectStatus.Header[j].Name], checkValue(value)...)
+			d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 		}
 	}
 	return true

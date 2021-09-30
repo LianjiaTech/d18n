@@ -19,17 +19,17 @@ import (
 	"path/filepath"
 	"strings"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 type PreviewStruct struct {
-	CommonConfig common.Config
+	Config common.Config
 }
 
 func NewPreviewStruct(c common.Config) (*PreviewStruct, error) {
 	var p *PreviewStruct
 	p = &PreviewStruct{
-		CommonConfig: c,
+		Config: c,
 	}
 	return p, nil
 }
@@ -38,16 +38,16 @@ func NewPreviewStruct(c common.Config) (*PreviewStruct, error) {
 func (p *PreviewStruct) Preview() error {
 	var err error
 
-	switch p.CommonConfig.File {
+	switch p.Config.File {
 	case "", "stdout":
 		return fmt.Errorf("expect -file arg")
 	}
 
-	if _, err := os.Stat(p.CommonConfig.File); err != nil {
+	if _, err := os.Stat(p.Config.File); err != nil {
 		return err
 	}
 
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(p.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(p.Config.File), "."))
 	switch suffix {
 	case "stdout", "":
 	case "csv", "psv", "tsv", "txt", "sql":

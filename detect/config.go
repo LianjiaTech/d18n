@@ -11,46 +11,49 @@
  * limitations under the License.
  */
 
-package preview
+package detect
 
 import (
-	"fmt"
+	_ "embed"
+	"io/ioutil"
+	"regexp"
 
-	"github.com/LianjiaTech/d18n/common"
-
-	"github.com/tealeg/xlsx/v3"
+	"gopkg.in/yaml.v2"
 )
 
-// PreviewXlsx ...
-func previewXlsx(p *PreviewStruct) error {
-	if p.Config.Preview == 0 {
-		return nil
+//go:embed sensitive.yaml
+var defaultSensitiveConfig []byte
+
+// sensitiveConfig ...
+type sensitiveConfig map[string]BasicDetect
+
+func (d *DetectStruct) parseConfig() error {
+	// load sensitive config
+	buf, err := ioutil.ReadFile(d.Config.Sensitive)
+	if err == nil {
+		defaultSensitiveConfig = buf
 	}
 
-	opts := xlsx.RowLimit(p.Config.Preview)
-	wb, err := xlsx.OpenFile(p.Config.File, opts)
+	err = yaml.Unmarshal(defaultSensitiveConfig, &d.Sensitive)
 	if err != nil {
 		return err
 	}
 
-	if len(wb.Sheets) > 0 {
-		for i := 0; i < p.Config.Preview && i < wb.Sheets[0].MaxRow; i++ {
-			row, err := wb.Sheets[0].Row(i)
+	// check config regexp valid
+	for _, v := range d.Sensitive {
+		for _, r := range v.Key {
+			_, err = regexp.Compile(r)
 			if err != nil {
 				return err
 			}
-			for j := 0; j < wb.Sheets[0].MaxCol; j++ {
-				fmt.Print(row.GetCell(j), "\t")
-			}
-			fmt.Println() // add line feed
 		}
-	}
 
-	if p.Config.Verbose {
-		watermark, err := common.GetXlsxWatermark(p.Config.File)
-		if err == nil && watermark != "" {
-			println("\nWatermark:", watermark)
+		for _, r := range v.Value {
+			_, err = regexp.Compile(r)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	return nil
+	return err
 }

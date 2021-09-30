@@ -17,7 +17,7 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 var testES *EmportStruct
@@ -25,12 +25,12 @@ var testES *EmportStruct
 func init() {
 	var err error
 	common.InitTestEnv()
-	common.Cfg.Schema = common.TestPath + "/test/schema.txt"
-	testES, err = NewEmportStruct(common.Cfg)
+	common.TestConfig.Schema = common.TestPath + "/test/schema.txt"
+	testES, err = NewEmportStruct(common.TestConfig)
 	if err != nil {
 		panic(err.Error())
 	}
-	testES.Status.Header, err = common.ParseSchema()
+	testES.Status.Header, err = common.TestConfig.ParseSchema()
 	fmt.Println(testES.Status.Header)
 	if err != nil {
 		panic(err.Error())
@@ -38,22 +38,22 @@ func init() {
 }
 
 func TestEmportCSV(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.csv"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 2
-	common.Cfg.Table = "actor_new"
-	common.Cfg.Replace = true
-	common.Cfg.Comma = ','
-	testES.CommonConfig = common.Cfg
+	common.TestConfig.File = common.TestPath + "/test/actor.csv"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 2
+	common.TestConfig.Table = "actor_new"
+	common.TestConfig.Replace = true
+	common.TestConfig.Comma = ','
+	testES.Config = common.TestConfig
 
-	conn, _ := common.NewConnection()
+	conn, _ := common.TestConfig.NewConnection()
 	err := emportCSV(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 
 }

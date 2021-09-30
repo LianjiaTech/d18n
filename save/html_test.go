@@ -16,17 +16,17 @@ package save
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestSaveRows2HTML(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/TestSaveRows2HTML.html"
-	common.Cfg.Comma = ','
+	common.TestConfig.File = common.TestPath + "/test/TestSaveRows2HTML.html"
+	common.TestConfig.Comma = ','
 
 	// new save struct
-	s, err := NewSaveStruct(common.Cfg)
+	s, err := NewSaveStruct(common.TestConfig)
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -35,5 +35,5 @@ func TestSaveRows2HTML(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

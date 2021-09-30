@@ -14,61 +14,66 @@
 package main
 
 import (
-	"d18n/common"
-	"d18n/detect"
-	"d18n/emport"
-	"d18n/lint"
-	"d18n/mask"
-	"d18n/preview"
-	"d18n/save"
+	"github.com/LianjiaTech/d18n/common"
+	"github.com/LianjiaTech/d18n/detect"
+	"github.com/LianjiaTech/d18n/emport"
+	"github.com/LianjiaTech/d18n/lint"
+	"github.com/LianjiaTech/d18n/mask"
+	"github.com/LianjiaTech/d18n/preview"
+	"github.com/LianjiaTech/d18n/save"
 )
 
+var c common.Config
+
 func main() {
+	var err error
+
 	// limit cpu 1 core, memory 2GB
 	common.PanicIfError(common.ResourceLimit(1, 2*1024*1024*1024))
 
 	// parse config
 	// common.PanicIfError(common.ParseFlag())
-	common.PanicIfError(common.ParseFlags())
+	c, err = common.ParseFlags()
+	common.PanicIfError(err)
 
 	// parse cipher config
-	common.PanicIfError(mask.ParseCipherConfig(common.Cfg.Cipher))
+	common.PanicIfError(mask.ParseCipherConfig(c.Cipher))
 
 	// print cipher
-	if common.Cfg.PrintCipher {
+	if c.PrintCipher {
 		mask.PrintCipher()
 		return
 	}
 
 	// print config
-	if common.Cfg.PrintConfig {
-		common.PrintConfig()
+	if c.PrintConfig {
+		common.PrintConfig(c)
 		return
 	}
 
 	// preview file
-	if common.Cfg.Preview > 0 {
+	if c.Preview > 0 {
 		common.PanicIfError(previewFile())
 		return
 	}
 
 	// lint file
-	if common.Cfg.Lint {
+	if c.Lint {
 		common.PanicIfError(lintFile())
 		return
 	}
 
 	// detect sensitive info
-	if common.Cfg.Detect {
+	if c.Detect {
 		common.PanicIfError(detectRows())
 		return
 	}
 
 	// init mask corpus
-	common.PanicIfError(mask.InitMaskCorpus(common.Cfg.RandSeed))
+	common.PanicIfError(mask.InitMaskCorpus(c.RandSeed))
 
 	// import file
-	if common.Cfg.Import {
+	if c.Import {
 		common.PanicIfError(emportFile())
 		return
 	}
@@ -77,7 +82,7 @@ func main() {
 }
 
 func previewFile() error {
-	p, err := preview.NewPreviewStruct(common.Cfg)
+	p, err := preview.NewPreviewStruct(c)
 	if err != nil {
 		return err
 	}
@@ -86,7 +91,7 @@ func previewFile() error {
 
 func saveRows() error {
 	// new save struct
-	s, err := save.NewSaveStruct(common.Cfg)
+	s, err := save.NewSaveStruct(c)
 	if err != nil {
 		return err
 	}
@@ -94,38 +99,44 @@ func saveRows() error {
 	// query and save result
 	common.PanicIfError(s.Save())
 
-	// check save status
-	return s.CheckStatus()
+	// show save status
+	return s.ShowStatus()
 }
 
 func lintFile() error {
-	// check file format
-	common.PanicIfError(lint.Lint())
+	l, err := lint.NewLintStruct(c)
+	if err != nil {
+		return err
+	}
 
-	// check lint status
-	return lint.CheckStatus()
+	// check file format
+	common.PanicIfError(l.Lint())
+
+	// show lint status
+	return l.ShowStatus()
 }
 
 func emportFile() error {
-	e, err := emport.NewEmportStruct(common.Cfg)
+	e, err := emport.NewEmportStruct(c)
 	if err != nil {
 		return err
 	}
 	// import file into database
 	common.PanicIfError(e.Emport())
 
-	// check emport status
-	return e.CheckStatus()
+	// show emport status
+	return e.ShowStatus()
 }
 
 func detectRows() error {
-	err := detect.ParseSensitiveConfig()
+	d, err := detect.NewDetectStruct(c)
 	if err != nil {
 		return err
 	}
 
-	common.PanicIfError(detect.Detect())
+	// detect sensitive data
+	common.PanicIfError(d.Detect())
 
-	// check detect status
-	return detect.CheckStatus()
+	// show detect status
+	return d.ShowStatus()
 }

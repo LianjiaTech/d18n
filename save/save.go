@@ -20,8 +20,8 @@ import (
 	"strings"
 	"time"
 
-	"d18n/common"
-	"d18n/mask"
+	"github.com/LianjiaTech/d18n/common"
+	"github.com/LianjiaTech/d18n/mask"
 )
 
 type saveStatus struct {
@@ -33,9 +33,9 @@ type saveStatus struct {
 }
 
 type SaveStruct struct {
-	CommonConfig common.Config    // common config
-	Status       saveStatus       // save status
-	Masker       *mask.MaskStruct // masker
+	Config common.Config    // common config
+	Status saveStatus       // save status
+	Masker *mask.MaskStruct // masker
 }
 
 func NewSaveStruct(c common.Config) (*SaveStruct, error) {
@@ -46,8 +46,8 @@ func NewSaveStruct(c common.Config) (*SaveStruct, error) {
 	}
 
 	s = &SaveStruct{
-		CommonConfig: c,
-		Masker:       m,
+		Config: c,
+		Masker: m,
 	}
 	return s, err
 }
@@ -55,7 +55,7 @@ func NewSaveStruct(c common.Config) (*SaveStruct, error) {
 func (s *SaveStruct) Save() error {
 	// execute sql and get all result rows
 	queryStartTime := time.Now().UnixNano()
-	rows, err := common.QueryRows()
+	rows, err := s.Config.QueryRows()
 	if err != nil {
 		return err
 	}
@@ -90,26 +90,26 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(s.CommonConfig.File), "."))
+	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(s.Config.File), "."))
 	switch suffix {
 	case "": // stdout ascii table
-		if strings.EqualFold(s.CommonConfig.File, "stdout") {
-			s.CommonConfig.Comma = '\t'
+		if strings.EqualFold(s.Config.File, "stdout") {
+			s.Config.Comma = '\t'
 			err = saveRows2CSV(s, rows)
 		} else {
 			err = saveRows2ASCII(s, rows)
 		}
 	case "tsv": // tab-separated values
-		s.CommonConfig.Comma = '\t'
+		s.Config.Comma = '\t'
 		err = saveRows2CSV(s, rows)
 	case "txt": // space-separated values
-		s.CommonConfig.Comma = ' '
+		s.Config.Comma = ' '
 		err = saveRows2CSV(s, rows)
 	case "psv": // pipe-separated values
-		s.CommonConfig.Comma = '|'
+		s.Config.Comma = '|'
 		err = saveRows2CSV(s, rows)
 	case "csv": // comma-separated values
-		s.CommonConfig.Comma = ','
+		s.Config.Comma = ','
 		err = saveRows2CSV(s, rows)
 	case "html": // html
 		err = saveRows2HTML(s, rows)
@@ -126,17 +126,17 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	return err
 }
 
-// CheckStatus check SaveRows status at last
-func (s *SaveStruct) CheckStatus() error {
+// ShowStatus check SaveRows status at last
+func (s *SaveStruct) ShowStatus() error {
 	var err error
 
 	// like QueryRow, should get result, but return empty set raise error
-	if s.CommonConfig.CheckEmpty && s.Status.Lines == 0 {
+	if s.Config.CheckEmpty && s.Status.Lines == 0 {
 		err = fmt.Errorf(common.WrongEmptySet)
 	}
 
 	// verbose mode print
-	if !s.CommonConfig.Verbose {
+	if !s.Config.Verbose {
 		return err
 	}
 	println(

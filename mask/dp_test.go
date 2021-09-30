@@ -17,13 +17,13 @@ import (
 	"fmt"
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func init() {
 	common.InitTestEnv()
-	ParseCipherConfig(common.Cfg.Cipher)
-	InitMaskCorpus(common.Cfg.RandSeed)
+	ParseCipherConfig(common.TestConfig.Cipher)
+	InitMaskCorpus(common.TestConfig.RandSeed)
 }
 
 func TestLaplaceDPFloat64(t *testing.T) {

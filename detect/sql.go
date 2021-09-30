@@ -16,10 +16,11 @@ package detect
 import (
 	"bufio"
 	"bytes"
-	"d18n/common"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/pingcap/parser"
 	"github.com/pingcap/parser/ast"
@@ -27,27 +28,27 @@ import (
 	_ "github.com/pingcap/tidb/types/parser_driver"
 )
 
-func detectSQL() error {
+func (d *DetectStruct) detectSQL() error {
 	var err error
-	f, err := os.Open(common.Cfg.File)
+	f, err := os.Open(d.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, common.Cfg.MaxBufferSize)
+	s.Buffer([]byte{}, d.Config.MaxBufferSize)
 	s.Split(common.SQLReadLine)
 
 	// new sql parser
 	p := parser.New()
-	if common.Cfg.ANSIQuotes {
+	if d.Config.ANSIQuotes {
 		mode, _ := mysql.GetSQLMode("ANSI_QUOTES")
 		p.SetSQLMode(mode)
 	}
 
 	for s.Scan() {
-		detectStatus.Lines++
+		d.Status.Lines++
 
 		if strings.TrimSpace(s.Text()) == "" {
 			continue
@@ -66,13 +67,13 @@ func detectSQL() error {
 			}
 
 			// check column names
-			if detectStatus.Lines == 1 {
-				if !common.Cfg.NoHeader && common.Cfg.Schema == "" {
+			if d.Status.Lines == 1 {
+				if !d.Config.NoHeader && d.Config.Schema == "" {
 					for _, col := range stmtNode.Columns {
-						detectStatus.Header = append(detectStatus.Header, common.HeaderColumn{Name: col.String()})
+						d.Status.Header = append(d.Status.Header, common.HeaderColumn{Name: col.String()})
 					}
 				}
-				checkFileHeader(detectStatus.Header)
+				d.checkHeader()
 			}
 
 			// check value
@@ -85,7 +86,7 @@ func detectSQL() error {
 				}
 
 				for j, value := range row {
-					detectStatus.Columns[detectStatus.Header[j].Name] = append(detectStatus.Columns[detectStatus.Header[j].Name], checkValue(value)...)
+					d.Status.Columns[d.Status.Header[j].Name] = append(d.Status.Columns[d.Status.Header[j].Name], d.checkValue(value)...)
 				}
 			}
 		default:
@@ -94,7 +95,7 @@ func detectSQL() error {
 	}
 	if s.Err() != nil {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes or error comment
-		return fmt.Errorf("line: %d, %s", detectStatus.Lines+1, s.Err().Error())
+		return fmt.Errorf("line: %d, %s", d.Status.Lines+1, s.Err().Error())
 	}
 	return err
 }

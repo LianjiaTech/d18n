@@ -16,27 +16,27 @@ package emport
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportHTML(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.html"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 2
-	common.Cfg.Table = "actor_new"
-	common.Cfg.Replace = true
-	common.Cfg.CompleteInsert = true
-	common.Cfg.Verbose = true
-	testES.CommonConfig = common.Cfg
+	common.TestConfig.File = common.TestPath + "/test/actor.html"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 2
+	common.TestConfig.Table = "actor_new"
+	common.TestConfig.Replace = true
+	common.TestConfig.CompleteInsert = true
+	common.TestConfig.Verbose = true
+	testES.Config = common.TestConfig
 
-	conn, _ := common.NewConnection()
+	conn, _ := common.TestConfig.NewConnection()
 	err := emportHTML(testES, conn)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 
 }

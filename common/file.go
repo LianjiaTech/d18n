@@ -74,27 +74,27 @@ Notice:
 */
 
 // SQLInsertPrefix ...
-func SQLInsertPrefix(header Row) (string, error) {
+func (c Config) SQLInsertPrefix(header Row) (string, error) {
 	var prefix string
 	var err error
 
-	if Cfg.Table == "" {
+	if c.Table == "" {
 		return prefix, fmt.Errorf("no table name")
 	}
 
 	// complete insert statement
 	var columnName string
 	var columnFilter []string
-	if Cfg.CompleteInsert {
+	if c.CompleteInsert {
 		for i, v := range header {
 			var ignore bool
-			for _, name := range Cfg.IgnoreColumns {
+			for _, name := range c.IgnoreColumns {
 				if strings.EqualFold(name, v) {
 					ignore = true
 					break
 				}
 			}
-			header[i] = QuoteKey(v)
+			header[i] = c.QuoteKey(v)
 			if !ignore {
 				columnFilter = append(columnFilter, header[i])
 			}
@@ -103,20 +103,20 @@ func SQLInsertPrefix(header Row) (string, error) {
 	}
 
 	// Table name
-	tableName := fmt.Sprint(QuoteKey(Cfg.Table))
+	tableName := fmt.Sprint(c.QuoteKey(c.Table))
 
 	// INSERT
 	prefix = fmt.Sprintf("INSERT INTO %s %s VALUES ",
 		tableName, columnName)
 
 	// REPLACE
-	if Cfg.Replace {
+	if c.Replace {
 		prefix = fmt.Sprintf("REPLACE INTO %s %s VALUES ",
 			tableName, columnName)
 	}
 
 	// UPDATE
-	if len(Cfg.Update) > 0 {
+	if len(c.Update) > 0 {
 		prefix = fmt.Sprintf("UPDATE %s SET ", tableName)
 	}
 
@@ -124,7 +124,7 @@ func SQLInsertPrefix(header Row) (string, error) {
 }
 
 // SQLInsertValues concat values to string
-func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, error) {
+func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, error) {
 	if len(header) != len(columns) {
 		return "", fmt.Errorf("%s, header: %v", WrongArgsCount, header)
 	}
@@ -135,7 +135,7 @@ func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, e
 	for i, col := range columns {
 		// --ignore-columns
 		var ignore bool
-		for _, name := range Cfg.IgnoreColumns {
+		for _, name := range c.IgnoreColumns {
 			if strings.EqualFold(name, header[i].Name) {
 				ignore = true
 				break
@@ -147,16 +147,16 @@ func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, e
 
 		var value string
 		if !col.Valid {
-			value = Cfg.NULLString
+			value = c.NULLString
 			// UPDATE set
-			if len(Cfg.Update) > 0 {
-				updateSet = append(updateSet, fmt.Sprintf("%s=NULL", QuoteKey(header[i].Name)))
+			if len(c.Update) > 0 {
+				updateSet = append(updateSet, fmt.Sprintf("%s=NULL", c.QuoteKey(header[i].Name)))
 			}
 
 			// UPDATE where
-			for _, k := range Cfg.Update {
+			for _, k := range c.Update {
 				if strings.EqualFold(k, header[i].Name) {
-					updateWhere = append(updateWhere, fmt.Sprintf("%s IS NULL", QuoteKey(header[i].Name)))
+					updateWhere = append(updateWhere, fmt.Sprintf("%s IS NULL", c.QuoteKey(header[i].Name)))
 					break
 				}
 			}
@@ -176,38 +176,38 @@ func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, e
 					"NUMBER", "NUMERIC", "REAL", "SINGLE", "CURRENCY", "AUTONUMBER", "SMALLMONEY", "MONEY":
 					value = col.String
 				case "RAW": // Oracle RAW data
-					value = QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
+					value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
 				default:
 					// LONG: in Oracle means string, in SQL Server means big integer
-					if Cfg.Server == "sqlserver" && strings.EqualFold(header[i].DatabaseType, "LONG") {
+					if c.Server == "sqlserver" && strings.EqualFold(header[i].DatabaseType, "LONG") {
 						value = col.String
 						break
 					}
 
 					// hex-blob
-					v, hexed := HexBLOB(header[i].Name, col.String)
+					v, hexed := c.Hex(header[i].Name, col.String)
 					if hexed {
 						value = v
 					} else {
 						switch ty {
 						case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
-							value = "N" + QuoteString(col.String)
+							value = "N" + c.QuoteString(col.String)
 						default:
-							value = QuoteString(col.String)
+							value = c.QuoteString(col.String)
 						}
 					}
 				}
 			}
 
 			// UPDATE set
-			if len(Cfg.Update) > 0 {
-				updateSet = append(updateSet, fmt.Sprintf("%s=%s", QuoteKey(header[i].Name), value))
+			if len(c.Update) > 0 {
+				updateSet = append(updateSet, fmt.Sprintf("%s=%s", c.QuoteKey(header[i].Name), value))
 			}
 
 			// UPDATE where
-			for _, k := range Cfg.Update {
+			for _, k := range c.Update {
 				if strings.EqualFold(k, header[i].Name) {
-					updateWhere = append(updateWhere, fmt.Sprintf("%s=%s", QuoteKey(header[i].Name), value))
+					updateWhere = append(updateWhere, fmt.Sprintf("%s=%s", c.QuoteKey(header[i].Name), value))
 					break
 				}
 			}
@@ -216,7 +216,7 @@ func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, e
 		values = append(values, value)
 	}
 
-	if len(Cfg.Update) > 0 && len(updateWhere) > 0 {
+	if len(c.Update) > 0 && len(updateWhere) > 0 {
 		return fmt.Sprintf("%s WHERE %s",
 			strings.Join(updateSet, ", "),
 			strings.Join(updateWhere, " AND "),
@@ -226,21 +226,21 @@ func SQLInsertValues(header []HeaderColumn, columns []sql.NullString) (string, e
 	return fmt.Sprintf("(%s)", strings.Join(values, ", ")), nil
 }
 
-func SQLMultiValues(counter int, prefix, values string) string {
+func (c Config) SQLMultiValues(counter int, prefix, values string) string {
 	delimiter := ";\n"
 
 	// skip-extended-insert
-	if Cfg.ExtendedInsert <= 1 {
+	if c.ExtendedInsert <= 1 {
 		return fmt.Sprint(prefix, values, delimiter)
 	}
 
 	// UPDATE
-	if len(Cfg.Update) > 0 {
+	if len(c.Update) > 0 {
 		return fmt.Sprint(prefix, values, delimiter)
 	}
 
 	// INSERT, REPLACE
-	switch counter % Cfg.ExtendedInsert {
+	switch counter % c.ExtendedInsert {
 	case 1:
 		delimiter = ""
 	case 0:
@@ -256,10 +256,10 @@ func SQLMultiValues(counter int, prefix, values string) string {
 
 // TableTemplate get header []HeaderColumn from table tamplate
 // schema must be strict formatted, only support SHOW CREATE output info
-func TableTemplate() ([]HeaderColumn, error) {
+func (c Config) TableTemplate() ([]HeaderColumn, error) {
 	var header []HeaderColumn
 
-	createTable, err := ioutil.ReadFile(Cfg.Schema)
+	createTable, err := ioutil.ReadFile(c.Schema)
 	if err != nil {
 		return header, err
 	}
@@ -271,15 +271,15 @@ func TableTemplate() ([]HeaderColumn, error) {
 		if len(def) >= 2 {
 			// table name
 			if def[0] == "CREATE" && def[1] == "TABLE" {
-				if Cfg.Table == "" && len(def) > 2 {
-					Cfg.Table = strings.Trim(def[2], "`\"'")
+				if c.Table == "" && len(def) > 2 {
+					c.Table = strings.Trim(def[2], "`\"'")
 				}
 				continue
 			}
 
 			// ignore comment line
 			var ignore bool
-			for _, comment := range Cfg.Comments {
+			for _, comment := range c.Comments {
 				if strings.HasPrefix(def[0], comment) {
 					ignore = true
 					break
@@ -396,13 +396,13 @@ func SQLReadLine(data []byte, atEOF bool) (advance int, token []byte, err error)
 	return
 }
 
-func ParseArray(values []string) string {
+func (c Config) ParseArray(values []string) string {
 	var buf []byte
 	var err error
-	switch Cfg.Server {
+	switch c.Server {
 	case "clickhouse":
 		for i, v := range values {
-			values[i] = QuoteString(v)
+			values[i] = c.QuoteString(v)
 		}
 		buf = []byte("[" + strings.Join(values, ",") + "]")
 	case "postgres":
@@ -428,4 +428,18 @@ func SetXlsxWatermark(filename string, watermark string) error {
 		return err
 	}
 	return fd.Save()
+}
+
+func GetXlsxWatermark(filename string) (string, error) {
+	var watermark string
+	fd, err := xlsx.OpenFile(filename)
+	if err != nil {
+		return watermark, err
+	}
+	attr, err := fd.GetDocProps()
+	if err != nil {
+		return watermark, err
+	}
+	watermark = attr.Title
+	return watermark, err
 }

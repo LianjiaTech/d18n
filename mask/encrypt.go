@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/capitalone/fpe/ff1"
 	"github.com/capitalone/fpe/ff3"

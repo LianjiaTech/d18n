@@ -16,33 +16,33 @@ package lint
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/kr/pretty"
 )
 
 func TestLintXlsx(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 	levels := lintLevels
 	lintLevels = []string{"FATAL", "ERROR"}
 	// right
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestXLSXLint.right.xlsx"
-	err := lintXlsx()
+	common.TestConfig.File = common.TestPath + "/test/TestXLSXLint.right.xlsx"
+	l, _ := NewLintStruct(common.TestConfig)
+	err := l.lintXlsx()
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	// wrong
-	lintStatus = LintStatus{}
-	common.Cfg.File = common.TestPath + "/test/TestXLSXLint.wrong.xlsx"
-	err = lintXlsx()
+	common.TestConfig.File = common.TestPath + "/test/TestXLSXLint.wrong.xlsx"
+	l, _ = NewLintStruct(common.TestConfig)
+	err = l.lintXlsx()
 	if err == nil {
 		t.Errorf("file contain error, but not find")
 	}
-	pretty.Println(lintStatus)
+	pretty.Println(l.Status)
 
 	lintLevels = levels
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

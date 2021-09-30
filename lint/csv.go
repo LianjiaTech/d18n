@@ -20,8 +20,6 @@ import (
 	"os"
 	"strings"
 	"unicode"
-
-	"d18n/common"
 )
 
 // RFC4180
@@ -37,7 +35,7 @@ func dropCR(data []byte) []byte {
 }
 
 // closedQuoteLineBreak quote close and line break
-func closedQuoteLineBreak(data []byte) (int, error) {
+func (l *LintStruct) closedQuoteLineBreak(data []byte) (int, error) {
 	var closed = true
 	var head int
 	var tail = len(data)
@@ -53,16 +51,16 @@ func closedQuoteLineBreak(data []byte) (int, error) {
 					case '"':
 						// ""
 						head++
-					case common.Cfg.Comma:
+					case l.Config.Comma:
 						// ",
 						closed = !closed
 					default:
 						head++
 						for ; head < tail; head++ {
-							if !unicode.IsSpace(rune(data[head])) && rune(data[head]) != common.Cfg.Comma {
+							if !unicode.IsSpace(rune(data[head])) && rune(data[head]) != l.Config.Comma {
 								return head, fmt.Errorf("column: %d, have quote error", head-1)
 							}
-							if rune(data[head]) == '\n' || rune(data[head]) == common.Cfg.Comma {
+							if rune(data[head]) == '\n' || rune(data[head]) == l.Config.Comma {
 								closed = !closed
 								break
 							}
@@ -80,13 +78,13 @@ func closedQuoteLineBreak(data []byte) (int, error) {
 }
 
 // csvReadLine bufio.Scan() SplitFunc
-func csvReadLine(data []byte, atEOF bool) (advance int, token []byte, err error) {
+func (l *LintStruct) csvReadLine(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	if atEOF && len(data) == 0 {
 		return
 	}
 
 	// Read one csv format row from file
-	if i, e := closedQuoteLineBreak(data); i > 0 {
+	if i, e := l.closedQuoteLineBreak(data); i > 0 {
 		advance = i + 1
 		token = data[0 : i+1]
 		err = e
@@ -105,51 +103,51 @@ func csvReadLine(data []byte, atEOF bool) (advance int, token []byte, err error)
 }
 
 // csvReadRow convert raw line into cells list, reuse csv Reader
-func csvReadRow(line string) ([][]string, error) {
+func (l *LintStruct) csvReadRow(line string) ([][]string, error) {
 	r := csv.NewReader(strings.NewReader(line))
-	r.Comma = common.Cfg.Comma
+	r.Comma = l.Config.Comma
 	return r.ReadAll()
 }
 
 // lintCSV ...
-func lintCSV() error {
+func (l *LintStruct) lintCSV() error {
 	var err error
 	//var line int64
-	f, err := os.Open(common.Cfg.File)
+	f, err := os.Open(l.Config.File)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	s.Buffer([]byte{}, common.Cfg.MaxBufferSize)
-	s.Split(csvReadLine)
+	s.Buffer([]byte{}, l.Config.MaxBufferSize)
+	s.Split(l.csvReadLine)
 
 	for s.Scan() {
 		//line++
-		//lintStatus.RowCount = line
-		lintStatus.RowCount++
+		//l.Status.RowCount = line
+		l.Status.RowCount++
 		// read lines
 		raw := s.Text()
 
 		// line validation
-		err = lintLine(lintStatus.RowCount, []string{raw})
+		err = l.lintLine(l.Status.RowCount, []string{raw})
 		if err != nil {
 			return err
 		}
 
 		// read cells
-		rows, err := csvReadRow(raw)
+		rows, err := l.csvReadRow(raw)
 		if err != nil {
 			return err
 		}
 
 		// cell validation
 		for _, row := range rows {
-			if lintStatus.RowCount == 1 && !common.Cfg.NoHeader {
-				lintStatus.Header = row
+			if l.Status.RowCount == 1 && !l.Config.NoHeader {
+				l.Status.Header = row
 			}
-			err = lintCell(lintStatus.RowCount, row)
+			err = l.lintCell(l.Status.RowCount, row)
 			if err != nil {
 				return err
 			}
@@ -158,23 +156,23 @@ func lintCSV() error {
 
 	if s.Err() != nil {
 		// bufio.ErrTooLong 1. raw data too large, 2. missing quotes
-		return fmt.Errorf("line: %d, %s", lintStatus.RowCount+1, s.Err().Error())
+		return fmt.Errorf("line: %d, %s", l.Status.RowCount+1, s.Err().Error())
 	}
 
 	return err
 }
 
 // lintCSVLineBreaks ...
-func lintCSVLineBreaks(line int64, raw []string) (column int, wrong bool) {
-	lineBreakLen := len(common.Cfg.LineBreak)
+func (l *LintStruct) lintCSVLineBreaks(line int64, raw []string) (column int, wrong bool) {
+	lineBreakLen := len(l.Config.LineBreak)
 	if lineBreakLen == 0 {
 		return 0, wrong
 	}
 
-	for _, l := range raw {
-		rawLen := len(l)
+	for _, buf := range raw {
+		rawLen := len(buf)
 		if rawLen >= lineBreakLen &&
-			l[rawLen-lineBreakLen:rawLen] != string(common.Cfg.LineBreak) {
+			buf[rawLen-lineBreakLen:rawLen] != string(l.Config.LineBreak) {
 			return rawLen - lineBreakLen, true
 		}
 	}
@@ -182,9 +180,9 @@ func lintCSVLineBreaks(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCSVBlankRows  ...
-func lintCSVBlankRows(line int64, raw []string) (column int, wrong bool) {
-	for _, l := range raw {
-		if strings.TrimSpace(l) == "" {
+func (l *LintStruct) lintCSVBlankRows(line int64, raw []string) (column int, wrong bool) {
+	for _, buf := range raw {
+		if strings.TrimSpace(buf) == "" {
 			return 0, true
 		}
 	}
@@ -192,7 +190,7 @@ func lintCSVBlankRows(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCSVUnclosedQuote ...
-func lintCSVUnclosedQuote(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCSVUnclosedQuote(line int64, raw []string) (column int, wrong bool) {
 	var closed = true
 	for _, chars := range raw {
 		for _, c := range chars {
@@ -208,7 +206,7 @@ func lintCSVUnclosedQuote(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCSVWhitespace check whitespace after closed quote
-func lintCSVWhitespace(line int64, raw []string) (column int, wrong bool) {
+func (l *LintStruct) lintCSVWhitespace(line int64, raw []string) (column int, wrong bool) {
 	var closed = true
 	var hasQuote bool
 	for _, chars := range raw {
@@ -231,12 +229,12 @@ func lintCSVWhitespace(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCommentRows ...
-func lintCSVCommentRows(line int64, raw []string) (column int, wrong bool) {
-	for _, commentChars := range common.Cfg.Comments {
-		for _, l := range raw {
+func (l *LintStruct) lintCSVCommentRows(line int64, raw []string) (column int, wrong bool) {
+	for _, commentChars := range l.Config.Comments {
+		for _, buf := range raw {
 			commentLen := len(commentChars)
-			if len(l) >= commentLen && commentLen > 0 &&
-				l[:commentLen] == commentChars {
+			if len(buf) >= commentLen && commentLen > 0 &&
+				buf[:commentLen] == commentChars {
 				return 0, true
 			}
 		}
@@ -245,9 +243,9 @@ func lintCSVCommentRows(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCSVLeadingSpace ...
-func lintCSVLeadingSpace(line int64, raw []string) (column int, wrong bool) {
-	for _, l := range raw {
-		if len(l) > 0 && unicode.IsSpace(rune(l[0])) {
+func (l *LintStruct) lintCSVLeadingSpace(line int64, raw []string) (column int, wrong bool) {
+	for _, buf := range raw {
+		if len(buf) > 0 && unicode.IsSpace(rune(buf[0])) {
 			return column, true
 		}
 	}
@@ -255,12 +253,12 @@ func lintCSVLeadingSpace(line int64, raw []string) (column int, wrong bool) {
 }
 
 // lintCSVCellSpace ...
-func lintCSVCellSpace(line int64, raw []string) (column int, wrong bool) {
-	for _, l := range raw {
-		if strings.TrimSpace(l) != l {
+func (l *LintStruct) lintCSVCellSpace(line int64, raw []string) (column int, wrong bool) {
+	for _, buf := range raw {
+		if strings.TrimSpace(buf) != buf {
 			return column, true
 		}
-		column += len(l)
+		column += len(buf)
 	}
 	return 0, wrong
 }

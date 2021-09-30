@@ -40,14 +40,14 @@ import (
 	_ "github.com/mithrandie/csvq-driver"
 )
 
-func GetColumnTypes() ([]*sql.ColumnType, error) {
-	db, err := NewConnection()
+func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
+	db, err := c.NewConnection()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	sql := fmt.Sprintf("SELECT * FROM %s LIMIT 0", QuoteKey(Cfg.Table))
+	sql := fmt.Sprintf("SELECT * FROM %s LIMIT 0", c.QuoteKey(c.Table))
 
 	rows, err := db.Query(sql)
 	if err != nil {
@@ -58,60 +58,60 @@ func GetColumnTypes() ([]*sql.ColumnType, error) {
 }
 
 // QueryRows mysql query get rows
-func QueryRows() (*sql.Rows, error) {
-	db, err := NewConnection()
+func (c Config) QueryRows() (*sql.Rows, error) {
+	db, err := c.NewConnection()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	return db.Query(Cfg.Query)
+	return db.Query(c.Query)
 }
 
 // ExecResult mysql query get result
-func ExecResult() (sql.Result, error) {
-	db, err := NewConnection()
+func (c Config) ExecResult() (sql.Result, error) {
+	db, err := c.NewConnection()
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	return db.Exec(Cfg.Query)
+	return db.Exec(c.Query)
 }
 
 // newConnection init database connection
 // Go 各种数据库连接字符串汇总 | 鸟窝
 // https://colobu.com/2019/01/10/drivers-connection-string-in-Go/
-func NewConnection() (*sql.DB, error) {
+func (c Config) NewConnection() (*sql.DB, error) {
 	var dsn string
-	switch Cfg.Server {
+	switch c.Server {
 	case "mysql":
-		dsn = dsnMySQL()
+		dsn = c.dsnMySQL()
 	case "postgres":
-		dsn = dsnPostgres()
+		dsn = c.dsnPostgres()
 	case "sqlite", "csvq":
-		dsn = dsnFile()
+		dsn = c.dsnFile()
 	case "oracle":
-		dsn = dsnOracle()
+		dsn = c.dsnOracle()
 	case "sqlserver":
-		dsn = dsnSQLServer()
+		dsn = c.dsnSQLServer()
 	case "clickhouse":
-		dsn = dsnClickHouse()
+		dsn = c.dsnClickHouse()
 	case "presto":
-		dsn = dsnPresto()
+		dsn = c.dsnPresto()
 	}
 	// --dsn flag highest level
-	if Cfg.DSN != "" {
-		dsn = strings.TrimSpace(Cfg.DSN)
+	if c.DSN != "" {
+		dsn = strings.TrimSpace(c.DSN)
 	}
-	return sql.Open(Cfg.Server, dsn)
+	return sql.Open(c.Server, dsn)
 }
 
 // SetForeignKeyChecks
-func SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
+func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
 	var err error
 	var sql string
-	switch Cfg.Server {
+	switch c.Server {
 	case "sqlite":
 		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
 	case "mysql":
@@ -129,7 +129,7 @@ func SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
 		return err
 	}
 
-	if DBAvailable(conn) {
+	if c.DBAvailable(conn) {
 		_, err = conn.Exec(sql)
 	} else {
 		fmt.Println(sql)
@@ -139,66 +139,66 @@ func SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
 }
 
 // dsnMySQL concat mysql dsn string
-func dsnMySQL() string {
+func (c Config) dsnMySQL() string {
 	var dsn string
-	if Cfg.Socket != "" {
+	if c.Socket != "" {
 		dsn = fmt.Sprintf("%s:%s@unix(%s)/%s?charset=%s",
-			Cfg.User, Cfg.Password, Cfg.Socket, Cfg.Database, Cfg.Charset)
+			c.User, c.Password, c.Socket, c.Database, c.Charset)
 	} else {
 		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
-			Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database, Cfg.Charset)
+			c.User, c.Password, c.Host, c.Port, c.Database, c.Charset)
 	}
 	return dsn
 }
 
 // dsnPostgres concat postgres dsn string
-func dsnPostgres() string {
+func (c Config) dsnPostgres() string {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database)
+		c.User, c.Password, c.Host, c.Port, c.Database)
 	return dsn
 }
 
 // dsnFile sqlite, csv database file string
-func dsnFile() string {
+func (c Config) dsnFile() string {
 	pwd, _ := os.Getwd()
-	if !filepath.IsAbs(Cfg.Database) {
-		Cfg.Database = filepath.Join(pwd, Cfg.Database)
+	if !filepath.IsAbs(c.Database) {
+		c.Database = filepath.Join(pwd, c.Database)
 	}
 
-	return Cfg.Database
+	return c.Database
 }
 
 // dsnOracle concat oracle dsn string
-func dsnOracle() string {
+func (c Config) dsnOracle() string {
 	return fmt.Sprintf("oracle://%s:%s@%s:%s/%s",
-		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database,
+		c.User, c.Password, c.Host, c.Port, c.Database,
 	)
 }
 
 // dsnSQLServer concat sqlserver dsn string
-func dsnSQLServer() string {
+func (c Config) dsnSQLServer() string {
 	return fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
-		Cfg.User, Cfg.Password, Cfg.Host, Cfg.Port, Cfg.Database,
+		c.User, c.Password, c.Host, c.Port, c.Database,
 	)
 }
 
 // dsnClickHouse concat ClickHouse dsn string
-func dsnClickHouse() string {
+func (c Config) dsnClickHouse() string {
 	return fmt.Sprintf("tcp://%s:%s?username=%s&password=%s&database=%s",
-		Cfg.Host, Cfg.Port, Cfg.User, Cfg.Password, Cfg.Database,
+		c.Host, c.Port, c.User, c.Password, c.Database,
 	)
 }
 
 // dsnPresto concat PrestoDB dsn string
-func dsnPresto() string {
-	return fmt.Sprintf("http://%s@%s:%s", Cfg.User, Cfg.Host, Cfg.Port)
+func (c Config) dsnPresto() string {
+	return fmt.Sprintf("http://%s@%s:%s", c.User, c.Host, c.Port)
 }
 
 // DBParseNullString convert []string to []sql.NullString
-func DBParseNullString(header []HeaderColumn, columns []string) []sql.NullString {
+func (c Config) DBParseNullString(header []HeaderColumn, columns []string) []sql.NullString {
 	values := make([]sql.NullString, len(columns))
 	for i, col := range columns {
-		if col == Cfg.NULLString {
+		if col == c.NULLString {
 			values[i] = sql.NullString{String: col, Valid: false}
 		} else {
 			values[i] = sql.NullString{String: col, Valid: true}
@@ -208,7 +208,7 @@ func DBParseNullString(header []HeaderColumn, columns []string) []sql.NullString
 }
 
 // DBParserColumnNames convert *sql.ColumnType to column name string list
-func DBParserColumnNames(header []*sql.ColumnType) []string {
+func (c Config) DBParserColumnNames(header []*sql.ColumnType) []string {
 	var columns []string
 	for _, h := range header {
 		columns = append(columns, h.Name())
@@ -217,7 +217,7 @@ func DBParserColumnNames(header []*sql.ColumnType) []string {
 }
 
 // DBParseHeaderColumn convert []HeaderColumn to column name string list
-func DBParseHeaderColumn(header []HeaderColumn) []string {
+func (c Config) DBParseHeaderColumn(header []HeaderColumn) []string {
 	var columns []string
 	for _, h := range header {
 		columns = append(columns, h.Name)
@@ -226,7 +226,7 @@ func DBParseHeaderColumn(header []HeaderColumn) []string {
 }
 
 // DBParseColumnTypes convert *sql.ColumnType to self define HeaderColumn list
-func DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
+func (c Config) DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
 	var headerColumns []HeaderColumn
 	for _, h := range header {
 		headerColumns = append(headerColumns, HeaderColumn{
@@ -239,7 +239,7 @@ func DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
 }
 
 // DBAvailable ...
-func DBAvailable(conn *sql.DB) bool {
+func (c Config) DBAvailable(conn *sql.DB) bool {
 	if conn == nil {
 		return false
 	}
@@ -247,15 +247,15 @@ func DBAvailable(conn *sql.DB) bool {
 	return err == nil
 }
 
-func QuoteString(str string) string {
+func (c Config) QuoteString(str string) string {
 	// How to escape special characters in Oracle SQL?
 	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
 
-	switch Cfg.Server {
+	switch c.Server {
 	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq
-		if Cfg.ANSIQuotes {
+		if c.ANSIQuotes {
 			return `'` + Escape(str) + `'`
 		} else {
 			return `"` + Escape(str) + `"`
@@ -263,8 +263,8 @@ func QuoteString(str string) string {
 	}
 }
 
-func QuoteKey(str string) string {
-	switch Cfg.Server {
+func (c Config) QuoteKey(str string) string {
+	switch c.Server {
 	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
 		return strconv.Quote(str)
 	default:
@@ -277,33 +277,33 @@ func QuoteKey(str string) string {
 }
 
 // HexBLOB ...
-func HexBLOB(name string, value interface{}) (string, bool) {
+func (c Config) Hex(name string, value interface{}) (string, bool) {
 	var hexed bool
-	for _, k := range Cfg.HexBLOB {
+	for _, k := range c.HexBLOB {
 		if k == "*" || strings.EqualFold(k, name) {
 			hexed = true
-			return hexBLOB(fmt.Sprint(value)), hexed
+			return c.hex(fmt.Sprint(value)), hexed
 		}
 	}
 	return fmt.Sprint(value), hexed
 }
 
 // hexBLOB hex-blob column
-func hexBLOB(value interface{}) string {
+func (c Config) hex(value interface{}) string {
 	var ret = fmt.Sprint(value)
 
-	if len(Cfg.HexBLOB) == 0 {
+	if len(c.HexBLOB) == 0 {
 		return ret
 	}
 
-	switch Cfg.Server {
+	switch c.Server {
 	case "postgres":
 		return `'\x` + hex.EncodeToString([]byte(ret)) + "'::bytea"
 	case "sqlite":
 		return "X'" + hex.EncodeToString([]byte(ret)) + "'"
 	case "oracle":
 		// https://www.sqlines.com/oracle/datatypes/raw
-		return QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
+		return c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
 	case "csvq", "clickhouse", "presto":
 		// not support binary data
 	default: // mysql, mariadb, tidb, sql server

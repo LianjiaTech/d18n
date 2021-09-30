@@ -1,4 +1,4 @@
-module d18n
+module github.com/LianjiaTech/d18n
 
 go 1.16
 

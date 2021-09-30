@@ -16,20 +16,21 @@ package detect
 import (
 	"testing"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 )
 
 func TestEmportHTML(t *testing.T) {
-	orgCfg := common.Cfg
+	orgCfg := common.TestConfig
 
-	common.Cfg.File = common.TestPath + "/test/actor.html"
-	common.Cfg.User = ""
-	common.Cfg.Limit = 10
-
-	err := detectHTML()
+	common.TestConfig.File = common.TestPath + "/test/actor.html"
+	common.TestConfig.User = ""
+	common.TestConfig.Limit = 10
+	d, _ := NewDetectStruct(common.TestConfig)
+	d.Status = detectTestStatus
+	err := d.detectHTML()
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	common.Cfg = orgCfg
+	common.TestConfig = orgCfg
 }

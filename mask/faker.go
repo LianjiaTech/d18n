@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"d18n/common"
+	"github.com/LianjiaTech/d18n/common"
 
 	"github.com/brianvoe/gofakeit/v6"
 	regen "github.com/zach-klippenstein/goregen"
