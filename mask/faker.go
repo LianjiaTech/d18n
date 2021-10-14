@@ -171,6 +171,9 @@ func Fake(args ...interface{}) (ret string, err error) {
 		return faker.Email(), nil
 	case "ssn": // American Social Security number
 		return faker.SSN(), nil
+	case "birthday":
+		daysAgo := faker.Number(0, 365*100) // last 100 years random date
+		return time.Now().Add(-time.Duration(daysAgo) * 24 * time.Hour).Format("2006-01-02"), nil
 	case "cc", "creditcard":
 		return faker.CreditCard().Number, nil
 	case "url":

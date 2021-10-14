@@ -29,7 +29,7 @@ const (
 	WrongArgsCount   = `arguments count mismatch`
 	WrongMaskFunc    = `wrong mask function`
 	WrongArgValue    = `wrong arguments`
-	WrongQuotesValue = `ANSI_QUOTES  mode values not support double quotes`
+	WrongQuotesValue = `ANSI_QUOTES mode values not support double quotes`
 	WrongColumnsCnt  = `columns count mismatch`
 	WrongLargeThan0  = `n should large than 0`
 )
