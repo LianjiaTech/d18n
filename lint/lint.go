@@ -202,7 +202,7 @@ func (l *LintStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !l.Config.Verbose {
+	if len(l.Config.Verbose) == 0 {
 		return err
 	}
 	println("")

@@ -160,7 +160,7 @@ func (e *EmportStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !e.Config.Verbose {
+	if len(e.Config.Verbose) == 0 {
 		return err
 	}
 	println(

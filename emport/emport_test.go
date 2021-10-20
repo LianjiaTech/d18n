@@ -76,7 +76,7 @@ func TestEmportRows(t *testing.T) {
 
 func TestCheckStatus(t *testing.T) {
 	orgCfg := common.TestConfig
-	common.TestConfig.Verbose = true
+	common.TestConfig.Verbose = []bool{true}
 
 	e, err := NewEmportStruct(common.TestConfig)
 	if err != nil {

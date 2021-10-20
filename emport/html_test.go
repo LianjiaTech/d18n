@@ -28,7 +28,7 @@ func TestEmportHTML(t *testing.T) {
 	common.TestConfig.Table = "actor_new"
 	common.TestConfig.Replace = true
 	common.TestConfig.CompleteInsert = true
-	common.TestConfig.Verbose = true
+	common.TestConfig.Verbose = []bool{true}
 	testES.Config = common.TestConfig
 
 	conn, _ := common.TestConfig.NewConnection()

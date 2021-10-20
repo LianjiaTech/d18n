@@ -45,7 +45,7 @@ type Config struct {
 	Cipher                  string // cipher config file
 	Mask                    string // mask config file, csv format
 	Sensitive               string // sensitive data detection config
-	Verbose                 bool   // verbose mod
+	Verbose                 []bool // verbose mod
 	CheckEmpty              bool   // check empty result, if empty raise error
 	BOM                     bool   // add BOM ahead of plain text file, windows unicode chaos
 	NULLString              string // NULL value write in file, e.g., NULL, None, nil, ""

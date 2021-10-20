@@ -60,7 +60,7 @@ func TestCheckStatus(t *testing.T) {
 		},
 	}
 
-	common.TestConfig.Verbose = true
+	common.TestConfig.Verbose = []bool{true}
 	err := s.ShowStatus()
 	if err != nil {
 		t.Error(err.Error())

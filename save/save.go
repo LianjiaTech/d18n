@@ -136,14 +136,20 @@ func (s *SaveStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !s.Config.Verbose {
+	if len(s.Config.Verbose) == 0 {
 		return err
 	}
-	println(
-		"Get rows:", s.Status.Lines,
-		"Query cost:", fmt.Sprint(time.Duration(s.Status.QueryTimeCost)*time.Nanosecond),
-		"Save cost:", fmt.Sprint(time.Duration(s.Status.SaveTimeCost)*time.Nanosecond),
-		"Total Cost:", fmt.Sprint(time.Duration(s.Status.TimeCost)*time.Nanosecond),
-	)
+	if len(s.Config.Verbose) >= 1 {
+		println(
+			"Get rows:", s.Status.Lines,
+			"Query cost:", fmt.Sprint(time.Duration(s.Status.QueryTimeCost)*time.Nanosecond),
+		)
+	}
+	if len(s.Config.Verbose) >= 2 {
+		println(
+			"Save cost:", fmt.Sprint(time.Duration(s.Status.SaveTimeCost)*time.Nanosecond),
+			"Total Cost:", fmt.Sprint(time.Duration(s.Status.TimeCost)*time.Nanosecond),
+		)
+	}
 	return err
 }

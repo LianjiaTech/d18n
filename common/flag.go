@@ -35,7 +35,7 @@ func ParseFlags() (Config, error) {
 	var c Config
 
 	type option struct {
-		Verbose bool         `short:"v" long:"verbose" required:"false" description:"verbose mode"`
+		Verbose []bool       `short:"v" long:"verbose" required:"false" description:"verbose mode"`
 		Help    func() error `long:"help" required:"false" description:"Show this help message"`
 
 		// database config

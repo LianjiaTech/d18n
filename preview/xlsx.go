@@ -46,11 +46,12 @@ func previewXlsx(p *PreviewStruct) error {
 		}
 	}
 
-	if p.Config.Verbose {
-		watermark, err := common.GetXlsxWatermark(p.Config.File)
-		if err == nil && watermark != "" {
-			println("\nWatermark:", watermark)
-		}
+	if len(p.Config.Verbose) == 0 {
+		return err
+	}
+	watermark, err := common.GetXlsxWatermark(p.Config.File)
+	if err == nil && watermark != "" {
+		println("\nWatermark:", watermark)
 	}
 	return nil
 }
