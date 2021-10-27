@@ -1,0 +1,11 @@
+# Useful SQLs
+## SQLite3
+# SELECT '' AS table_schema, name AS table_name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' ORDER BY name
+
+.PHONY: test-sqlite
+test-sqlite: build
+	# test detect text for nil ScanType
+	@./bin/d18n \
+	--detect --server sqlite \
+	--table film_text \
+	--database test/sakila.sqlite3

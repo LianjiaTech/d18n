@@ -229,9 +229,13 @@ func (c Config) DBParseHeaderColumn(header []HeaderColumn) []string {
 func (c Config) DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
 	var headerColumns []HeaderColumn
 	for _, h := range header {
+		var scanType string
+		if h.ScanType() != nil { // some database drive will not set ScanType, eg. sqlite
+			scanType = h.ScanType().Name()
+		}
 		headerColumns = append(headerColumns, HeaderColumn{
 			Name:         h.Name(),
-			ScanType:     h.ScanType().Name(),
+			ScanType:     scanType,
 			DatabaseType: h.DatabaseTypeName(),
 		})
 	}
