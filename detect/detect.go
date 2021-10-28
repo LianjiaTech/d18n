@@ -241,7 +241,7 @@ func (d *DetectStruct) ShowStatus() error {
 	fmt.Println(string(s))
 
 	// verbose mode
-	if !d.Config.Verbose {
+	if len(d.Config.Verbose) == 0 {
 		return nil
 	}
 

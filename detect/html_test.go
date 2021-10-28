@@ -19,7 +19,7 @@ import (
 	"github.com/LianjiaTech/d18n/common"
 )
 
-func TestEmportHTML(t *testing.T) {
+func TestDetectHTML(t *testing.T) {
 	orgCfg := common.TestConfig
 
 	common.TestConfig.File = common.TestPath + "/test/actor.html"

@@ -35,7 +35,7 @@ func ParseFlags() (Config, error) {
 	var c Config
 
 	type option struct {
-		Verbose bool         `short:"v" long:"verbose" required:"false" description:"verbose mode"`
+		Verbose []bool       `short:"v" long:"verbose" required:"false" description:"verbose mode"`
 		Help    func() error `long:"help" required:"false" description:"Show this help message"`
 
 		// database config
@@ -283,7 +283,7 @@ func ParseFlags() (Config, error) {
 		c.Table = strings.Split(filepath.Base(c.File), ".")[0]
 	}
 
-	if c.Server == "sqlite" &&
+	if (c.Server == "sqlite" || c.Server == "sqlite3") &&
 		c.Database == "" && c.DSN == "" {
 		println("sqlite should specified `--database DATA_FILE` arg")
 		os.Exit(1)

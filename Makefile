@@ -1,6 +1,8 @@
 default: build
 
 include test/Makefile.mysql
+include test/Makefile.csvq
+include test/Makefile.sqlite
 include test/Makefile.postgres
 include test/Makefile.oracle
 include test/Makefile.mssql
@@ -109,7 +111,7 @@ cover: test
 			{print "$(CYELLOW)"$$0"%$(CEND)"}}'
 
 .PHONY: ci
-ci: cover test-mysql check-diff
+ci: cover test-mysql test-sqlite check-diff
 
 .PHONY: mask-typo
 mask-typo:

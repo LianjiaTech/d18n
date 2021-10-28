@@ -74,6 +74,7 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 
 		// limit return rows
 		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
+			s.Status.Lines = s.Config.Limit
 			break
 		}
 

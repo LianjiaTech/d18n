@@ -31,6 +31,7 @@ func TestEmportSQL(t *testing.T) {
 	common.TestConfig.Table = "actor_sql"
 	common.TestConfig.Database = "sakila"
 	testES.Config = common.TestConfig
+	testES.Status.Lines = 0
 
 	conn, _ := common.TestConfig.NewConnection()
 	err := emportSQL(testES, conn)

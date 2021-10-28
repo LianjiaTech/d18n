@@ -202,7 +202,7 @@ func (l *LintStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !l.Config.Verbose {
+	if len(l.Config.Verbose) == 0 {
 		return err
 	}
 	println("")
@@ -263,7 +263,7 @@ func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column 
 				if len(c) > 128 {
 					return k + 1, true
 				}
-			case "sqlite":
+			case "sqlite", "sqlite3":
 				if len(c) > 30 {
 					return k + 1, true
 				}

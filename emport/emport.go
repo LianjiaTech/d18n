@@ -47,6 +47,9 @@ func NewEmportStruct(c common.Config) (*EmportStruct, error) {
 	e = &EmportStruct{
 		Masker: m,
 		Config: c,
+		Status: emportStatus{
+			Lines: 0,
+		},
 	}
 	return e, nil
 }
@@ -160,7 +163,7 @@ func (e *EmportStruct) ShowStatus() error {
 	}
 
 	// verbose mode print
-	if !e.Config.Verbose {
+	if len(e.Config.Verbose) == 0 {
 		return err
 	}
 	println(

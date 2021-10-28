@@ -89,7 +89,7 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = c.dsnMySQL()
 	case "postgres":
 		dsn = c.dsnPostgres()
-	case "sqlite", "csvq":
+	case "sqlite", "sqlite3", "csvq", "csv":
 		dsn = c.dsnFile()
 	case "oracle":
 		dsn = c.dsnOracle()
@@ -104,6 +104,13 @@ func (c Config) NewConnection() (*sql.DB, error) {
 	if c.DSN != "" {
 		dsn = strings.TrimSpace(c.DSN)
 	}
+
+	switch c.Server {
+	case "sqlite", "sqlite3":
+		c.Server = "sqlite"
+	case "csvq", "csv":
+		c.Server = "csvq"
+	}
 	return sql.Open(c.Server, dsn)
 }
 
@@ -112,11 +119,11 @@ func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) e
 	var err error
 	var sql string
 	switch c.Server {
-	case "sqlite":
+	case "sqlite", "sqlite3":
 		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
 	case "mysql":
 		sql = fmt.Sprintf("SET FOREIGN_KEY_CHECKS = %v;", enable)
-	case "csvq", "clickhouse", "presto":
+	case "csvq", "csv", "clickhouse", "presto":
 		return fmt.Errorf("not support foreign key")
 	case "postgres":
 		if enable {
@@ -229,9 +236,13 @@ func (c Config) DBParseHeaderColumn(header []HeaderColumn) []string {
 func (c Config) DBParseColumnTypes(header []*sql.ColumnType) []HeaderColumn {
 	var headerColumns []HeaderColumn
 	for _, h := range header {
+		var scanType string
+		if h.ScanType() != nil { // some database drive will not set ScanType, eg. sqlite
+			scanType = h.ScanType().Name()
+		}
 		headerColumns = append(headerColumns, HeaderColumn{
 			Name:         h.Name(),
-			ScanType:     h.ScanType().Name(),
+			ScanType:     scanType,
 			DatabaseType: h.DatabaseTypeName(),
 		})
 	}
@@ -299,12 +310,12 @@ func (c Config) hex(value interface{}) string {
 	switch c.Server {
 	case "postgres":
 		return `'\x` + hex.EncodeToString([]byte(ret)) + "'::bytea"
-	case "sqlite":
+	case "sqlite", "sqlite3":
 		return "X'" + hex.EncodeToString([]byte(ret)) + "'"
 	case "oracle":
 		// https://www.sqlines.com/oracle/datatypes/raw
 		return c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
-	case "csvq", "clickhouse", "presto":
+	case "csvq", "csv", "clickhouse", "presto":
 		// not support binary data
 	default: // mysql, mariadb, tidb, sql server
 		return "0x" + hex.EncodeToString([]byte(ret))

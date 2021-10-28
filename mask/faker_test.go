@@ -20,7 +20,47 @@ import (
 	"github.com/LianjiaTech/d18n/common"
 )
 
-func TestFakeName(t *testing.T) {
+func TestFake(t *testing.T) {
+	fakeData, err := Fake("name", "zh_CN")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("name", fakeData)
+	fakeData, err = Fake("birthday")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("birthday", fakeData)
+	fakeData, err = Fake("number")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("number", fakeData)
+	fakeData, err = Fake("uscc")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println(fakeData)
+	fakeData, err = Fake("license-plate", "zh_CN")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("license-plate", fakeData)
+	fakeData, err = Fake("phone", "zh_CN")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("phone", fakeData)
+
+	// `^([A-Za-z0-9_\-\.])+\@[A-Za-z0-9_\-\.]+\.[A-Za-z]{2,4}$`
+	fakeData, err = Fake("regexp-rand", `^([A-Za-z0-9_\-\.])+\@[A-Za-z0-9_\-\.]+\.[A-Za-z]{2,4}$`, 1, 1)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	fmt.Println("regexp-rand", fakeData)
+}
+
+func TestFakeRand(t *testing.T) {
 	cases := []string{
 		"name",
 		"name",
@@ -32,6 +72,8 @@ func TestFakeName(t *testing.T) {
 		"email",
 		"ssn",
 		"ssn",
+		"birthday",
+		"birthday",
 		"creditcard",
 		"creditcard",
 		"url",
@@ -96,36 +138,6 @@ func TestFakeRegexRandomData(t *testing.T) {
 func TestFakeChineseName(t *testing.T) {
 	t.Log(fakeNameByCountry("zh_CN"))
 	t.Log(fakeNameByCountry("zh_CN"))
-}
-
-func TestFake(t *testing.T) {
-	fakeData, err := Fake("name", "zh_CN")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log(fakeData)
-	fakeData, err = Fake("uscc")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log(fakeData)
-	fakeData, err = Fake("lpn", "zh_CN")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log(fakeData)
-	fakeData, err = Fake("phone", "zh_CN")
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log(fakeData)
-
-	// `^([A-Za-z0-9_\-\.])+\@[A-Za-z0-9_\-\.]+\.[A-Za-z]{2,4}$`
-	fakeData, err = Fake("regexp-rand", `^([A-Za-z0-9_\-\.])+\@[A-Za-z0-9_\-\.]+\.[A-Za-z]{2,4}$`, 1, 1)
-	if err != nil {
-		t.Error(err.Error())
-	}
-	t.Log(fakeData)
 }
 
 func Example_fakePassword() {

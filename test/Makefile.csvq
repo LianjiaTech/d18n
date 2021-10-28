@@ -1,0 +1,17 @@
+# https://github.com/mithrandie/csvq-driver
+
+.PHONY: test-csvq
+test-csvq: build
+	# test csvq query
+	@./bin/d18n --server csvq \
+	--database './test' \
+	--query 'select * from `actor.csv`' \
+	--limit 2
+
+	# test csv covert to excel & add watermark
+	@./bin/d18n --server csvq \
+	--database './test' \
+	--query 'select * from `actor.csv` limit 10' \
+	--watermark "hello world" \
+	--file ./test/actor_csvq.xlsx
+	@./bin/d18n --preview 2 --verbose --file ./test/actor_csvq.xlsx

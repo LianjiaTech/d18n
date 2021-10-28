@@ -43,10 +43,11 @@ func TestEmportCSV(t *testing.T) {
 	common.TestConfig.File = common.TestPath + "/test/actor.csv"
 	common.TestConfig.User = ""
 	common.TestConfig.Limit = 2
-	common.TestConfig.Table = "actor_new"
+	common.TestConfig.Table = "actor_csv"
 	common.TestConfig.Replace = true
 	common.TestConfig.Comma = ','
 	testES.Config = common.TestConfig
+	testES.Status.Lines = 0
 
 	conn, _ := common.TestConfig.NewConnection()
 	err := emportCSV(testES, conn)
