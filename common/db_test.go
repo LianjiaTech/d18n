@@ -129,7 +129,9 @@ func TestNewConnection(t *testing.T) {
 		"oracle",
 		"sqlserver",
 		"sqlite",
+		"sqlite3",
 		"csvq",
+		"csv",
 		"clickhouse",
 		"presto",
 	}

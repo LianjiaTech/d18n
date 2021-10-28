@@ -1,6 +1,7 @@
 default: build
 
 include test/Makefile.mysql
+include test/Makefile.csvq
 include test/Makefile.sqlite
 include test/Makefile.postgres
 include test/Makefile.oracle

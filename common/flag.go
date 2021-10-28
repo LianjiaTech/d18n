@@ -283,7 +283,7 @@ func ParseFlags() (Config, error) {
 		c.Table = strings.Split(filepath.Base(c.File), ".")[0]
 	}
 
-	if c.Server == "sqlite" &&
+	if (c.Server == "sqlite" || c.Server == "sqlite3") &&
 		c.Database == "" && c.DSN == "" {
 		println("sqlite should specified `--database DATA_FILE` arg")
 		os.Exit(1)
