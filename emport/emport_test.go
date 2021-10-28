@@ -64,7 +64,6 @@ func TestEmportRows(t *testing.T) {
 			t.Error(err.Error())
 		}
 
-		e.Status.Lines = 0
 		err = emportRows(e, conn)
 		if err != nil {
 			t.Error(err.Error())

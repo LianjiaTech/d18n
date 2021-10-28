@@ -25,11 +25,12 @@ func TestEmportHTML(t *testing.T) {
 	common.TestConfig.File = common.TestPath + "/test/actor.html"
 	common.TestConfig.User = ""
 	common.TestConfig.Limit = 2
-	common.TestConfig.Table = "actor_new"
+	common.TestConfig.Table = "actor_html"
 	common.TestConfig.Replace = true
 	common.TestConfig.CompleteInsert = true
 	common.TestConfig.Verbose = []bool{true}
 	testES.Config = common.TestConfig
+	testES.Status.Lines = 0
 
 	conn, _ := common.TestConfig.NewConnection()
 	err := emportHTML(testES, conn)
@@ -38,5 +39,4 @@ func TestEmportHTML(t *testing.T) {
 	}
 
 	common.TestConfig = orgCfg
-
 }

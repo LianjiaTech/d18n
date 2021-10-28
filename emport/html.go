@@ -114,6 +114,7 @@ func emportHTML(e *EmportStruct, conn *sql.DB) error {
 		}
 		if e.Config.Limit > 0 &&
 			(e.Status.Lines-e.Config.SkipLines) > e.Config.Limit {
+			e.Status.Lines = e.Config.Limit
 			break
 		}
 	}

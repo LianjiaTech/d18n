@@ -32,6 +32,7 @@ func TestEmportXLSX(t *testing.T) {
 	common.TestConfig.Database = "sakila"
 	common.TestConfig.Replace = false
 	testES.Config = common.TestConfig
+	testES.Status.Lines = 0
 
 	conn, _ := common.TestConfig.NewConnection()
 	err := emportXlsx(testES, conn)

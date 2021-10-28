@@ -47,6 +47,9 @@ func NewEmportStruct(c common.Config) (*EmportStruct, error) {
 	e = &EmportStruct{
 		Masker: m,
 		Config: c,
+		Status: emportStatus{
+			Lines: 0,
+		},
 	}
 	return e, nil
 }

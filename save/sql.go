@@ -50,6 +50,7 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 		s.Status.Lines++
 		// limit return rows
 		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
+			s.Status.Lines = s.Config.Limit
 			break
 		}
 
