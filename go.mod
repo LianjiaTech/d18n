@@ -27,6 +27,7 @@ require (
 	github.com/pingcap/tidb v1.1.0-beta.0.20210601085537-5d7c852770eb
 	github.com/prestodb/presto-go-client v0.0.0-20201204133205-8958eb37e584
 	github.com/sijms/go-ora/v2 v2.1.21
+	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07 // indirect
 	github.com/tealeg/xlsx/v3 v3.2.3
 	github.com/tjfoc/gmsm v1.3.2
 	github.com/wumansgy/goEncrypt v0.0.0-20201114063050-efa0a0601707

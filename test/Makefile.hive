@@ -1,0 +1,25 @@
+# https://github.com/sql-machine-learning/gohive/
+# podman pull docker.io/sqlflow/gohive:dev
+
+# Hive useful queries
+# show databases
+# show tables
+# show grant user xxxx
+
+D18N_HIVE_ARGS=--server hive --host 127.0.0.1 --port 10000 --user sqlflow --password sqlflow
+
+.PHONY: docker-hive
+docker-hive:
+	${DOCKER_CMD} run --rm -it --name d18n-hive \
+		-p 10000:10000 \
+		gohive:dev bash
+
+.PHONY: test-hive
+test-hive: build
+	# test --query
+	@./bin/d18n ${D18N_HIVE_ARGS} \
+	--query "SELECT 'Hello world', 1, 0.4, '中文'"
+	# test --detect
+	@./bin/d18n ${D18N_HIVE_ARGS} \
+	--query "select * from iris.train" --limit 10 \
+	--detect

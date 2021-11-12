@@ -38,6 +38,8 @@ import (
 	_ "github.com/prestodb/presto-go-client/presto"
 	// csvq
 	_ "github.com/mithrandie/csvq-driver"
+	// hive
+	_ "github.com/taozle/go-hive-driver"
 )
 
 func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
@@ -99,6 +101,8 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = c.dsnClickHouse()
 	case "presto":
 		dsn = c.dsnPresto()
+	case "hive":
+		dsn = c.dsnHive()
 	}
 	// --dsn flag highest level
 	if c.DSN != "" {
@@ -131,7 +135,7 @@ func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) e
 		} else {
 			sql = fmt.Sprintf("ALTER TABLE %s DISABLE TRIGGER ALL;", args[0])
 		}
-	case "oracle", "sqlserver":
+	case "oracle", "sqlserver", "hive":
 		// Notice: not suport tmp disable foreign key check by session
 		return err
 	}
@@ -201,6 +205,10 @@ func (c Config) dsnPresto() string {
 	return fmt.Sprintf("http://%s@%s:%s", c.User, c.Host, c.Port)
 }
 
+func (c Config) dsnHive() string {
+	return fmt.Sprintf("hive://%s:%s@%s:%s", c.User, c.Password, c.Host, c.Port)
+}
+
 // DBParseNullString convert []string to []sql.NullString
 func (c Config) DBParseNullString(header []HeaderColumn, columns []string) []sql.NullString {
 	values := make([]sql.NullString, len(columns))
@@ -265,7 +273,7 @@ func (c Config) QuoteString(str string) string {
 	switch c.Server {
 	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
-	default: // mysql, mariadb, tidb, sqlite, csvq
+	default: // mysql, mariadb, tidb, sqlite, csvq, hive
 		if c.ANSIQuotes {
 			return `'` + Escape(str) + `'`
 		} else {
@@ -283,7 +291,7 @@ func (c Config) QuoteKey(str string) string {
 		// backtick (`) can be used to delimit identifiers whether or not ANSI_QUOTES
 		// is enabled, but if ANSI_QUOTES is enabled, then "you cannot use double
 		// quotation marks to quote literal strings, because it is interpreted as an identifier."
-		return "`" + str + "`" // mysql, mariadb, tidb, sqlite, csvq
+		return "`" + str + "`" // mysql, mariadb, tidb, sqlite, csvq, hive
 	}
 }
 
@@ -317,6 +325,7 @@ func (c Config) hex(value interface{}) string {
 		return c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
 	case "csvq", "csv", "clickhouse", "presto":
 		// not support binary data
+	// TODO: hive
 	default: // mysql, mariadb, tidb, sql server
 		return "0x" + hex.EncodeToString([]byte(ret))
 	}

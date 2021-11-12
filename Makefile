@@ -8,6 +8,7 @@ include test/Makefile.oracle
 include test/Makefile.mssql
 include test/Makefile.clickhouse
 include test/Makefile.presto
+include test/Makefile.hive
 
 # colors compatible setting
 CRED:=$(shell tput setaf 1 2>/dev/null)
