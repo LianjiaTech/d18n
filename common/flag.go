@@ -52,6 +52,7 @@ func ParseFlags() (Config, error) {
 		Table               string `long:"table" description:"table name"`
 		Charset             string `long:"charset" default:"utf8mb4" description:"connection charset"`
 		Limit               int    `long:"limit" description:"query result lines limit"`
+		Timeout             int    `long:"timeout" description:"query timeout in seconds"`
 
 		// read from fille
 		Query            string `short:"e" long:"query" description:"query read from file or command line"`
@@ -235,6 +236,7 @@ func ParseFlags() (Config, error) {
 		Port:     fmt.Sprint(opt.Port),
 		Database: opt.Database,
 		Limit:    opt.Limit,
+		Timeout:  opt.Timeout,
 
 		Query:                   opt.Query,
 		File:                    opt.File,

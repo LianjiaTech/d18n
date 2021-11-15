@@ -14,6 +14,7 @@
 package common
 
 import (
+	"context"
 	"database/sql"
 	"encoding/hex"
 	"fmt"
@@ -21,6 +22,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	// mysql
 	_ "github.com/go-sql-driver/mysql"
@@ -49,9 +51,15 @@ func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
 	}
 	defer db.Close()
 
-	sql := fmt.Sprintf("SELECT * FROM %s LIMIT 0", c.QuoteKey(c.Table))
+	var ctx context.Context
+	ctx = context.Background()
+	if c.Timeout > 0 {
+		var ctxCancel context.CancelFunc
+		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
+		defer ctxCancel()
+	}
 
-	rows, err := db.Query(sql)
+	rows, err := db.QueryContext(ctx, fmt.Sprintf("SELECT * FROM %s LIMIT 0", c.QuoteKey(c.Table)))
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +75,14 @@ func (c Config) QueryRows() (*sql.Rows, error) {
 	}
 	defer db.Close()
 
-	return db.Query(c.Query)
+	var ctx context.Context
+	ctx = context.Background()
+	if c.Timeout > 0 {
+		var ctxCancel context.CancelFunc
+		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
+		defer ctxCancel()
+	}
+	return db.QueryContext(ctx, c.Query)
 }
 
 // ExecResult mysql query get result
@@ -78,7 +93,15 @@ func (c Config) ExecResult() (sql.Result, error) {
 	}
 	defer db.Close()
 
-	return db.Exec(c.Query)
+	var ctx context.Context
+	ctx = context.Background()
+	if c.Timeout > 0 {
+		var ctxCancel context.CancelFunc
+		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
+		defer ctxCancel()
+	}
+
+	return db.ExecContext(ctx, c.Query)
 }
 
 // newConnection init database connection

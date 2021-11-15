@@ -37,6 +37,7 @@ type Config struct {
 	Port     string
 	Database string
 	Limit    int // result lines limit
+	Timeout  int // query timeout
 
 	// other config
 	Query                   string // select query
