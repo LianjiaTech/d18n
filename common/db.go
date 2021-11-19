@@ -54,9 +54,7 @@ func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
 	var ctx context.Context
 	ctx = context.Background()
 	if c.Timeout > 0 {
-		var ctxCancel context.CancelFunc
-		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
-		defer ctxCancel()
+		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
 
 	rows, err := db.QueryContext(ctx, fmt.Sprintf("SELECT * FROM %s LIMIT 0", c.QuoteKey(c.Table)))
@@ -78,9 +76,7 @@ func (c Config) QueryRows() (*sql.Rows, error) {
 	var ctx context.Context
 	ctx = context.Background()
 	if c.Timeout > 0 {
-		var ctxCancel context.CancelFunc
-		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
-		defer ctxCancel()
+		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
 	return db.QueryContext(ctx, c.Query)
 }
@@ -96,9 +92,7 @@ func (c Config) ExecResult() (sql.Result, error) {
 	var ctx context.Context
 	ctx = context.Background()
 	if c.Timeout > 0 {
-		var ctxCancel context.CancelFunc
-		ctx, ctxCancel = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
-		defer ctxCancel()
+		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
 
 	return db.ExecContext(ctx, c.Query)

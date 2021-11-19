@@ -268,3 +268,11 @@ test-mysql: build
 	--ignore-columns first_name,last_update \
 	--complete-insert \
 	--file test/actor.ignore-columns.sql
+
+	# test timeout
+	@./bin/d18n --defaults-extra-file=test/my.cnf \
+	--query "select sleep(0.001)" \
+	--timeout 1
+	@./bin/d18n --defaults-extra-file=test/my.cnf \
+	--query "select sleep(2)" \
+	--timeout 1 || true
