@@ -55,6 +55,17 @@ test-mysql: build
 	--file test/test-mysql.sql
 	@./bin/d18n --preview 10 --file test/test-mysql.sql
 
+	# test multiStatements, set session variables
+	@./bin/d18n \
+	--dsn "root:@tcp(127.0.0.1:3306)/sakila?charset=utf8mb4&multiStatements=true" \
+	--query "set @a = 1; set @b = 2;select @a, @b;"
+
+	# test multiStatements, multi query
+	@./bin/d18n \
+	--dsn "root:@tcp(127.0.0.1:3306)/sakila?charset=utf8mb4&multiStatements=true" \
+	--query "select 1;select 2;" | \
+        grep 1 # expect first query result
+
 	# test hex-blob sql
 	@rm -f test/test-mysql.hex.sql
 	@./bin/d18n --defaults-extra-file test/my.cnf \

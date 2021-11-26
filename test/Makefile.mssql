@@ -21,8 +21,15 @@ docker-sqlcmd:
 
 .PHONY: test-mssql
 test-mssql:
+	# test simple query
 	@./bin/d18n ${D18N_MSSQL_ARGS} \
 	--query "SELECT 'Hello world', 1, 0.4, N'中文'"
+
+	# test declare, like mysql multiStatement
+	@./bin/d18n ${D18N_MSSQL_ARGS} \
+	--query "declare @a int = 2021; select @a"
+
+	# test export result to file
 	@./bin/d18n ${D18N_MSSQL_ARGS} \
 	--hex-blob c1 \
 	--query 'SELECT * from "rawdata"' \
