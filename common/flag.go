@@ -45,6 +45,7 @@ func ParseFlags() (Config, error) {
 		Password            string `long:"password" description:"database password"`
 		InteractivePassword bool   `short:"p" description:"input password interactively"`
 		DefaultsExtraFile   string `long:"defaults-extra-file" description:"like mysql --defaults-extra-file for hidden password"`
+		LoginPath           string `long:"login-path" description:"read config like mysql login-path"`
 		Host                string `short:"h" long:"host" default:"127.0.0.1" description:"database host"`
 		Port                int    `short:"P" long:"port" default:"3306" description:"database port"`
 		Socket              string `short:"S" long:"socket" description:"unix socket file"`
@@ -125,6 +126,13 @@ func ParseFlags() (Config, error) {
 
 	if opt.DefaultsExtraFile != "" {
 		err := parseDefaultsExtraFile(opt.DefaultsExtraFile, &c)
+		if err != nil {
+			return c, err
+		}
+	}
+
+	if opt.LoginPath != "" {
+		err := parseLoginPath(opt.LoginPath, &c)
 		if err != nil {
 			return c, err
 		}

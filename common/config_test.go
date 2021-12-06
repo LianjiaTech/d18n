@@ -15,6 +15,7 @@ package common
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/kr/pretty"
@@ -27,6 +28,27 @@ func TestParseDefaultsExtraFile(t *testing.T) {
 		t.Error(err.Error())
 	}
 	pretty.Println(TestConfig.User, TestConfig.Password, TestConfig.Charset)
+
+	TestConfig = orgCfg
+}
+
+func TestParseLoginPath(t *testing.T) {
+	orgCfg := TestConfig
+
+	orgLoginFile := os.Getenv("MYSQL_TEST_LOGIN_FILE")
+
+	err := os.Setenv("MYSQL_TEST_LOGIN_FILE", TestPath+"/test/.mylogin.cnf")
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	err = parseLoginPath("d18n", &TestConfig)
+	if err != nil {
+		t.Error(err.Error())
+	}
+	pretty.Println(TestConfig.User, TestConfig.Password, TestConfig.Charset)
+
+	os.Setenv("MYSQL_TEST_LOGIN_FILE", orgLoginFile)
 	TestConfig = orgCfg
 }
 

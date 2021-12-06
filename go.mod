@@ -11,6 +11,7 @@ require (
 	github.com/capitalone/fpe v1.2.1
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/dnnrly/abbreviate v1.5.2
+	github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122 // indirect
 	github.com/go-ego/gse v0.67.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.4.2 // indirect

@@ -160,6 +160,8 @@ github.com/dnnrly/abbreviate v1.5.2 h1:FkZLLMQQdLdDS90sFsH5QEj8HJIrTuMrzjljk8vqn
 github.com/dnnrly/abbreviate v1.5.2/go.mod h1:/4/lOTkpMKmOvumlIePbe0STKmEoC5HnDjZ46TRqWXc=
 github.com/docker/go-units v0.4.0 h1:3uh0PgVws3nIA0Q+MwDC8yjEPf9zjRfZZWXZYDct3Tw=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
+github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122 h1:vinZkqYdp8klhsJBOGz4V9JNz5GEBLvjcc3i015I30E=
+github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122/go.mod h1:EoH138uGURqqDK3ozwLmEG83pv2igAUhzHYL3Z9RKw8=
 github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=

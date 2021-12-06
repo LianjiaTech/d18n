@@ -6,6 +6,10 @@
 # SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'mysql', 'performance_schema') ORDER BY table_schema, table_name
 #
 
+# edit login-path file
+# MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf mysql_config_editor set --login-path=d18n --user=root --password
+# MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf mysql_config_editor print --all
+
 # Add mysql version for testing `MYSQL_RELEASE=percona MYSQL_VERSION=5.7 make docker-mysql`
 # MySQL 5.1 `MYSQL_RELEASE=vsamov/mysql-5.1.73 make docker-mysql`
 # MYSQL_RELEASE: mysql, percona, mariadb ...
@@ -287,3 +291,7 @@ test-mysql: build
 	@./bin/d18n --defaults-extra-file=test/my.cnf \
 	--query "select sleep(2)" \
 	--timeout 1 || true
+
+	# test --login-path
+	@MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf ./bin/d18n --login-path=d18n \
+	-e "show databases"

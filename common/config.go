@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/dolmen-go/mylogin"
 	ini "gopkg.in/ini.v1"
 	"gopkg.in/yaml.v2"
 )
@@ -119,6 +120,33 @@ func parseDefaultsExtraFile(file string, c *Config) error {
 	c.Port = config.Section("client").Key("port").String()
 	c.Charset = config.Section("client").Key("default-character-set").String()
 
+	return err
+}
+
+// parseLoginPath parse --login-path file
+func parseLoginPath(section string, c *Config) error {
+	if section == "" {
+		section = "client"
+	}
+
+	login, err := mylogin.ReadLogin(mylogin.DefaultFile(), []string{section})
+
+	if login == nil {
+		return fmt.Errorf("--login-path has not such section '%s'", section)
+	}
+
+	if login.User != nil {
+		c.User = *login.User
+	}
+	if login.Password != nil {
+		c.Password = *login.Password
+	}
+	if login.Host != nil {
+		c.Host = *login.Host
+	}
+	if login.Port != nil {
+		c.Port = *login.Port
+	}
 	return err
 }
 
