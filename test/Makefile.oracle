@@ -26,9 +26,9 @@ docker-oracle: docker-exist
 		fi ; \
 	done
 
-.PHONY: docker-sqlplus
+.PHONY: connect-oracle
 #@${DOCKER_CMD} exec -it d18n-oracle sqlplus / as sysdba
-docker-sqlplus:
+connect-oracle:
 	@${DOCKER_CMD} exec -it d18n-oracle sqlplus system/oracle@//localhost:1521/xe
 
 .PHONY: test-oracle

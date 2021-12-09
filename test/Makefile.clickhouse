@@ -16,10 +16,10 @@ docker-clickhouse: docker-exist
 	-p 9000:9000 \
 	yandex/clickhouse-server
 
-.PHONY: docker-ck-client
+.PHONY: connect-clickhouse
 # clickhouse support load csv file directly
 # cat file.csv | time clickhouse-client --query="INSERT INTO mytable FORMAT CSV"
-docker-ck-client:
+connect-clickhouse:
 	@${DOCKER_CMD} exec -it d18n-clickhouse clickhouse client --user username --password password
 
 .PHONY: test-clickhouse

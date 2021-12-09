@@ -27,8 +27,8 @@ docker-postgres: docker-exist
 	-p 5432:5432 \
 	$(POSTGRES_RELEASE):$(POSTGRES_VERSION)
 
-.PHONY: docker-psql
-docker-psql:
+.PHONY: connect-postgres
+connect-postgres:
 	@${DOCKER_CMD} exec -it d18n-postgres psql -U postgres
 
 .PHONY: test-postgres

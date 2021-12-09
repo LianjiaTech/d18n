@@ -45,9 +45,9 @@ docker-mysql: docker-exist
 		fi ; \
 	done
 
-.PHONY: docker-connect
+.PHONY: connect-mysql
 #${DOCKER_CMD} exec -i d18n-mysql mysql --user=root --password="" --host "127.0.0.1" test -f < ./test.sql
-docker-connect:
+connect-mysql:
 	@${DOCKER_CMD} exec -it d18n-mysql env LANG=C.UTF-8 mysql --user=root --password="" --host "127.0.0.1" -c test
 
 .PHONY: test-mysql
