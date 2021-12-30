@@ -111,3 +111,14 @@ last_update,DateFormat,"MM/DD/YYYY HH:mm:ss"
 ```bash
 ~ $ d18n --defaults-extra-file test/my.cnf --file actor.xlsx --mask test/mask.csv --import --database sakila --table actor --replace --disable-foreign-key-checks
 ```
+
+## ORA-00911 invalid character
+
+Using `d18n` export data from Oracle, your query should not end with semicolon `;`.
+
+```bash
+d18n --server oracle --host 127.0.0.1 --port 1521 \
+--user system --password xxxx --database xe \
+--query "select 1 from dual;"
+ORA-00911: invalid character
+```
