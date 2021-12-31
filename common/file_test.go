@@ -103,3 +103,10 @@ func ExampleGetXlsxWatermark() {
 	// Output:
 	// watermark text <nil>
 }
+
+func ExampleReadFileString() {
+	s, err := ReadFileString(TestPath + "/test/bom.sql")
+	fmt.Println([]byte(s), err)
+	// Output:
+	// [115 101 108 101 99 116 32 49 59 13 10] <nil>
+}

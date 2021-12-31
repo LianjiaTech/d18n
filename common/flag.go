@@ -17,7 +17,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -216,9 +215,9 @@ func ParseFlags() (Config, error) {
 
 	// test read from file
 	if _, err := os.Stat(opt.Query); err == nil {
-		buf, err := ioutil.ReadFile(opt.Query)
+		q, err := ReadFileString(opt.Query)
 		if err == nil {
-			opt.Query = string(buf)
+			opt.Query = q
 		}
 	}
 

@@ -18,7 +18,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	xlsx "github.com/360EntSecGroup-Skylar/excelize/v2"
@@ -259,12 +259,12 @@ func (c Config) SQLMultiValues(counter int, prefix, values string) string {
 func (c Config) TableTemplate() ([]HeaderColumn, error) {
 	var header []HeaderColumn
 
-	createTable, err := ioutil.ReadFile(c.Schema)
+	createTable, err := ReadFileString(c.Schema)
 	if err != nil {
 		return header, err
 	}
 
-	columns := strings.Split(string(createTable), "\n")
+	columns := strings.Split(createTable, "\n")
 	for _, col := range columns {
 		col = strings.TrimSpace(col)
 		def := strings.Fields(col)
@@ -442,4 +442,18 @@ func GetXlsxWatermark(filename string) (string, error) {
 	}
 	watermark = attr.Title
 	return watermark, err
+}
+
+// ReadFileString read string from file
+func ReadFileString(filename string) (string, error) {
+	buf, err := os.ReadFile(filename)
+	if err != nil {
+		return "", err
+	}
+
+	// UTF8 BOM compatible
+	if strings.HasPrefix(string(buf), UTF8BOM) {
+		return strings.TrimPrefix(string(buf), UTF8BOM), err
+	}
+	return string(buf), err
 }

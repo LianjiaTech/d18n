@@ -15,8 +15,9 @@ package detect
 
 import (
 	_ "embed"
-	"io/ioutil"
 	"regexp"
+
+	"github.com/LianjiaTech/d18n/common"
 
 	"gopkg.in/yaml.v2"
 )
@@ -29,9 +30,9 @@ type sensitiveConfig map[string]BasicDetect
 
 func (d *DetectStruct) parseConfig() error {
 	// load sensitive config
-	buf, err := ioutil.ReadFile(d.Config.Sensitive)
+	c, err := common.ReadFileString(d.Config.Sensitive)
 	if err == nil {
-		defaultSensitiveConfig = buf
+		defaultSensitiveConfig = []byte(c)
 	}
 
 	err = yaml.Unmarshal(defaultSensitiveConfig, &d.Sensitive)
