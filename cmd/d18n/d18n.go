@@ -79,6 +79,9 @@ func main() {
 	}
 
 	common.PanicIfError(saveRows())
+	if c.Interactive {
+		main()
+	}
 }
 
 func previewFile() error {

@@ -41,6 +41,7 @@ type Config struct {
 	Timeout  int // query timeout
 
 	// other config
+	Interactive             bool   // interactive mode
 	Query                   string // select query
 	File                    string // storage file abs path
 	Schema                  string // create table sql file, use for import data

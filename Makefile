@@ -33,10 +33,11 @@ GO_VERSION_MIN=1.16
 VER_TO_INT:=awk '{split(substr($$0, match ($$0, /[0-9\.]+/)), a, "."); print a[1]*10000+a[2]*100+a[3]}'
 go_version_check:
 	@echo "$(CGREEN)Go version check ...$(CEND)"
+	@go version
 	@if test $(shell go version | $(VER_TO_INT) ) -lt \
 	$(shell echo "$(GO_VERSION_MIN)" | $(VER_TO_INT)); \
 	then printf "go version $(GO_VERSION_MIN)+ required, found: "; go version; exit 1; \
-		else echo "go version check pass";      fi
+	fi
 
 .PHONY: release
 release: build
