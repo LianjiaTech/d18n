@@ -18,6 +18,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/LianjiaTech/d18n/common"
 
@@ -26,9 +27,16 @@ import (
 
 // saveRows2HTML save rows result into HTML format file
 func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
-	file, err := os.Create(s.Config.File)
-	if err != nil {
-		return err
+
+	var err error
+	var file *os.File
+	if strings.EqualFold(s.Config.File, "stdout") {
+		file = os.Stdout
+	} else {
+		file, err = os.Create(s.Config.File)
+		if err != nil {
+			return err
+		}
 	}
 	defer file.Close()
 

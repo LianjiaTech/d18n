@@ -50,6 +50,10 @@ docker-mysql: docker-exist
 connect-mysql:
 	@${DOCKER_CMD} exec -it d18n-mysql env LANG=C.UTF-8 mysql --user=root --password="" --host "127.0.0.1" -c test
 
+.PHONY: interactive
+interactive:
+	@./bin/d18n --defaults-extra-file test/my.cnf -q
+
 .PHONY: test-mysql
 test-mysql: build
 	# test sql

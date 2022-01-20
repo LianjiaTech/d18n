@@ -18,14 +18,21 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 )
 
 // saveRows2SQL save rows result into sql file
 func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 
-	file, err := os.Create(s.Config.File)
-	if err != nil {
-		return err
+	var err error
+	var file *os.File
+	if strings.EqualFold(s.Config.File, "stdout") {
+		file = os.Stdout
+	} else {
+		file, err = os.Create(s.Config.File)
+		if err != nil {
+			return err
+		}
 	}
 	defer file.Close()
 

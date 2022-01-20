@@ -31,20 +31,74 @@ Query result print as ASCII table.
 Get rows: 7 Query cost: 3.943ms Save cost: 247µs Total Cost: 4.191ms
 ```
 
+Except `xlsx`， other file formats also support print to `stdout`
+
+```bash
+~ $ d18n --defaults-extra-file test/my.cnf --query "show databases" --file csv
+Database
+information_schema
+mysql
+performance_schema
+sakila
+sys
+test
+world_x
+```
+
+Combine with [s3cmd](https://github.com/s3tools/s3cmd), [mc](https://docs.min.io/docs/minio-client-quickstart-guide.html), [rclone](https://rclone.org/), you can save select result into cloud storage ike `s3`, `hdfs`, `gcs`...
+
+```bash
+# Example for saving file into minio
+~ $ d18n --defaults-extra-file test/my.cnf --query "show databases" --file csv | \
+mc pipe s3/mybucket/d18n_query_result.csv
+```
+
 Save query result into a file.
 
 ```bash
 ~ $ d18n --defaults-extra-file test/my.cnf --query "show databases" --file result.csv
 ```
 
+
 ## Query
 
-d18n can read the query from the file after `--query` flag. If the file not exists, d18n reads the flag value as query SQL.
+d18n can read the query from the file after `--query` flag. If the file does not exist, d18n reads the flag value as query SQL.
 
 ```bash
 ~ $ d18n --query query.sql
 
 ~ $ d18n --query "select 1"
+```
+
+## Interactive Query
+
+d18n can be used as a simple interactive client, with `-q` flag.
+
+```bash
+~ $ d18n --defaults-extra-file test/my.cnf -q
+Query (end with '; + <Enter>'):
+select 1;
++---+
+| 1 |
++---+
+| 1 |
++---+
+Query (end with '; + <Enter>'):
+show databases;
++--------------------+
+|      DATABASE      |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sakila             |
+| sys                |
+| test               |
+| world_x            |
++--------------------+
+Query (end with '; + <Enter>'):
+<Ctrl>+D
+EOF
 ```
 
 ## File Size Limitation

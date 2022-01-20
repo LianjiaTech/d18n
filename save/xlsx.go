@@ -16,6 +16,7 @@ package save
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/LianjiaTech/d18n/common"
 
@@ -31,6 +32,11 @@ const (
 
 // saveRows2XLSX save rows result into xlsx format file
 func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
+
+	if strings.EqualFold(s.Config.File, "stdout") {
+		return fmt.Errorf("xlsx not support stdout")
+	}
+
 	file := xlsx.NewFile()
 	// create new sheet
 	sheet, err := file.AddSheet("result")

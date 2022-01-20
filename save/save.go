@@ -90,15 +90,14 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// file type switch
-	suffix := strings.ToLower(strings.TrimLeft(filepath.Ext(s.Config.File), "."))
-	switch suffix {
-	case "": // stdout ascii table
-		if strings.EqualFold(s.Config.File, "stdout") {
-			s.Config.Comma = '\t'
-			err = saveRows2CSV(s, rows)
-		} else {
-			err = saveRows2ASCII(s, rows)
-		}
+	ext := strings.ToLower(strings.Trim(filepath.Ext(s.Config.File), "."))
+	if ext == "" {
+		ext = strings.ToLower(strings.Trim(filepath.Base(s.Config.File), "."))
+		s.Config.File = "stdout"
+	}
+	switch ext {
+	case "", "stdout": // stdout ascii table
+		err = saveRows2ASCII(s, rows)
 	case "tsv": // tab-separated values
 		s.Config.Comma = '\t'
 		err = saveRows2CSV(s, rows)
@@ -120,7 +119,7 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	case "json": // json file, first element is column name, others are values
 		err = saveRows2JSON(s, rows)
 	default:
-		err = fmt.Errorf("not support extension: " + suffix)
+		err = fmt.Errorf("not support extension: " + ext)
 	}
 
 	return err
