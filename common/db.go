@@ -78,7 +78,7 @@ func (c Config) QueryRows() (*sql.Rows, error) {
 	if c.Timeout > 0 {
 		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
-	return db.QueryContext(ctx, c.Query)
+	return db.QueryContext(ctx, strings.TrimRight(strings.TrimSpace(c.Query), ";"))
 }
 
 // ExecResult mysql query get result
@@ -95,7 +95,7 @@ func (c Config) ExecResult() (sql.Result, error) {
 		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
 
-	return db.ExecContext(ctx, c.Query)
+	return db.ExecContext(ctx, strings.TrimRight(strings.TrimSpace(c.Query), ";"))
 }
 
 // newConnection init database connection

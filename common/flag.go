@@ -44,7 +44,7 @@ type Option struct {
 	Host                string `short:"h" long:"host" default:"127.0.0.1" description:"database host"`
 	Port                int    `short:"P" long:"port" default:"3306" description:"database port"`
 	Socket              string `short:"S" long:"socket" description:"unix socket file"`
-	Database            string `short:"d" long:"database" description:"database name"`
+	Database            string `short:"d" long:"database" description:"mysql/sql server: database name, oracle: service_name/sid, sqlite/csv: database file path"`
 	Table               string `long:"table" description:"table name"`
 	Charset             string `long:"charset" default:"utf8mb4" description:"connection charset"`
 	Limit               int    `long:"limit" description:"query result lines limit"`
@@ -92,6 +92,8 @@ type Option struct {
 	MaxBufferSize    int    `long:"max-buffer-size" description:"bufio MaxScanTokenSize"`
 	NULLString       string `long:"null-string" default:"NULL" description:"NULL string write into file. e.g., NULL, nil, None, \"\""`
 }
+
+var interactivePassword = `this can't be a password, just for init`
 
 func ParseFlags() (Config, error) {
 	var err error
@@ -170,12 +172,17 @@ func ParseFlags() (Config, error) {
 	}
 
 	if opt.InteractivePassword {
-		fmt.Print("Password:")
-		password, err := gopass.GetPasswd()
-		if err != nil {
-			return c, err
+		if interactivePassword != `this can't be a password, just for init` {
+			opt.Password = interactivePassword
+		} else {
+			fmt.Print("Password:")
+			password, err := gopass.GetPasswd()
+			if err != nil {
+				return c, err
+			}
+			opt.Password = strings.TrimSpace(string(password))
+			interactivePassword = opt.Password
 		}
-		opt.Password = strings.TrimSpace(string(password))
 	}
 
 	// read query interactive
