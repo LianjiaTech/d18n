@@ -4,6 +4,11 @@
 
 .PHONY: test-sqlite
 test-sqlite: build
+	# test sqlite query
+	@./bin/d18n --server sqlite \
+	--database 'test/sakila.sqlite3' \
+	--query 'select * from actor' \
+	--limit 2
 	# test detect text for nil ScanType
 	@./bin/d18n \
 	--detect --server sqlite \
