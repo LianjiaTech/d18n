@@ -179,7 +179,8 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 					value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
 				default:
 					// LONG: in Oracle means string, in SQL Server means big integer
-					if c.Server == "sqlserver" && strings.EqualFold(header[i].DatabaseType, "LONG") {
+					if (c.Server == "sqlserver" || c.Server == "mssql") &&
+						strings.EqualFold(header[i].DatabaseType, "LONG") {
 						value = col.String
 						break
 					}

@@ -112,7 +112,7 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = c.dsnFile()
 	case "oracle":
 		dsn = c.dsnOracle()
-	case "sqlserver":
+	case "sqlserver", "mssql":
 		dsn = c.dsnSQLServer()
 	case "clickhouse":
 		dsn = c.dsnClickHouse()
@@ -152,7 +152,7 @@ func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) e
 		} else {
 			sql = fmt.Sprintf("ALTER TABLE %s DISABLE TRIGGER ALL;", args[0])
 		}
-	case "oracle", "sqlserver", "hive":
+	case "oracle", "sqlserver", "mssql", "hive":
 		// Notice: not suport tmp disable foreign key check by session
 		return err
 	}
@@ -288,7 +288,7 @@ func (c Config) QuoteString(str string) string {
 	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
 
 	switch c.Server {
-	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
+	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq, hive
 		if c.ANSIQuotes {
@@ -301,7 +301,7 @@ func (c Config) QuoteString(str string) string {
 
 func (c Config) QuoteKey(str string) string {
 	switch c.Server {
-	case "postgres", "oracle", "sqlserver", "clickhouse", "presto":
+	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
 		return strconv.Quote(str)
 	default:
 		// MySQL

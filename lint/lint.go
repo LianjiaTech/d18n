@@ -259,7 +259,7 @@ func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column 
 				if len(c) > 63 {
 					return k + 1, true
 				}
-			case "oracle", "sqlserver":
+			case "oracle", "sqlserver", "mssql":
 				if len(c) > 128 {
 					return k + 1, true
 				}

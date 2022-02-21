@@ -210,7 +210,7 @@ func ParseFlags() (Config, error) {
 			switch strings.ToLower(opt.Server) {
 			case "oracle":
 				opt.Query = fmt.Sprintf("SELECT * FROM %s WHERE ROWNUM <= %d", c.QuoteKey(opt.Table), opt.Limit)
-			case "sqlserver":
+			case "sqlserver", "mssql":
 				opt.Query = fmt.Sprintf("SELECT TOP %d * FROM %s", opt.Limit, c.QuoteKey(opt.Table))
 			default:
 				opt.Query = fmt.Sprintf("SELECT * FROM %s LIMIT %d", c.QuoteKey(opt.Table), opt.Limit)
