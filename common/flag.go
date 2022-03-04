@@ -52,6 +52,7 @@ type Option struct {
 
 	// read from fille
 	Query            string `short:"e" long:"query" description:"query read from file or command line"`
+	Vertical         bool
 	InteractiveQuery bool   `short:"q" description:"input query interactively"`
 	File             string `short:"f" long:"file" description:"input/output file"`
 	Schema           string `long:"schema" description:"schema config file. support: sql, txt"`
@@ -197,7 +198,12 @@ func ParseFlags() (Config, error) {
 			}
 			opt.Query = opt.Query + line
 			line = strings.TrimSpace(line)
-			if len(line) > 1 && line[len(line)-1] == ';' {
+			if len(line) > 1 &&
+				(strings.HasSuffix(line, ";") || strings.HasSuffix(line, `\G`)) {
+				if strings.HasSuffix(line, `\G`) {
+					opt.Vertical = true
+					opt.Query = strings.TrimSuffix(strings.TrimSpace(opt.Query), `\G`)
+				}
 				break
 			}
 		}
@@ -253,6 +259,7 @@ func ParseFlags() (Config, error) {
 		Timeout:  opt.Timeout,
 
 		Interactive:             opt.InteractiveQuery,
+		Vertical:                opt.Vertical,
 		Query:                   opt.Query,
 		File:                    opt.File,
 		Schema:                  opt.Schema,

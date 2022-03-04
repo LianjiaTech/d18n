@@ -42,6 +42,7 @@ type Config struct {
 
 	// other config
 	Interactive             bool   // interactive mode
+	Vertical                bool   // print result vertical like MySQL '\G'
 	Query                   string // select query
 	File                    string // storage file abs path
 	Schema                  string // create table sql file, use for import data

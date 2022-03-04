@@ -28,7 +28,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	// set table header
-	if !s.Config.NoHeader {
+	if !s.Config.NoHeader && !s.Config.Vertical {
 		table.SetHeader(s.Config.DBParserColumnNames(s.Status.Header))
 	}
 
@@ -82,7 +82,14 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
 			}
 		}
-		table.Append(values)
+		if s.Config.Vertical {
+			table.Append([]string{fmt.Sprintf(`********* Row %d *********`, s.Status.Lines), fmt.Sprintf(`********* Row %d *********`, s.Status.Lines)})
+			for i, v := range values {
+				table.Append([]string{s.Status.Header[i].Name(), v})
+			}
+		} else {
+			table.Append(values)
+		}
 	}
 	err = rows.Err()
 	if err != nil {
