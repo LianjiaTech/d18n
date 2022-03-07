@@ -78,9 +78,14 @@ func main() {
 		return
 	}
 
-	common.PanicIfError(saveRows())
 	if c.Interactive {
+		err = saveRows()
+		if err != nil {
+			println(err.Error())
+		}
 		main()
+	} else {
+		common.PanicIfError(saveRows())
 	}
 }
 
@@ -100,7 +105,10 @@ func saveRows() error {
 	}
 
 	// query and save result
-	common.PanicIfError(s.Save())
+	err = s.Save()
+	if err != nil {
+		return err
+	}
 
 	// show save status
 	return s.ShowStatus()

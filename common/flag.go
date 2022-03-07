@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -52,7 +53,8 @@ type Option struct {
 
 	// read from fille
 	Query            string `short:"e" long:"query" description:"query read from file or command line"`
-	Vertical         bool
+	Vertical         bool   // print result vertical
+	Prompt           string `long:"prompt" description:"iteractive query prompt"`
 	InteractiveQuery bool   `short:"q" description:"input query interactively"`
 	File             string `short:"f" long:"file" description:"input/output file"`
 	Schema           string `long:"schema" description:"schema config file. support: sql, txt"`
@@ -94,7 +96,8 @@ type Option struct {
 	NULLString       string `long:"null-string" default:"NULL" description:"NULL string write into file. e.g., NULL, nil, None, \"\""`
 }
 
-var interactivePassword = `this can't be a password, just for init`
+var sessionPassword = `this can't be a password, just for init`
+var sessionDatabase = ""
 
 func ParseFlags() (Config, error) {
 	var err error
@@ -161,6 +164,8 @@ func ParseFlags() (Config, error) {
 	}
 	if c.Database != "" {
 		opt.Database = c.Database
+	} else if sessionDatabase != "" {
+		opt.Database = sessionDatabase
 	}
 
 	if len(opt.Comma) > 1 || opt.Comma == "" {
@@ -173,23 +178,28 @@ func ParseFlags() (Config, error) {
 	}
 
 	if opt.InteractivePassword {
-		if interactivePassword != `this can't be a password, just for init` {
-			opt.Password = interactivePassword
+		if sessionPassword != `this can't be a password, just for init` {
+			opt.Password = sessionPassword
 		} else {
-			fmt.Print("Password:")
+			fmt.Print("Password: ")
 			password, err := gopass.GetPasswd()
 			if err != nil {
 				return c, err
 			}
 			opt.Password = strings.TrimSpace(string(password))
-			interactivePassword = opt.Password
+			sessionPassword = opt.Password
 		}
 	}
 
 	// read query interactive
 	if opt.InteractiveQuery {
-		// allow line separator, sql end with ';'
-		fmt.Println("Query (end with '; + <Enter>'):")
+		opt.Prompt, err = strconv.Unquote(`"` + opt.Prompt + `"`)
+		if err == nil && opt.Prompt != "" {
+			fmt.Print(opt.Prompt)
+		} else {
+			// allow line separator, sql end with ';'
+			fmt.Print(opt.Server + " > ")
+		}
 		reader := bufio.NewReaderSize(os.Stdin, c.MaxBufferSize)
 		for {
 			line, err := reader.ReadString('\n')
@@ -198,14 +208,25 @@ func ParseFlags() (Config, error) {
 			}
 			opt.Query = opt.Query + line
 			line = strings.TrimSpace(line)
-			if len(line) > 1 &&
-				(strings.HasSuffix(line, ";") || strings.HasSuffix(line, `\G`)) {
+			switch strings.ToLower(strings.TrimSpace(opt.Query)) {
+			case "exit", "quit":
+				os.Exit(0)
+			}
+
+			if strings.HasSuffix(line, ";") || strings.HasSuffix(line, `\G`) {
 				if strings.HasSuffix(line, `\G`) {
 					opt.Vertical = true
 					opt.Query = strings.TrimSuffix(strings.TrimSpace(opt.Query), `\G`)
 				}
 				break
 			}
+		}
+		// use database
+		dbReg := regexp.MustCompile(`(?i)^\s*use\s+[` + "`" + `\["']?(?P<Database>\w+)[` + "`" + `\]"']?\s*[;]?`)
+		sub := dbReg.FindStringSubmatch(opt.Query)
+		if len(sub) == 2 {
+			sessionDatabase = sub[1]
+			opt.Database = sessionDatabase
 		}
 	}
 
