@@ -134,6 +134,7 @@ func TestNewConnection(t *testing.T) {
 		"csv",
 		"clickhouse",
 		"presto",
+		"h2",
 	}
 	for _, s := range servers {
 		TestConfig.Server = s

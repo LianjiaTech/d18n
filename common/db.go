@@ -42,6 +42,8 @@ import (
 	_ "github.com/mithrandie/csvq-driver"
 	// hive
 	_ "github.com/taozle/go-hive-driver"
+	// h2
+	_ "github.com/jmrobles/h2go"
 )
 
 func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
@@ -120,6 +122,8 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = c.dsnPresto()
 	case "hive":
 		dsn = c.dsnHive()
+	case "h2":
+		dsn = c.dsnH2()
 	}
 	// --dsn flag highest level
 	if c.DSN != "" {
@@ -222,8 +226,17 @@ func (c Config) dsnPresto() string {
 	return fmt.Sprintf("http://%s@%s:%s", c.User, c.Host, c.Port)
 }
 
+// dsnHive concat Hive dsn string
 func (c Config) dsnHive() string {
 	return fmt.Sprintf("hive://%s:%s@%s:%s", c.User, c.Password, c.Host, c.Port)
+}
+
+// dsnH2 concat H2 dsn string
+func (c Config) dsnH2() string {
+	if c.User == "" {
+		return fmt.Sprintf("h2://%s:%s/%s", c.Host, c.Port, c.Database)
+	}
+	return fmt.Sprintf("h2://%s:%s@%s:%s/%s", c.User, c.Password, c.Host, c.Port, c.Database)
 }
 
 // DBParseNullString convert []string to []sql.NullString

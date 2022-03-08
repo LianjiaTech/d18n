@@ -1,0 +1,22 @@
+# Usefull SQL
+#
+# select * from system.local;
+
+CASSANDRA_RELEASE := $(or ${CASSANDRA_RELEASE}, ${CASSANDRA_RELEASE}, cassandra)
+CASSANDRA_VERSION := $(or ${CASSANDRA_VERSION}, ${CASSANDRA_VERSION}, latest)
+CASSANDRA_PASSWORD=cassandra
+
+.PHONY: docker-cassandra
+docker-cassandra: docker-exist
+	@echo "$(CGREEN)Build cassandra test environment ...$(CEND)"
+	@${DOCKER_CMD} stop d18n-cassandra 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-cassandra 2>/dev/null >/dev/null || true
+	@echo "${DOCKER_CMD} run --name d18n-cassandra $(CASSANDRA_RELEASE):$(CASSANDRA_VERSION)"
+	@${DOCKER_CMD} run --name d18n-cassandra --rm -d \
+	-p 9042:9042 \
+	$(CASSANDRA_RELEASE):$(CASSANDRA_VERSION)
+
+.PHONY: connect-cassandra
+connect-cassandra:
+	@${DOCKER_CMD} exec -it d18n-cassandra cqlsh -u cassandra --password=${CASSANDRA_PASSWORD}
+

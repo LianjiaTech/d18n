@@ -19,6 +19,7 @@ require (
 	github.com/google/gxui v0.0.0-20151028112939-f85e0a97b3a4 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/jessevdk/go-flags v1.5.0
+	github.com/jmrobles/h2go v0.5.0 // indirect
 	github.com/json-iterator/go v1.1.11
 	github.com/kr/pretty v0.2.1
 	github.com/lib/pq v1.10.2

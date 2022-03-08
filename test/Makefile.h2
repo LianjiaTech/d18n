@@ -1,0 +1,32 @@
+# https://hub.docker.com/r/buildo/h2database
+# Using the web interface
+# Then in your browser open http://localhost:8082/ and use the following connection parameters:
+# Driver Class: org.h2.Driver JDBC URL: jdbc:h2:my-db-name User Name: (empty) Password: (empty)
+
+H2_RELEASE := $(or ${H2_RELEASE}, ${H2_RELEASE}, buildo/h2database)
+H2_VERSION := $(or ${H2_VERSION}, ${H2_VERSION}, latest)
+
+D18N_H2_ARGS=--server h2 --dsn "h2://sa@localhost/testdb?mem=true"
+
+# 8082 web interface
+# 9092 tcp service listen
+.PHONY: docker-h2
+docker-h2: docker-exist
+	@echo "$(CGREEN)Build h2 test environment ...$(CEND)"
+	@${DOCKER_CMD} stop d18n-h2 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-h2 2>/dev/null >/dev/null || true
+	@echo "${DOCKER_CMD} run --name d18n-h2 $(H2_RELEASE):$(H2_VERSION)"
+	@${DOCKER_CMD} run --name d18n-h2 --rm -d \
+	-p 8082:8082 \
+	-p 9092:9092 \
+	$(H2_RELEASE):$(H2_VERSION)
+
+.PHONY: connect-h2
+connect-h2:
+	@./bin/d18n ${D18N_H2_ARGS} -q
+
+.PHONY: test-h2
+test-h2:
+	@./bin/d18n ${D18N_H2_ARGS} \
+	--query "show databases"
+

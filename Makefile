@@ -9,6 +9,8 @@ include test/Makefile.mssql
 include test/Makefile.clickhouse
 include test/Makefile.presto
 include test/Makefile.hive
+include test/Makefile.h2
+include test/Makefile.cassandra
 
 # colors compatible setting
 CRED:=$(shell tput setaf 1 2>/dev/null)
