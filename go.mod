@@ -11,7 +11,7 @@ require (
 	github.com/capitalone/fpe v1.2.1
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/dnnrly/abbreviate v1.5.2
-	github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122 // indirect
+	github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122
 	github.com/go-ego/gse v0.67.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/protobuf v1.4.2 // indirect
@@ -19,7 +19,7 @@ require (
 	github.com/google/gxui v0.0.0-20151028112939-f85e0a97b3a4 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/jmrobles/h2go v0.5.0 // indirect
+	github.com/jmrobles/h2go v0.5.0
 	github.com/json-iterator/go v1.1.11
 	github.com/kr/pretty v0.2.1
 	github.com/lib/pq v1.10.2
@@ -28,8 +28,8 @@ require (
 	github.com/pingcap/parser v0.0.0-20210525032559-c37778aff307
 	github.com/pingcap/tidb v1.1.0-beta.0.20210601085537-5d7c852770eb
 	github.com/prestodb/presto-go-client v0.0.0-20201204133205-8958eb37e584
-	github.com/sijms/go-ora/v2 v2.1.21
-	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07 // indirect
+	github.com/sijms/go-ora/v2 v2.4.9
+	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07
 	github.com/tealeg/xlsx/v3 v3.2.3
 	github.com/tjfoc/gmsm v1.3.2
 	github.com/wumansgy/goEncrypt v0.0.0-20201114063050-efa0a0601707
