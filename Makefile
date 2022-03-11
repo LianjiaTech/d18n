@@ -134,6 +134,10 @@ mask-typo:
 
 # check docker installed
 DOCKER_CMD:=$(shell which podman 2>/dev/null || which docker 2>/dev/null)
+
+# read line wrap
+RLWRAP:=$(shell which rlwrap 2>/dev/null || echo "")
+
 .PHONY: docker-exist
 docker-exist:
 ifndef DOCKER_CMD

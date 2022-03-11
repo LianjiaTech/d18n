@@ -28,6 +28,9 @@ import (
 	"github.com/jessevdk/go-flags"
 )
 
+var sessionPassword = `this can't be a password, just for init`
+var sessionDatabase = ""
+
 // https://darjun.github.io/2020/01/10/godailylib/go-flags/
 
 type Option struct {
@@ -96,8 +99,71 @@ type Option struct {
 	NULLString       string `long:"null-string" default:"NULL" description:"NULL string write into file. e.g., NULL, nil, None, \"\""`
 }
 
-var sessionPassword = `this can't be a password, just for init`
-var sessionDatabase = ""
+// printPrompt print prompt
+func (opt *Option) printPrompt() {
+	var err error
+	opt.Prompt, err = strconv.Unquote(`"` + opt.Prompt + `"`)
+	if err == nil && opt.Prompt != "" {
+		fmt.Print(opt.Prompt)
+	} else {
+		// allow line separator, sql end with ';'
+		fmt.Print(opt.Server + " > ")
+	}
+}
+
+// readQuery read query sql from stdin
+func (opt *Option) readQuery() error {
+	reader := bufio.NewReaderSize(os.Stdin, opt.MaxBufferSize)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			return err
+		}
+		opt.Query = opt.Query + line
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(strings.ToLower(line), "use") ||
+			strings.HasPrefix(strings.ToLower(line), "save") {
+			break
+		}
+		switch strings.ToLower(strings.TrimSpace(opt.Query)) {
+		case "exit", "quit":
+			os.Exit(0)
+		}
+
+		if strings.HasSuffix(line, ";") || strings.HasSuffix(line, `\G`) {
+			if strings.HasSuffix(line, `\G`) {
+				opt.Vertical = true
+				opt.Query = strings.TrimSuffix(strings.TrimSpace(opt.Query), `\G`)
+			}
+			break
+		}
+	}
+	return nil
+}
+
+// prepareQuery deal query before send to database server
+func (opt *Option) prepareQuery() error {
+	var err error
+	// use database
+	dbReg := regexp.MustCompile(`(?i)^\s*use\s+[` + "`" + `\["']?(?P<Database>\w+)[` + "`" + `\]"']?\s*[;]?`)
+	sub := dbReg.FindStringSubmatch(opt.Query)
+	if len(sub) == 2 {
+		sessionDatabase = sub[1]
+		opt.Database = sessionDatabase
+	}
+
+	// interactive change save result type
+	saveReg := regexp.MustCompile(`(?i)^\s*save\s+["']?(?P<File>\w+\.\w+)["']?\s*[;]?`)
+	sub = saveReg.FindStringSubmatch(strings.TrimSpace(opt.Query))
+	if len(sub) == 2 {
+		opt.Query = ""
+		opt.File = sub[1]
+		opt.printPrompt()
+		return opt.readQuery()
+	}
+
+	return err
+}
 
 func ParseFlags() (Config, error) {
 	var err error
@@ -193,40 +259,17 @@ func ParseFlags() (Config, error) {
 
 	// read query interactive
 	if opt.InteractiveQuery {
-		opt.Prompt, err = strconv.Unquote(`"` + opt.Prompt + `"`)
-		if err == nil && opt.Prompt != "" {
-			fmt.Print(opt.Prompt)
-		} else {
-			// allow line separator, sql end with ';'
-			fmt.Print(opt.Server + " > ")
-		}
-		reader := bufio.NewReaderSize(os.Stdin, c.MaxBufferSize)
-		for {
-			line, err := reader.ReadString('\n')
-			if err != nil {
-				return c, err
-			}
-			opt.Query = opt.Query + line
-			line = strings.TrimSpace(line)
-			switch strings.ToLower(strings.TrimSpace(opt.Query)) {
-			case "exit", "quit":
-				os.Exit(0)
-			}
+		// print prompt prefix
+		opt.printPrompt()
 
-			if strings.HasSuffix(line, ";") || strings.HasSuffix(line, `\G`) {
-				if strings.HasSuffix(line, `\G`) {
-					opt.Vertical = true
-					opt.Query = strings.TrimSuffix(strings.TrimSpace(opt.Query), `\G`)
-				}
-				break
-			}
+		// read query interactive
+		if err := opt.readQuery(); err != nil {
+			return c, err
 		}
-		// use database
-		dbReg := regexp.MustCompile(`(?i)^\s*use\s+[` + "`" + `\["']?(?P<Database>\w+)[` + "`" + `\]"']?\s*[;]?`)
-		sub := dbReg.FindStringSubmatch(opt.Query)
-		if len(sub) == 2 {
-			sessionDatabase = sub[1]
-			opt.Database = sessionDatabase
+
+		// prepare query before send to database server
+		if err := opt.prepareQuery(); err != nil {
+			return c, err
 		}
 	}
 

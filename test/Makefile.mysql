@@ -52,7 +52,7 @@ connect-mysql:
 
 .PHONY: interactive
 interactive:
-	@./bin/d18n --defaults-extra-file test/my.cnf -q
+	@${RLWRAP} ./bin/d18n --defaults-extra-file test/my.cnf -q || true
 
 .PHONY: test-mysql
 test-mysql: build
