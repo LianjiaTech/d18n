@@ -50,9 +50,9 @@ docker-mysql: docker-exist
 connect-mysql:
 	@${DOCKER_CMD} exec -it d18n-mysql env LANG=C.UTF-8 mysql --user=root --password="" --host "127.0.0.1" -c test
 
-.PHONY: interactive
-interactive:
-	@${RLWRAP} ./bin/d18n --defaults-extra-file test/my.cnf -q || true
+.PHONY: d18n-mysql
+d18n-mysql:
+	@${RLWRAP} ./bin/d18n --defaults-extra-file test/my.cnf -q --verbose || true
 
 .PHONY: test-mysql
 test-mysql: build
@@ -295,6 +295,13 @@ test-mysql: build
 	@./bin/d18n --defaults-extra-file=test/my.cnf \
 	--query "select sleep(2)" \
 	--timeout 1 || true
+
+	# test detect
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--database sakila \
+	--query 'select * from actor' \
+	--limit 2 \
+	--detect
 
 	# test --login-path
 	@MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf ./bin/d18n --login-path=d18n \

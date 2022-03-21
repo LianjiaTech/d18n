@@ -19,6 +19,10 @@ docker-mssql: docker-exist
 connect-mssql:
 	@${DOCKER_CMD} exec -it d18n-mssql /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'yourStrong(!)Password'
 
+.PHONY: d18n-mssql
+d18n-mssql:
+	@${RLWRAP} ./bin/d18n ${D18N_MSSQL_ARGS} -q --verbose || true
+
 .PHONY: test-mssql
 test-mssql:
 	# test simple query

@@ -31,6 +31,10 @@ docker-oracle: docker-exist
 connect-oracle:
 	@${DOCKER_CMD} exec -it d18n-oracle sqlplus system/oracle@//localhost:1521/xe
 
+.PHONY: d18n-oracle
+d18n-oracle:
+	@${RLWRAP} ./bin/d18n ${D18N_ORACLE_ARGS} -q --verbose
+
 .PHONY: test-oracle
 test-oracle:
 	# SELECT FROM DUAL

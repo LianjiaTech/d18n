@@ -31,6 +31,10 @@ docker-postgres: docker-exist
 connect-postgres:
 	@${DOCKER_CMD} exec -it d18n-postgres psql -U postgres
 
+.PHONY: d18n-postgres
+d18n-postgres:
+	@${RLWRAP} ./bin/d18n ${D18N_POSTGRES_ARGS} -q -v || true
+
 .PHONY: test-postgres
 test-postgres:
 	#select * from actor limit 2
