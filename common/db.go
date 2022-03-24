@@ -180,6 +180,11 @@ func (c Config) dsnMySQL() string {
 		dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
 			c.User, c.Password, c.Host, c.Port, c.Database, c.Charset)
 	}
+
+	if c.Limit != 0 {
+		dsn += fmt.Sprintf("&sql_select_limit=%d", c.Limit)
+	}
+
 	return dsn
 }
 
