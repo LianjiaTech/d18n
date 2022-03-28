@@ -86,12 +86,13 @@ type Config struct {
 	ExcelMaxFileSize int // excel file max size
 
 	// sql config
-	Replace        bool     // use replace into, instead of insert
-	Update         []string // use update, instead of insert, primary key list, separated by comma
-	Table          string   // table name
-	CompleteInsert bool     // complete-insert
-	HexBLOB        []string // blob column names
-	IgnoreColumns  []string // ignore column list
+	Replace        bool              // use replace into, instead of insert
+	Update         []string          // use update, instead of insert, primary key list, separated by comma
+	Table          string            // table name
+	CompleteInsert bool              // complete-insert
+	HexBLOB        []string          // blob column names
+	IgnoreColumns  []string          // ignore column list
+	FieldsAliasMap map[string]string // select fields alias map
 }
 
 func parseCommaFlag(update string) []string {

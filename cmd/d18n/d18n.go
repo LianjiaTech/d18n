@@ -32,7 +32,6 @@ func main() {
 	common.PanicIfError(common.ResourceLimit(1, 2*1024*1024*1024))
 
 	// parse config
-	// common.PanicIfError(common.ParseFlag())
 	c, err = common.ParseFlags()
 	common.PanicIfError(err)
 

@@ -52,6 +52,14 @@ func NewSaveStruct(c common.Config) (*SaveStruct, error) {
 	return s, err
 }
 
+func (s *SaveStruct) FieldName(i int) string {
+	name := s.Status.Header[i].Name()
+	if n, ok := s.Config.FieldsAliasMap[name]; ok {
+		name = n
+	}
+	return name
+}
+
 func (s *SaveStruct) Save() error {
 	// execute sql and get all result rows
 	queryStartTime := time.Now().UnixNano()

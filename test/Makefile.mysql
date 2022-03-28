@@ -263,6 +263,13 @@ test-mysql: build
 	--verbose \
 	--query "select * from actor where actor_id between 10 and 12" \
 
+	# test mask with alias
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--mask test/mask.csv \
+	--database sakila \
+	--verbose \
+	--query "select *, last_name as l from actor where actor_id between 10 and 12" \
+
 	# test html watermark
 	@./bin/d18n --defaults-extra-file test/my.cnf \
 	-e "show databases" \

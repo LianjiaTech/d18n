@@ -73,13 +73,13 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 				}
 
 				// data mask
-				values[j], err = s.Masker.Mask(s.Status.Header[j].Name(), values[j])
+				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])
 				if err != nil {
 					return err
 				}
 
 				// hex-blob
-				values[j], _ = s.Config.Hex(s.Status.Header[j].Name(), values[j])
+				values[j], _ = s.Config.Hex(s.FieldName(j), values[j])
 			}
 		}
 		if s.Config.Vertical {

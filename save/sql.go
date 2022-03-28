@@ -81,7 +81,7 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 					values[j] = sql.NullString{String: fmt.Sprint(col), Valid: true}
 				}
 				// data mask
-				valueMask, err := s.Masker.Mask(s.Status.Header[j].Name(), values[j].String)
+				valueMask, err := s.Masker.Mask(s.FieldName(j), values[j].String)
 				if err != nil {
 					return err
 				}

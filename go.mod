@@ -6,6 +6,7 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.4.0
 	github.com/ClickHouse/clickhouse-go v1.4.5
 	github.com/andrewarchi/gocipher v0.0.0-20201117064119-d399f25a1970
+	github.com/auxten/postgresql-parser v1.0.0 // indirect
 	github.com/brianvoe/gofakeit/v6 v6.5.0
 	github.com/bykof/gostradamus v1.0.4
 	github.com/capitalone/fpe v1.2.1
@@ -14,7 +15,6 @@ require (
 	github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122
 	github.com/go-ego/gse v0.67.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/differential-privacy/go v0.0.0-20210713105217-8da48001ccbd
 	github.com/google/gxui v0.0.0-20151028112939-f85e0a97b3a4 // indirect
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
@@ -27,6 +27,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pingcap/parser v0.0.0-20210525032559-c37778aff307
 	github.com/pingcap/tidb v1.1.0-beta.0.20210601085537-5d7c852770eb
+	github.com/pingcap/tipb v0.0.0-20210601083426-79a378b6d1c4 // indirect
 	github.com/prestodb/presto-go-client v0.0.0-20201204133205-8958eb37e584
 	github.com/sijms/go-ora/v2 v2.4.9
 	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07

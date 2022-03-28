@@ -366,6 +366,11 @@ func ParseFlags() (Config, error) {
 		IgnoreColumns:  parseCommaFlag(opt.IgnoreColumns),
 	}
 
+	// Fields alias map for data mask with column alias
+	// ignore all errors
+	fields, _ := c.ParseSelectFields()
+	c.FieldsAliasMap = fieldsAliasMap(fields)
+
 	// get table name from file prefix
 	if c.Table == "" {
 		c.Table = strings.Split(filepath.Base(c.File), ".")[0]
