@@ -56,6 +56,7 @@ type Option struct {
 
 	// read from fille
 	Query            string `short:"e" long:"query" description:"query read from file or command line"`
+	Parser           string `long:"parser" default:"pingcap" description:"query parser: tidb, cockroach"`
 	Vertical         bool   // print result vertical
 	Prompt           string `long:"prompt" description:"iteractive query prompt"`
 	InteractiveQuery bool   `short:"q" description:"input query interactively"`
@@ -325,6 +326,7 @@ func ParseFlags() (Config, error) {
 		Interactive:             opt.InteractiveQuery,
 		Vertical:                opt.Vertical,
 		Query:                   opt.Query,
+		Parser:                  opt.Parser,
 		File:                    opt.File,
 		Schema:                  opt.Schema,
 		Mask:                    opt.Mask,

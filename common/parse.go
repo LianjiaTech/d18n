@@ -2,6 +2,7 @@ package common
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 
 	// mysql, mariadb, tidb
@@ -9,8 +10,10 @@ import (
 	pingcapAst "github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
-	// postgres
-	cockroachdb "github.com/auxten/postgresql-parser/pkg/sql/parser"
+	// postgres, cockroach
+	cockroachDB "github.com/auxten/postgresql-parser/pkg/sql/parser"
+	cockroachTree "github.com/auxten/postgresql-parser/pkg/sql/sem/tree"
+	cockroachWalk "github.com/auxten/postgresql-parser/pkg/walk"
 )
 
 type SelectTables struct {
@@ -41,14 +44,14 @@ func fieldsAliasMap(fields []SelectField) map[string]string {
 
 // ParseSelectFields ...
 func (c Config) ParseSelectFields() (fields []SelectField, err error) {
-	switch c.Server {
-	case "mysql":
+	switch strings.ToLower(c.Parser) {
+	case "mysql", "pingcap", "tidb", "mariadb", "":
 		stmts, err := PingcapParse(c.Query)
 		if err != nil {
 			return fields, err
 		}
 		return PingcapSelectFields(stmts)
-	case "postgres":
+	case "postgres", "cockroachdb", "cockroach":
 		stmts, err := CockroachDBParse(c.Query)
 		if err != nil {
 			return fields, err
@@ -59,8 +62,8 @@ func (c Config) ParseSelectFields() (fields []SelectField, err error) {
 }
 
 func (c Config) ParseSelectTables() (tables SelectTables, err error) {
-	switch c.Server {
-	case "mysql":
+	switch strings.ToLower(c.Parser) {
+	case "mysql", "pingcap", "tidb", "mariadb", "":
 		stmts, err := PingcapParse(c.Query)
 		if err != nil {
 			return tables, err
@@ -69,7 +72,12 @@ func (c Config) ParseSelectTables() (tables SelectTables, err error) {
 		for _, stmt := range stmts {
 			stmt.Accept(v)
 		}
-	case "postgres":
+	case "postgres", "cockroachdb", "cockroach":
+		stmts, err := CockroachDBParse(c.Query)
+		if err != nil {
+			return tables, err
+		}
+		return CockroachDBSelectTables(stmts)
 	}
 	return tables, err
 }
@@ -160,12 +168,62 @@ func (v *SelectTables) Leave(in pingcapAst.Node) (pingcapAst.Node, bool) {
 	return in, true
 }
 
-// CockroachDBParse use cockroachdb parser for postgres/cockroachdb
-func CockroachDBParse(sql string) (cockroachdb.Statements, error) {
-	return cockroachdb.Parse(sql)
+// CockroachDBParse use CockroachDB parser for postgres/cockroachdb
+func CockroachDBParse(sql string) (cockroachDB.Statements, error) {
+	return cockroachDB.Parse(sql)
 }
 
-func CockroachDBSelectFields(stmts cockroachdb.Statements) (fields []SelectField, err error) {
+func CockroachDBSelectFields(stmts cockroachDB.Statements) (fields []SelectField, err error) {
+	w := &cockroachWalk.AstWalker{
+		Fn: func(ctx interface{}, node interface{}) (stop bool) {
+			if n, ok := node.(cockroachTree.SelectExpr); ok {
+				var db, tb, col, as string
+				tup := strings.Split(strings.ToLower(n.Expr.String()), ".")
+				switch len(tup) {
+				case 1: // col
+					col = tup[0]
+				case 2: // tb.col
+					tb = tup[0]
+					col = tup[1]
+				case 3: // db.tb.col
+					db = tup[0]
+					tb = tup[1]
+					col = tup[2]
+				}
+				as, err = strconv.Unquote(strings.ToLower(n.As.String()))
+				if err != nil {
+					return true
+				}
 
+				fields = append(fields,
+					SelectField{
+						Database: db,
+						Table:    tb,
+						Name:     col,
+						As:       as,
+					})
+			}
+			return false
+		},
+	}
+
+	_, err = w.Walk(stmts, nil)
 	return fields, err
+}
+
+func CockroachDBSelectTables(stmts cockroachDB.Statements) (tables SelectTables, err error) {
+	w := &cockroachWalk.AstWalker{
+		Fn: func(ctx interface{}, node interface{}) (stop bool) {
+			if n, ok := node.(*cockroachTree.AliasedTableExpr); ok {
+				tables.Tables = append(tables.Tables,
+					SelectTable{
+						Database: strings.ToLower(n.Expr.(*cockroachTree.TableName).Schema()),
+						Table:    strings.ToLower(n.Expr.(*cockroachTree.TableName).Table()),
+					})
+			}
+			return false
+		},
+	}
+	_, err = w.Walk(stmts, nil)
+	return tables, err
 }

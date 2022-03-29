@@ -44,6 +44,7 @@ type Config struct {
 	Interactive             bool   // interactive mode
 	Vertical                bool   // print result vertical like MySQL '\G'
 	Query                   string // select query
+	Parser                  string // sql parser, pingcap/tidb, cockroachdb/cockroach
 	File                    string // storage file abs path
 	Schema                  string // create table sql file, use for import data
 	Cipher                  string // cipher config file
