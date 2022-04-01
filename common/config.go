@@ -93,6 +93,7 @@ type Config struct {
 	CompleteInsert bool              // complete-insert
 	HexBLOB        []string          // blob column names
 	IgnoreColumns  []string          // ignore column list
+	DisableFuncs   []string          // disable func list, query fail
 	FieldsAliasMap map[string]string // select fields alias map
 }
 

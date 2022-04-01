@@ -82,6 +82,7 @@ type Option struct {
 	CompleteInsert          bool   `long:"complete-insert" description:"complete insert with columns name"`
 	HexBLOB                 string `long:"hex-blob" description:"need hex encoding columns, separate by comma, case insensitive"`
 	IgnoreColumns           string `long:"ignore-columns" default:"" description:"import file ignore columns, separated by comma"`
+	DisableFuncs            string `long:"disable-funcs" default:"" description:"disable functions when selecting, * for all functions, comma separated"`
 	ExtendedInsert          uint   `long:"extended-insert" default:"1" description:"use multiple-row INSERT syntax that include several values list"`
 	ANSIQuotes              bool   `long:"ansi-quotes" description:"enable ANSI_QUOTES"`
 	DisableForeignKeyChecks bool   `long:"disable-foreign-key-checks" description:"disable foreign key checks"`
@@ -366,12 +367,38 @@ func ParseFlags() (Config, error) {
 		CompleteInsert: opt.CompleteInsert,
 		HexBLOB:        parseCommaFlag(opt.HexBLOB),
 		IgnoreColumns:  parseCommaFlag(opt.IgnoreColumns),
+		DisableFuncs:   parseCommaFlag(opt.DisableFuncs),
 	}
 
 	// Fields alias map for data mask with column alias
 	// ignore all errors
 	fields, _ := c.ParseSelectFields()
 	c.FieldsAliasMap = fieldsAliasMap(fields)
+
+	// sensitive detect, disable funcs
+	if len(c.DisableFuncs) != 0 {
+		var breakFunc string
+		funcs, _ := c.ParseSelectFuncs()
+		for _, f := range funcs.Funcs {
+			for _, df := range c.DisableFuncs {
+				if df == "*" {
+					breakFunc = "all"
+					break
+				}
+				if strings.EqualFold(f, df) {
+					breakFunc = df
+					break
+				}
+			}
+			if breakFunc != "" {
+				break
+			}
+		}
+		if breakFunc != "" {
+			println(breakFunc, "function is disabled")
+			os.Exit(1)
+		}
+	}
 
 	// get table name from file prefix
 	if c.Table == "" {

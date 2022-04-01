@@ -32,9 +32,17 @@ type SelectField struct {
 	As       string
 }
 
-func fieldsAliasMap(fields []SelectField) map[string]string {
+type SelectFields struct {
+	Fields []SelectField
+}
+
+type SelectFuncs struct {
+	Funcs []string
+}
+
+func fieldsAliasMap(fields SelectFields) map[string]string {
 	alias := make(map[string]string)
-	for _, f := range fields {
+	for _, f := range fields.Fields {
 		if f.As != "" && f.Name != "" {
 			alias[f.As] = f.Name
 		}
@@ -43,7 +51,7 @@ func fieldsAliasMap(fields []SelectField) map[string]string {
 }
 
 // ParseSelectFields ...
-func (c Config) ParseSelectFields() (fields []SelectField, err error) {
+func (c Config) ParseSelectFields() (fields SelectFields, err error) {
 	switch strings.ToLower(c.Parser) {
 	case "mysql", "pingcap", "tidb", "mariadb", "":
 		stmts, err := PingcapParse(c.Query)
@@ -80,6 +88,27 @@ func (c Config) ParseSelectTables() (tables SelectTables, err error) {
 		return CockroachDBSelectTables(stmts)
 	}
 	return tables, err
+}
+
+func (c Config) ParseSelectFuncs() (funcs SelectFuncs, err error) {
+	switch strings.ToLower(c.Parser) {
+	case "mysql", "pingcap", "tidb", "mariadb", "":
+		stmts, err := PingcapParse(c.Query)
+		if err != nil {
+			return funcs, err
+		}
+		v := &funcs
+		for _, stmt := range stmts {
+			stmt.Accept(v)
+		}
+	case "postgres", "cockroachdb", "cockroach":
+		stmts, err := CockroachDBParse(c.Query)
+		if err != nil {
+			return funcs, err
+		}
+		return CockroachDBSelectFuncs(stmts)
+	}
+	return funcs, err
 }
 
 // PingcapParse use tidb parser for tidb/mysql/mariadb
@@ -126,29 +155,9 @@ func removeIncompatibleWords(sql string) string {
 }
 
 // PingcapSelectFields only get output fields not all columns in select clause
-func PingcapSelectFields(stmts []pingcapAst.StmtNode) ([]SelectField, error) {
-	var fields []SelectField
+func PingcapSelectFields(stmts []pingcapAst.StmtNode) (fields SelectFields, err error) {
 	for _, stmt := range stmts {
-		switch s := stmt.(type) {
-		case *pingcapAst.SelectStmt:
-			for _, f := range s.Fields.Fields {
-				if f.WildCard == nil {
-					switch expr := f.Expr.(type) {
-					case *pingcapAst.ColumnNameExpr:
-						fields = append(fields, SelectField{
-							Database: expr.Name.Schema.L,
-							Table:    expr.Name.Table.L,
-							Name:     expr.Name.Name.L,
-							As:       f.AsName.L,
-						})
-					}
-				} else {
-					fields = append(fields, SelectField{
-						Name: "*",
-					})
-				}
-			}
-		}
+		stmt.Accept(&fields)
 	}
 	return fields, nil
 }
@@ -168,40 +177,119 @@ func (v *SelectTables) Leave(in pingcapAst.Node) (pingcapAst.Node, bool) {
 	return in, true
 }
 
+// Enter tables ast node visitor
+func (v *SelectFields) Enter(in pingcapAst.Node) (pingcapAst.Node, bool) {
+	if f, ok := in.(*pingcapAst.SelectField); ok {
+		var db, tb, col, as string
+		// as
+		as = f.AsName.L
+
+		// db, tb, col
+		val, err := strconv.Unquote(strings.ToLower(f.Text()))
+		if err != nil {
+			val = f.Text()
+		}
+		if val != "" {
+			val = strings.TrimSpace(strings.TrimRight(strings.TrimLeft(val, "("), ")"))
+			col = val
+		}
+		if f.WildCard == nil {
+			switch c := f.Expr.(type) {
+			case *pingcapAst.ColumnNameExpr:
+				db = c.Name.Schema.L
+				tb = c.Name.Table.L
+				col = c.Name.Name.L
+			}
+		} else {
+			col = "*"
+		}
+
+		if col != "" {
+			v.Fields = append(v.Fields, SelectField{Database: db, Table: tb, Name: col, As: as})
+		}
+	}
+
+	return in, false
+}
+
+// Leave tables ast node visitor
+func (v *SelectFields) Leave(in pingcapAst.Node) (pingcapAst.Node, bool) {
+	return in, true
+}
+
+// Enter tables ast node visitor
+func (v *SelectFuncs) Enter(in pingcapAst.Node) (pingcapAst.Node, bool) {
+	switch f := in.(type) {
+	case *pingcapAst.AggregateFuncExpr:
+		v.Funcs = append(v.Funcs, strings.ToLower(f.F))
+	case *pingcapAst.FuncCallExpr:
+		v.Funcs = append(v.Funcs, f.FnName.L)
+	case *pingcapAst.WindowFuncExpr:
+		v.Funcs = append(v.Funcs, strings.ToLower(f.F))
+	case *pingcapAst.FuncCastExpr:
+		var name string
+		switch f.FunctionType {
+		case 1:
+			name = "cast"
+		case 2:
+			name = "convert"
+		case 3:
+			name = "binary"
+		}
+		v.Funcs = append(v.Funcs, name)
+	}
+	return in, false
+}
+
+// Leave tables ast node visitor
+func (v *SelectFuncs) Leave(in pingcapAst.Node) (pingcapAst.Node, bool) {
+	return in, true
+}
+
 // CockroachDBParse use CockroachDB parser for postgres/cockroachdb
 func CockroachDBParse(sql string) (cockroachDB.Statements, error) {
 	return cockroachDB.Parse(sql)
 }
 
-func CockroachDBSelectFields(stmts cockroachDB.Statements) (fields []SelectField, err error) {
+func CockroachDBSelectFields(stmts cockroachDB.Statements) (fields SelectFields, err error) {
 	w := &cockroachWalk.AstWalker{
+		UnknownNodes: []interface{}{},
 		Fn: func(ctx interface{}, node interface{}) (stop bool) {
 			if n, ok := node.(cockroachTree.SelectExpr); ok {
 				var db, tb, col, as string
+				// as
+				as, err = strconv.Unquote(strings.ToLower(n.As.String()))
+				if err != nil {
+					as = n.As.String()
+				}
+
+				// db, tb, col
 				tup := strings.Split(strings.ToLower(n.Expr.String()), ".")
 				switch len(tup) {
-				case 1: // col
+				case 1:
 					col = tup[0]
-				case 2: // tb.col
+				case 2:
 					tb = tup[0]
 					col = tup[1]
-				case 3: // db.tb.col
+				case 3:
 					db = tup[0]
 					tb = tup[1]
 					col = tup[2]
 				}
-				as, err = strconv.Unquote(strings.ToLower(n.As.String()))
-				if err != nil {
-					return true
+				val, _ := strconv.Unquote(strings.ToLower(col))
+				if val != "" {
+					col = val
+				}
+				if strings.HasPrefix(col, "(") {
+					col = strings.TrimSpace(strings.TrimRight(strings.TrimLeft(col, "("), ")"))
+				}
+				if strings.HasSuffix(col, ")") {
+					col = ""
 				}
 
-				fields = append(fields,
-					SelectField{
-						Database: db,
-						Table:    tb,
-						Name:     col,
-						As:       as,
-					})
+				if col != "" {
+					fields.Fields = append(fields.Fields, SelectField{Database: db, Table: tb, Name: col, As: as})
+				}
 			}
 			return false
 		},
@@ -226,4 +314,17 @@ func CockroachDBSelectTables(stmts cockroachDB.Statements) (tables SelectTables,
 	}
 	_, err = w.Walk(stmts, nil)
 	return tables, err
+}
+
+func CockroachDBSelectFuncs(stmts cockroachDB.Statements) (funcs SelectFuncs, err error) {
+	w := &cockroachWalk.AstWalker{
+		Fn: func(ctx interface{}, node interface{}) (stop bool) {
+			if f, ok := node.(*cockroachTree.FuncExpr); ok {
+				funcs.Funcs = append(funcs.Funcs, f.Func.String())
+			}
+			return false
+		},
+	}
+	_, err = w.Walk(stmts, nil)
+	return funcs, err
 }
