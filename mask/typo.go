@@ -39,6 +39,7 @@ var maskFuncs = map[string]MaskFunc{
 	"hmac":                HMAC,
 	"ip":                  IP,
 	"initialism":          Initialism,
+	"json":                JSON,
 	"laplacedpfloat64":    LaplaceDPFloat64,
 	"laplacedpint64":      LaplaceDPInt64,
 	"licenseplate":        LicensePlate,

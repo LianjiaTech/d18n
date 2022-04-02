@@ -36,12 +36,23 @@ func TestMask(t *testing.T) {
 			MaskFunc: "smokeleft",
 			Args:     []string{"3", "*"},
 		},
+		"col3": {
+			MaskFunc: "json",
+		},
+		"phoneno": {
+			MaskFunc: "fake",
+			Args:     []string{"phone"}, // phone return string, not int, so it doesn't mask value
+		},
+		"firstname": {
+			MaskFunc: "shuffle",
+		},
 	}
 
 	cases := [][]interface{}{
 		{"col", 1},
 		{"col1", "hello world"},
 		{"col2", "hello earth"},
+		{"col3", `{"foo":1,"bar":2,"baz":[3,4],"phoneNo":13888880000, "newField":"test", "userInfo":{"firstname":"Kritchat", "lastname": "Rojanaphruk"}}`},
 	}
 
 	for _, c := range cases {

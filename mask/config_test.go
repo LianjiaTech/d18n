@@ -25,7 +25,7 @@ func ExampleParseMaskConfig() {
 	mc, err := ParseMaskConfig(file)
 	fmt.Println(mc, err)
 	// Output:
-	// map[id:{shuffle []} last_name:{smokeleft [3 x]}] <nil>
+	// map[id:{shuffle []} info:{json []} last_name:{smokeleft [3 x]} population:{ff1 [10]}] <nil>
 }
 
 func TestGenRSAKey(t *testing.T) {

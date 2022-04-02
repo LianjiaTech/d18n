@@ -58,17 +58,21 @@ func (m *MaskStruct) Mask(name string, value interface{}) (ret string, err error
 
 	// concat mask args
 	var args []interface{}
-	// generate fake data no need origin value
-	if !strings.HasPrefix(m.Config[name].MaskFunc, "fake") {
-		args = append(args, value)
-	}
+	args = append(args, value)
 	for _, arg := range m.Config[name].Args {
 		args = append(args, arg)
 	}
 
 	// run mask function
 	mask := maskFuncs[m.Config[name].MaskFunc]
-	return mask(args...)
+	switch m.Config[name].MaskFunc {
+	case "json":
+		return string(m.JSONMask(value)), nil
+	case "fake": // generate fake data no need origin value
+		return mask(args[1:]...)
+	default:
+		return mask(args...)
+	}
 }
 
 // MaskRow mask data for read file
