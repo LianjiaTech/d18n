@@ -535,9 +535,9 @@ func DateRound(args ...interface{}) (ret string, err error) {
 	case "day":
 		accuracy = time.Hour * 24
 	case "month":
-		return gostradamus.NewDateTime(formatDate.Year(), formatDate.Month(), 1, 0, 0, 0, 0, formatDate.Timezone()).Format(fmt.Sprint(args[2])), err
+		return gostradamus.NewDateTime(formatDate.Year(), formatDate.Month(), 1, 0, 0, 0, 0, formatDate.Timezone()).Format(dateFormat), err
 	case "year":
-		return gostradamus.NewDateTime(formatDate.Year(), 1, 1, 0, 0, 0, 0, formatDate.Timezone()).Format(fmt.Sprint(args[2])), err
+		return gostradamus.NewDateTime(formatDate.Year(), 1, 1, 0, 0, 0, 0, formatDate.Timezone()).Format(dateFormat), err
 	default:
 		accuracy = time.Hour
 	}

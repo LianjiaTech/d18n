@@ -163,9 +163,9 @@ func Example_fakePassword() {
 }
 
 func TestFakerUSCC(t *testing.T) {
-	fakeDate, err := fakerUSCC()
+	fakeData, err := fakerUSCC()
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(fakeDate)
+	fmt.Println(fakeData)
 }
