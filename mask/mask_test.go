@@ -41,7 +41,7 @@ func TestMask(t *testing.T) {
 		},
 		"phoneno": {
 			MaskFunc: "fake",
-			Args:     []string{"phone"}, // phone return string, not int, so it doesn't mask value
+			Args:     []string{"phone"},
 		},
 		"firstname": {
 			MaskFunc: "shuffle",

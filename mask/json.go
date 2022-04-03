@@ -16,6 +16,7 @@ package mask
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -72,9 +73,14 @@ func (m *MaskStruct) maskMap(in []byte) ([]byte, error) {
 		if r, ok := m.Config[strings.ToLower(i)]; ok {
 			b, _ := v.MarshalJSON()
 
+			var quoted bool
+			if strings.HasPrefix(string(b), `"`) && strings.HasSuffix(string(b), `"`) {
+				quoted = true
+			}
+
 			// concat mask args
 			var args []interface{}
-			args = append(args, string(b))
+			args = append(args, strings.Trim(string(b), `"`))
 			for _, arg := range r.Args {
 				args = append(args, arg)
 			}
@@ -91,6 +97,9 @@ func (m *MaskStruct) maskMap(in []byte) ([]byte, error) {
 				return in, err
 			}
 
+			if quoted {
+				tmp = strconv.Quote(tmp)
+			}
 			raw := json.RawMessage(tmp)
 			out[i] = &raw
 			continue

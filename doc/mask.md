@@ -95,3 +95,25 @@ aspell -d en dump master | aspell -l en expand > mask/corpus/mangle.en_US
 ```bash
 ~ $ make mask-typo
 ```
+
+## Mask JSON data
+
+If sensitive data contains in TEXT or JSON data type, use `json` mask function mark the column first, and config json keys mask rules in mask config file as columns mask rules.
+
+```bash
+$ cat mask.csv
+j,json
+password,smoke
+firstname,ReserveLeft,1
+lastname,ReserveLeft,1
+
+$ cat query.sql
+select '{"Userinfo": {"Firstname": "Bruce", "Lastname": "John", "Password": "123456"} }' as j from dual
+
+$ d18n --defaults-extra-file test/my.cnf --mask mask.csv --query query.sql
++--------------------------------------------------------------------------+
+|                                    J                                     |
++--------------------------------------------------------------------------+
+| {"Userinfo":{"Firstname":"B****","Lastname":"J***","Password":"******"}} |
++--------------------------------------------------------------------------+
+```

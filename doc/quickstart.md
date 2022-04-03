@@ -59,7 +59,9 @@ Full help please check [detect](detect.md) doc.
 
 ## Data masking
 
-Data masking config file support `csv`, `txt` format, first argument is column name, it's case insensitive, second argument is data mask function, other arguments for function.
+Data masking config file support `csv`, `txt` format, the first argument is a column name, the second argument is data mask function, other arguments are for that function.
+
+Notice: column or function names in the mask config file are case insensitive.
 
 `mask.csv`
 
