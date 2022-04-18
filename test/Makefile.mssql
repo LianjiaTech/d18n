@@ -12,6 +12,7 @@ docker-mssql: docker-exist
 	-p 1433:1433 \
 	-v `pwd`/test/mssql.init.sh:/docker-entrypoint-initdb.d/mssql.init.sh \
 	-v `pwd`/test/mssql.init.sql:/docker-entrypoint-initdb.d/mssql.init.sql \
+	-v `pwd`/test/sakila.mssql.sql.gz:/docker-entrypoint-initdb.d/sakila.mssql.sql.gz \
 	mcr.microsoft.com/mssql/server:2017-latest
 	@${DOCKER_CMD} exec d18n-mssql /docker-entrypoint-initdb.d/mssql.init.sh
 
