@@ -6,6 +6,7 @@ require (
 	github.com/360EntSecGroup-Skylar/excelize/v2 v2.4.0
 	github.com/ClickHouse/clickhouse-go v1.4.5
 	github.com/andrewarchi/gocipher v0.0.0-20201117064119-d399f25a1970
+	github.com/antlr/antlr4 v0.0.0-20181218183524-be58ebffde8e // indirect
 	github.com/auxten/postgresql-parser v1.0.0 // indirect
 	github.com/brianvoe/gofakeit/v6 v6.5.0
 	github.com/bykof/gostradamus v1.0.4

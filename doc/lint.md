@@ -80,7 +80,7 @@ We are also trying to make it support more formats
 
 ## More flag
 
-`--max-buffer-size`: If your row data is too large, it may cause bufio overflow. Please consider adding `--max-buffer-size`,defalut:64k
+`--max-buffer-size`: If your row data is too large, it may cause bufio overflow. Please consider adding `--max-buffer-size`,defalut: 65535
 
 `--no-header`: You can use it to skip the header check
 

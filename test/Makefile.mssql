@@ -1,13 +1,24 @@
+# -- show databases
+# SELECT name FROM sys.databases WHERE name not in ('master', 'tempdb', 'model', 'msdb');
+# -- show tables
+# SELECT name FROM [database].sys.tables where is_ms_shipped=0
+#
+# TSQL Parser generate code
+# cd github.com/antlr/grammars-v4/sql/tsql
+# antlr4 -Dlanguage=Go -o parser TSqlLexer.g4 TSqlParser.g4
+
 MSSQL_PASSWORD='yourStrong(!)Password'
 
 D18N_MSSQL_ARGS=--server sqlserver --host 127.0.0.1 --port 1433 --user sa --password ${MSSQL_PASSWORD}
 
 .PHONY: docker-mssql
+# The full list of env vars in document: https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables?view=sql-server-linux-2017
 docker-mssql: docker-exist
 	@${DOCKER_CMD} stop d18n-mssql 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-mssql 2>/dev/null >/dev/null || true
 	@${DOCKER_CMD} run -d --rm --name d18n-mssql \
 	-e 'ACCEPT_EULA=Y' \
+	-e 'MSSQL_AGENT_ENABLED=true' \
 	-e 'SA_PASSWORD=yourStrong(!)Password' \
 	-p 1433:1433 \
 	-v `pwd`/test/mssql.init.sh:/docker-entrypoint-initdb.d/mssql.init.sh \

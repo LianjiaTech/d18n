@@ -14,9 +14,13 @@
 package common
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+
+	// mssql github.com/antlr/grammars-v4/sql/tsql
+	mssql "github.com/LianjiaTech/d18n/common/mssql/parser"
 
 	// mysql, mariadb, tidb
 	pingcap "github.com/pingcap/parser"
@@ -27,6 +31,8 @@ import (
 	cockroachDB "github.com/auxten/postgresql-parser/pkg/sql/parser"
 	cockroachTree "github.com/auxten/postgresql-parser/pkg/sql/sem/tree"
 	cockroachWalk "github.com/auxten/postgresql-parser/pkg/walk"
+
+	"github.com/antlr/antlr4/runtime/Go/antlr"
 )
 
 type SelectTables struct {
@@ -78,6 +84,12 @@ func (c Config) ParseSelectFields() (fields SelectFields, err error) {
 			return fields, err
 		}
 		return CockroachDBSelectFields(stmts)
+	// case "mssql", "sqlserver":
+	// 	stmts, err := MSSQLParse(c.Query)
+	// 	if err != nil {
+	// 		return fields, err
+	// 	}
+	// 	return MSSQLSelectFields(stmts)
 	}
 	return fields, err
 }
@@ -99,6 +111,12 @@ func (c Config) ParseSelectTables() (tables SelectTables, err error) {
 			return tables, err
 		}
 		return CockroachDBSelectTables(stmts)
+	// case "mssql", "sqlserver":
+	// 	stmts, err := MSSQLParse(c.Query)
+	// 	if err != nil {
+	// 		return tables, err
+	// 	}
+	// 	return MSSQLSelectTables(stmts)
 	}
 	return tables, err
 }
@@ -120,6 +138,12 @@ func (c Config) ParseSelectFuncs() (funcs SelectFuncs, err error) {
 			return funcs, err
 		}
 		return CockroachDBSelectFuncs(stmts)
+	// case "mssql", "sqlserver":
+	// 	stmts, err := MSSQLParse(c.Query)
+	// 	if err != nil {
+	// 		return funcs, err
+	// 	}
+	// 	return MSSQLSelectFuncs(stmts)
 	}
 	return funcs, err
 }
@@ -340,4 +364,124 @@ func CockroachDBSelectFuncs(stmts cockroachDB.Statements) (funcs SelectFuncs, er
 	}
 	_, err = w.Walk(stmts, nil)
 	return funcs, err
+}
+
+type mssqlListener struct {
+	Tables SelectTables
+	Fields SelectFields
+	Funcs  SelectFuncs
+	*mssql.BaseTSqlParserListener
+}
+
+func (m *mssqlListener) EnterTable_name(ctx *mssql.Table_nameContext) {
+	var db, tb string
+	if ctx.GetSchema() != nil {
+		db = ctx.GetSchema().GetText()
+	}
+	if ctx.GetTable() != nil {
+		tb = ctx.GetTable().GetText()
+	}
+	m.Tables.Tables = append(m.Tables.Tables, SelectTable{Database: db, Table: tb})
+}
+
+func (m *mssqlListener) EnterColumn_name_list(ctx *mssql.Column_name_listContext) {
+	cols := ctx.GetCol()
+	for _, col := range cols {
+		m.Fields.Fields = append(m.Fields.Fields, SelectField{
+			Name: col.GetText(),
+		})
+	}
+}
+
+func (m *mssqlListener) EnterExecute_clause(ctx *mssql.Execute_clauseContext) {
+	m.Funcs.Funcs = append(m.Funcs.Funcs, ctx.STRING().GetText())
+}
+
+// antlr error listener
+// https://stackoverflow.com/questions/66067549/how-to-write-a-custom-error-reporter-in-go-target-of-antlr
+type CustomError struct {
+	line, column int
+	msg          string
+}
+
+type CustomErrorListener struct {
+	*antlr.DefaultErrorListener // Embed default which ensures we fit the interface
+	Errors                      []CustomError
+}
+
+func (ce *CustomErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	ce.Errors = append(ce.Errors, CustomError{
+		line:   line,
+		column: column,
+		msg:    msg,
+	})
+}
+
+func (ce *CustomErrorListener) ReportAmbiguity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, exact bool, ambigAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
+	ce.Errors = append(ce.Errors, CustomError{})
+}
+
+func (ce *CustomErrorListener) ReportAttemptingFullContext(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, conflictingAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
+	ce.Errors = append(ce.Errors, CustomError{})
+}
+
+func (ce *CustomErrorListener) ReportContextSensitivity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex, prediction int, configs antlr.ATNConfigSet) {
+	ce.Errors = append(ce.Errors, CustomError{})
+}
+
+func (ce *CustomErrorListener) Error() string {
+	for _, e := range ce.Errors {
+		return fmt.Sprintf("Line: %d, Column: %d, Error: %s", e.line, e.column, e.msg)
+	}
+	return ""
+}
+
+func MSSQLParse(sql string) (stmt antlr.Tree, err error) {
+	// setup the input stream
+	is := antlr.NewInputStream(strings.ToUpper(sql))
+
+	// create the mssql lexer
+	l := mssql.NewTSqlLexer(is)
+	lexerError := &CustomErrorListener{}
+	l.RemoveErrorListeners()
+	l.AddErrorListener(lexerError)
+	if lexerError.Error() != "" {
+		err = fmt.Errorf(lexerError.Error())
+	}
+
+	s := antlr.NewCommonTokenStream(l, antlr.TokenDefaultChannel)
+
+	// create the mssql parser
+	p := mssql.NewTSqlParser(s)
+	parserError := &CustomErrorListener{}
+	p.RemoveErrorListeners()
+	p.AddErrorListener(parserError)
+
+	if parserError.Error() != "" {
+		err = fmt.Errorf(parserError.Error())
+	}
+	// FIXME: 语法错误检查
+	println(len(lexerError.Errors), len(parserError.Errors))
+	return p.Sql_clauses(), err
+}
+
+func MSSQLSelectFields(stmts antlr.Tree) (SelectFields, error) {
+	// walk the tree
+	var m *mssqlListener
+	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	return m.Fields, nil
+}
+
+func MSSQLSelectTables(stmts antlr.Tree) (SelectTables, error) {
+	// walk the tree
+	var m *mssqlListener
+	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	return m.Tables, nil
+}
+
+func MSSQLSelectFuncs(stmts antlr.Tree) (SelectFuncs, error) {
+	// walk the tree
+	var m *mssqlListener
+	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	return m.Funcs, nil
 }
