@@ -27,6 +27,9 @@ import (
 	pingcapAst "github.com/pingcap/parser/ast"
 	_ "github.com/pingcap/tidb/types/parser_driver"
 
+	// Positive Technologies mysql parser
+	pt "github.com/LianjiaTech/d18n/common/mysql/parser"
+
 	// postgres, cockroach
 	cockroachDB "github.com/auxten/postgresql-parser/pkg/sql/parser"
 	cockroachTree "github.com/auxten/postgresql-parser/pkg/sql/sem/tree"
@@ -84,12 +87,12 @@ func (c Config) ParseSelectFields() (fields SelectFields, err error) {
 			return fields, err
 		}
 		return CockroachDBSelectFields(stmts)
-	// case "mssql", "sqlserver":
-	// 	stmts, err := MSSQLParse(c.Query)
-	// 	if err != nil {
-	// 		return fields, err
-	// 	}
-	// 	return MSSQLSelectFields(stmts)
+		// case "mssql", "sqlserver":
+		// 	stmts, err := MSSQLParse(c.Query)
+		// 	if err != nil {
+		// 		return fields, err
+		// 	}
+		// 	return MSSQLSelectFields(stmts)
 	}
 	return fields, err
 }
@@ -111,12 +114,12 @@ func (c Config) ParseSelectTables() (tables SelectTables, err error) {
 			return tables, err
 		}
 		return CockroachDBSelectTables(stmts)
-	// case "mssql", "sqlserver":
-	// 	stmts, err := MSSQLParse(c.Query)
-	// 	if err != nil {
-	// 		return tables, err
-	// 	}
-	// 	return MSSQLSelectTables(stmts)
+		// case "mssql", "sqlserver":
+		// 	stmts, err := MSSQLParse(c.Query)
+		// 	if err != nil {
+		// 		return tables, err
+		// 	}
+		// 	return MSSQLSelectTables(stmts)
 	}
 	return tables, err
 }
@@ -138,14 +141,29 @@ func (c Config) ParseSelectFuncs() (funcs SelectFuncs, err error) {
 			return funcs, err
 		}
 		return CockroachDBSelectFuncs(stmts)
-	// case "mssql", "sqlserver":
-	// 	stmts, err := MSSQLParse(c.Query)
-	// 	if err != nil {
-	// 		return funcs, err
-	// 	}
-	// 	return MSSQLSelectFuncs(stmts)
+		// case "mssql", "sqlserver":
+		// 	stmts, err := MSSQLParse(c.Query)
+		// 	if err != nil {
+		// 		return funcs, err
+		// 	}
+		// 	return MSSQLSelectFuncs(stmts)
 	}
 	return funcs, err
+}
+
+// PTParse Positive Technologies mysql parse
+func PTParse(sql string) (stmt antlr.Tree, err error) {
+	// setup the input stream
+	is := antlr.NewInputStream(strings.ToUpper(sql))
+
+	// create the mysql lexer
+	l := pt.NewMySqlLexer(is)
+	s := antlr.NewCommonTokenStream(l, antlr.TokenDefaultChannel)
+
+	// create the mysql parser
+	p := pt.NewMySqlParser(s)
+
+	return p.Root(), err
 }
 
 // PingcapParse use tidb parser for tidb/mysql/mariadb

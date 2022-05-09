@@ -6,6 +6,10 @@
 # SELECT table_schema, table_name FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'mysql', 'performance_schema') ORDER BY table_schema, table_name
 #
 
+# Antlr parser
+# github.com/antlr/grammars-v4/sql/mysql/Positive-Technologies
+# antlr4 -Dlanguage=Go -o parser MySqlLexer.g4 MySqlParser.g4
+
 # edit login-path file
 # MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf mysql_config_editor set --login-path=d18n --user=root --password
 # MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf mysql_config_editor print --all

@@ -105,6 +105,18 @@ EOF
 
 Default excel max size is 10MB, other file type's size with no limit. Excel size limit can be changed with `--excel-max-file-size` flag. Increasing this size will cause more memory usage.
 
+Excel has many more limitations. For example:
+
+```txt
+MaxRows      = 1048576 // 1M
+MaxColumns   = 16384   // 16K
+MaxCellChars = 32767   // 32K
+```
+
+If CSV file too large, open with Excel will overflow. At this time, please open CSV file with plain text viewer like `less`, `more`.
+
+![excel_overflow](./images/excel_overflow.png)
+
 ## Extra Statistic Information
 
 With `--verbose` flag, d18n will print extra statistic information into `stderr`.

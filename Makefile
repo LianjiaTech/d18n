@@ -103,7 +103,7 @@ test: mask-typo fmt
 .PHONY: cover
 cover: test
 	@echo "$(CGREEN)Run test cover check ...$(CEND)"
-	@go test -coverpkg=./... -coverprofile=test/coverage.data ./... | column -t
+	@go test $(shell go list ./... | grep -v parser) -coverprofile=test/coverage.data | column -t
 	@go tool cover -html=test/coverage.data -o test/coverage.html
 	@go tool cover -func=test/coverage.data -o test/coverage.txt
 	@tail -n 1 test/coverage.txt | awk '{sub(/%/, "", $$NF); \

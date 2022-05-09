@@ -139,3 +139,17 @@ func TestMSSQLParse(t *testing.T) {
 		// pretty.Println(stmts)
 	}
 }
+
+func TestPTParse(t *testing.T) {
+	var sqls = []string{
+		"SELECT col as c, SUM(c1) as s FROM `tb` AS t",
+		"select * from tb limit 1",
+	}
+	for _, sql := range sqls {
+		_, err := PTParse(sql)
+		if err != nil {
+			t.Error(err.Error())
+		}
+		// pretty.Println(stmts)
+	}
+}
