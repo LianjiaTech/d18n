@@ -14,6 +14,7 @@
 package common
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/kr/pretty"
@@ -128,16 +129,28 @@ func TestCockroachDBParse(t *testing.T) {
 
 func TestMSSQLParse(t *testing.T) {
 	var sqls = []string{
-		"SELECT col as c, SUM(c1) as s FROM `tb` AS t",
+		"SELECT col as c, SUM(c1) as s FROM [tb] AS t",
 		"select * from tb limit 1",
 	}
 	for _, sql := range sqls {
-		_, err := MSSQLParse(sql)
+		p, ec := MSSQLParse(sql)
+		_, err := MSSQLSelectFields(p, ec)
 		if err != nil {
-			t.Error(err.Error())
+			t.Error(err)
 		}
-		// pretty.Println(stmts)
 	}
+	sqls = []string{
+		"xxx, xxx",
+	}
+	for _, sql := range sqls {
+		p, ec := MSSQLParse(sql)
+		_, err := MSSQLSelectFields(p, ec)
+		if err == nil {
+			t.Error("should get error message")
+		}
+		fmt.Println(ec.errors)
+	}
+
 }
 
 func TestPTParse(t *testing.T) {
@@ -146,10 +159,6 @@ func TestPTParse(t *testing.T) {
 		"select * from tb limit 1",
 	}
 	for _, sql := range sqls {
-		_, err := PTParse(sql)
-		if err != nil {
-			t.Error(err.Error())
-		}
-		// pretty.Println(stmts)
+		PTParse(sql)
 	}
 }

@@ -38,6 +38,24 @@ import (
 	"github.com/antlr/antlr4/runtime/Go/antlr"
 )
 
+// antlr error handling
+type antlrErrorCollector struct {
+	*antlr.DefaultErrorListener
+	errors AntlrSyntaxErrors
+}
+
+type AntlrSyntaxErrors struct {
+	messages []string
+}
+
+func (s AntlrSyntaxErrors) Error() string {
+	return strings.Join(s.messages, "\n")
+}
+
+func (c *antlrErrorCollector) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+	c.errors.messages = append(c.errors.messages, fmt.Sprintf("Line: %d, Column: %d, Error: %s", line, column, msg))
+}
+
 type SelectTables struct {
 	Tables []SelectTable
 }
@@ -152,7 +170,7 @@ func (c Config) ParseSelectFuncs() (funcs SelectFuncs, err error) {
 }
 
 // PTParse Positive Technologies mysql parse
-func PTParse(sql string) (stmt antlr.Tree, err error) {
+func PTParse(sql string) (*pt.MySqlParser, *antlrErrorCollector) {
 	// setup the input stream
 	is := antlr.NewInputStream(strings.ToUpper(sql))
 
@@ -163,7 +181,14 @@ func PTParse(sql string) (stmt antlr.Tree, err error) {
 	// create the mysql parser
 	p := pt.NewMySqlParser(s)
 
-	return p.Root(), err
+	// antlr error handling
+	l.RemoveErrorListeners()
+	p.RemoveErrorListeners()
+	ec := &antlrErrorCollector{}
+	p.AddErrorListener(ec)
+	l.AddErrorListener(ec)
+
+	return p, ec
 }
 
 // PingcapParse use tidb parser for tidb/mysql/mariadb
@@ -415,91 +440,56 @@ func (m *mssqlListener) EnterExecute_clause(ctx *mssql.Execute_clauseContext) {
 	m.Funcs.Funcs = append(m.Funcs.Funcs, ctx.STRING().GetText())
 }
 
-// antlr error listener
-// https://stackoverflow.com/questions/66067549/how-to-write-a-custom-error-reporter-in-go-target-of-antlr
-type CustomError struct {
-	line, column int
-	msg          string
-}
-
-type CustomErrorListener struct {
-	*antlr.DefaultErrorListener // Embed default which ensures we fit the interface
-	Errors                      []CustomError
-}
-
-func (ce *CustomErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
-	ce.Errors = append(ce.Errors, CustomError{
-		line:   line,
-		column: column,
-		msg:    msg,
-	})
-}
-
-func (ce *CustomErrorListener) ReportAmbiguity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, exact bool, ambigAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
-	ce.Errors = append(ce.Errors, CustomError{})
-}
-
-func (ce *CustomErrorListener) ReportAttemptingFullContext(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex int, conflictingAlts *antlr.BitSet, configs antlr.ATNConfigSet) {
-	ce.Errors = append(ce.Errors, CustomError{})
-}
-
-func (ce *CustomErrorListener) ReportContextSensitivity(recognizer antlr.Parser, dfa *antlr.DFA, startIndex, stopIndex, prediction int, configs antlr.ATNConfigSet) {
-	ce.Errors = append(ce.Errors, CustomError{})
-}
-
-func (ce *CustomErrorListener) Error() string {
-	for _, e := range ce.Errors {
-		return fmt.Sprintf("Line: %d, Column: %d, Error: %s", e.line, e.column, e.msg)
-	}
-	return ""
-}
-
-func MSSQLParse(sql string) (stmt antlr.Tree, err error) {
+func MSSQLParse(sql string) (*mssql.TSqlParser, *antlrErrorCollector) {
 	// setup the input stream
 	is := antlr.NewInputStream(strings.ToUpper(sql))
 
 	// create the mssql lexer
 	l := mssql.NewTSqlLexer(is)
-	lexerError := &CustomErrorListener{}
-	l.RemoveErrorListeners()
-	l.AddErrorListener(lexerError)
-	if lexerError.Error() != "" {
-		err = fmt.Errorf(lexerError.Error())
-	}
-
 	s := antlr.NewCommonTokenStream(l, antlr.TokenDefaultChannel)
 
 	// create the mssql parser
 	p := mssql.NewTSqlParser(s)
-	parserError := &CustomErrorListener{}
-	p.RemoveErrorListeners()
-	p.AddErrorListener(parserError)
 
-	if parserError.Error() != "" {
-		err = fmt.Errorf(parserError.Error())
-	}
-	// FIXME: 语法错误检查
-	println(len(lexerError.Errors), len(parserError.Errors))
-	return p.Sql_clauses(), err
+	// antlr error handling
+	l.RemoveErrorListeners()
+	p.RemoveErrorListeners()
+	ec := &antlrErrorCollector{}
+	p.AddErrorListener(ec)
+	l.AddErrorListener(ec)
+
+	return p, ec
 }
 
-func MSSQLSelectFields(stmts antlr.Tree) (SelectFields, error) {
+func MSSQLSelectFields(p *mssql.TSqlParser, ec *antlrErrorCollector) (SelectFields, error) {
 	// walk the tree
-	var m *mssqlListener
-	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	var m = &mssqlListener{}
+	antlr.ParseTreeWalkerDefault.Walk(m, p.Sql_clauses())
+
+	if len(ec.errors.messages) > 0 {
+		return m.Fields, ec.errors
+	}
 	return m.Fields, nil
 }
 
-func MSSQLSelectTables(stmts antlr.Tree) (SelectTables, error) {
+func MSSQLSelectTables(p *mssql.TSqlParser, ec *antlrErrorCollector) (SelectTables, error) {
 	// walk the tree
-	var m *mssqlListener
-	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	var m = &mssqlListener{}
+	antlr.ParseTreeWalkerDefault.Walk(m, p.Sql_clauses())
+
+	if len(ec.errors.messages) > 0 {
+		return m.Tables, ec.errors
+	}
 	return m.Tables, nil
 }
 
-func MSSQLSelectFuncs(stmts antlr.Tree) (SelectFuncs, error) {
+func MSSQLSelectFuncs(p *mssql.TSqlParser, ec *antlrErrorCollector) (SelectFuncs, error) {
 	// walk the tree
-	var m *mssqlListener
-	antlr.ParseTreeWalkerDefault.Walk(m, stmts)
+	var m = &mssqlListener{}
+	antlr.ParseTreeWalkerDefault.Walk(m, p.Sql_clauses())
+
+	if len(ec.errors.messages) > 0 {
+		return m.Funcs, ec.errors
+	}
 	return m.Funcs, nil
 }
