@@ -1,3 +1,15 @@
+# -- show databases
+#  select name from v$database;
+#  select username from dba_users;
+# -- show tables
+#  select table_name from user_tables;
+#  SELECT table_name FROM all_tables;
+# -- show create table
+#  select DBMS_METADATA.GET_DDL('TABLE','TABLE NAME'[,'SCHEMA']) from DUAL
+# -- show create view
+#  SELECT VIEW_NAME, TEXT FROM USER_VIEWS;
+#  select dbms_metadata.get_ddl('VIEW', 'VIEW_NAME', 'VIEW_OWNER') from dual;
+
 # https://github.com/MaksymBilenko/docker-oracle-12c
 
 D18N_ORACLE_ARGS=--server oracle --host 127.0.0.1 --port 1521 --user system --password oracle --database xe

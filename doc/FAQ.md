@@ -111,3 +111,19 @@ last_update,DateFormat,"MM/DD/YYYY HH:mm:ss"
 ```bash
 ~ $ d18n --defaults-extra-file test/my.cnf --file actor.xlsx --mask test/mask.csv --import --database sakila --table actor --replace --disable-foreign-key-checks
 ```
+
+# ORA-01009: missing mandatory parameter
+
+With follow command will raise this error, because you don't specified `--query` or `-q` flag.
+
+```bash
+./d18n --server oracle --host 127.0.0.1 --port 1521 --user sys --database xe -p
+```
+
+Do like this will fix the problem.
+
+```bash
+./d18n --server oracle --host 127.0.0.1 --port 1521 --user sys --database xe -p -q
+
+./d18n --server oracle --host 127.0.0.1 --port 1521 --user sys --database xe -p --query 'select 1 from dual'
+```
