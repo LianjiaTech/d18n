@@ -179,9 +179,9 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 					case "RAW": // Oracle RAW data
 						value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
 						special = true
-					case "DATE", "OCIDate", "TimeStampDTY", "TimeStampTZ_DTY", "IntervalYM_DTY",
-						"IntervalDS_DTY", "TimeTZ", "TIMESTAMP", "TimeStampTZ", "IntervalYM",
-						"IntervalDS", "TimeStampLTZ_DTY", "TimeStampeLTZ": // Oracle time
+					case "DATE", "OCIDATE", "TIMESTAMPDTY", "TIMESTAMPTZ_DTY", "INTERVALYM_DTY",
+						"INTERVALDS_DTY", "TIMETZ", "TIMESTAMP", "TIMESTAMPTZ", "INTERVALYM",
+						"INTERVALDS", "TIMESTAMPLTZ_DTY", "TIMESTAMPLTZ": // Oracle time
 						value = "TIMESTAMP" + c.QuoteString(col.String)
 						special = true
 					case "LONG": // Oracle means string

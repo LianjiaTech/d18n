@@ -63,7 +63,7 @@ func ExampleSQLInsertValues() {
 	}
 	fmt.Println(TestConfig.SQLInsertValues(header, columns))
 	// Output:
-	// (NULL, "", NULL, "NULL", "ABC", "abc", 1, 1.0, 0.1, -1, 1e+2, 1E+2) <nil>
+	// (NULL, '', NULL, 'NULL', 'ABC', 'abc', 1, 1.0, 0.1, -1, 1e+2, 1E+2) <nil>
 }
 
 func ExampleTableTemplate() {

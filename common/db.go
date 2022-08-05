@@ -309,24 +309,39 @@ func (c Config) QuoteString(str string) string {
 	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq, hive
-		if c.ANSIQuotes {
-			return `'` + Escape(str) + `'`
-		} else {
-			return `"` + Escape(str) + `"`
-		}
+		return `'` + Escape(str) + `'`
+		// if c.ANSIQuotes {
+		//	return `'` + Escape(str) + `'`
+		// } else {
+		//	return `"` + Escape(str) + `"`
+		// }
 	}
 }
 
 func (c Config) QuoteKey(str string) string {
 	switch c.Server {
-	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
+	case "postgres", "clickhouse", "presto":
 		return strconv.Quote(str)
+	// sqlserver, mssql [db].[dbo].[tb]
+	case "sqlserver", "mssql":
+		return "[" + str + "]"
+	// oracle default is case insensitive, add quote make key case sensitive
+	case "oracle":
+		if c.ANSIQuotes {
+			return strconv.Quote(str)
+		} else {
+			return str
+		}
 	default:
 		// MySQL
 		// backtick (`) can be used to delimit identifiers whether or not ANSI_QUOTES
 		// is enabled, but if ANSI_QUOTES is enabled, then "you cannot use double
 		// quotation marks to quote literal strings, because it is interpreted as an identifier."
-		return "`" + str + "`" // mysql, mariadb, tidb, sqlite, csvq, hive
+		if c.ANSIQuotes {
+			return strconv.Quote(str)
+		} else {
+			return "`" + str + "`" // mysql, mariadb, tidb, sqlite, csvq, hive
+		}
 	}
 }
 

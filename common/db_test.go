@@ -177,9 +177,9 @@ func ExampleQuoteString() {
 	fmt.Println(TestConfig.QuoteString(`abc"`))
 	fmt.Println(TestConfig.QuoteString(`abc'`))
 	// Output:
-	// "abc"
-	// "abc\""
-	// "abc\'"
+	// 'abc'
+	// 'abc\"'
+	// 'abc\''
 	// 'oracle'
 	// 'abc"'
 	// 'abc'''
@@ -196,12 +196,18 @@ func ExampleQuoteKey() {
 	fmt.Println(TestConfig.QuoteKey("abc"))
 	fmt.Println(TestConfig.QuoteKey(`abc"`))
 	fmt.Println(TestConfig.QuoteKey(`abc'`))
+	TestConfig.Server = "sqlserver"
+	fmt.Println(TestConfig.QuoteKey("mssql"))
 	TestConfig.Server = "oracle"
+	fmt.Println(TestConfig.QuoteKey("abc"))
+	TestConfig.ANSIQuotes = true
 	fmt.Println(TestConfig.QuoteKey("abc"))
 	// Output:
 	// `abc`
 	// `abc"`
 	// `abc'`
+	// [mssql]
+	// abc
 	// "abc"
 
 	TestConfig = orgCfg
