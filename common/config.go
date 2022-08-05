@@ -54,7 +54,6 @@ type Config struct {
 	CheckEmpty              bool   // check empty result, if empty raise error
 	BOM                     bool   // add BOM ahead of plain text file, windows unicode chaos
 	NULLString              string // NULL value write in file, e.g., NULL, None, nil, ""
-	TimeFormat              string // golang print time format default: "2006-01-02 15:04:05"
 	ANSIQuotes              bool   // enable ANSIQuotes
 	DisableForeignKeyChecks bool   // disable foreign key checks
 	MaxBufferSize           int    // bufio default buffer size

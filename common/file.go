@@ -161,6 +161,9 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 				}
 			}
 		} else {
+			// header[i].DatabaseTypeName() is not cross database compatible
+			// float value like 0.1 ScanType is RawBytes, DatabaseTypeName is DECIMAL
+			ty := strings.ToUpper(header[i].DatabaseType)
 			switch header[i].ScanType {
 			case "int", "int8", "int16", "int32", "int64",
 				"unit", "uint8", "uint16", "uint32", "uint64",
@@ -168,36 +171,55 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 				value = col.String
 
 			default:
-				// header[i].DatabaseTypeName() is not cross database compatible
-				// float value like 0.1 ScanType is RawBytes, DatabaseTypeName is DECIMAL
-				ty := strings.ToUpper(header[i].DatabaseType)
+				// different server has special data types
+				var special bool
+				switch c.Server {
+				case "oracle":
+					switch ty {
+					case "RAW": // Oracle RAW data
+						value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
+						special = true
+					case "DATE", "OCIDate", "TimeStampDTY", "TimeStampTZ_DTY", "IntervalYM_DTY",
+						"IntervalDS_DTY", "TimeTZ", "TIMESTAMP", "TimeStampTZ", "IntervalYM",
+						"IntervalDS", "TimeStampLTZ_DTY", "TimeStampeLTZ": // Oracle time
+						value = "TIMESTAMP" + c.QuoteString(col.String)
+						special = true
+					case "LONG": // Oracle means string
+						value = col.String
+						special = true
+					}
+				case "mssql", "sqlserver":
+					switch ty {
+					case "LONG": // SQL Server means big integer
+						value = c.QuoteString(col.String)
+						special = true
+					}
+				}
+
+				if special {
+					break
+				}
+
 				switch ty {
+				// unquote
 				case "DECIMAL", "INT", "BIGINT", "INTEGER", "FLOAT", "DOUBLE", "SMALLINT",
 					"NUMBER", "NUMERIC", "REAL", "SINGLE", "CURRENCY", "AUTONUMBER", "SMALLMONEY", "MONEY":
 					value = col.String
-				case "RAW": // Oracle RAW data
-					value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
+				// quote
 				default:
-					// LONG: in Oracle means string, in SQL Server means big integer
-					if (c.Server == "sqlserver" || c.Server == "mssql") &&
-						strings.EqualFold(header[i].DatabaseType, "LONG") {
-						value = col.String
-						break
-					}
-
-					// hex-blob
-					v, hexed := c.Hex(header[i].Name, col.String)
-					if hexed {
-						value = v
-					} else {
-						switch ty {
-						case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
-							value = "N" + c.QuoteString(col.String)
-						default:
-							value = c.QuoteString(col.String)
-						}
+					switch ty {
+					case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
+						value = "N" + c.QuoteString(col.String)
+					default:
+						value = c.QuoteString(col.String)
 					}
 				}
+			}
+
+			// hex-blob
+			v, hexed := c.Hex(header[i].Name, col.String)
+			if hexed {
+				value = v
 			}
 
 			// UPDATE set

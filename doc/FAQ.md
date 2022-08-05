@@ -128,6 +128,16 @@ Do like this will fix the problem.
 ./d18n --server oracle --host 127.0.0.1 --port 1521 --user sys --database xe -p --query 'select 1 from dual'
 ```
 
-# Oracle NUMBER Format
+## Oracle use TO_CHAR FUNCTION formating time, number data
 
-Ref: https://www.anycodings.com/1questions/204281/oracle-floating-point-comparison
+```sql
+select to_char(num_col) from num_tab where rownum = 1;
+
+SELECT TO_CHAR(ts_col, 'DD-MON-YYYY HH24:MI:SSxFF'),
+   TO_CHAR(tstz_col, 'DD-MON-YYYY HH24:MI:SSxFF TZH:TZM')
+   FROM date_tab;
+```
+
+Ref Link:
+* https://www.anycodings.com/1questions/204281/oracle-floating-point-comparison
+* https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions180.htm

@@ -164,7 +164,7 @@ func (s *SaveStruct) ShowStatus() error {
 }
 
 func (s *SaveStruct) TimeFormat(t time.Time) string {
-	return time.Time(t).Format(s.Config.TimeFormat)
+	return time.Time(t).Format("2006-01-02 15:04:05")
 }
 
 func (s *SaveStruct) String(col interface{}) string {
