@@ -99,6 +99,7 @@ type Option struct {
 	RandSeed         int64  `long:"rand-seed" description:"random seed, default: current unix nano timestamp"`
 	MaxBufferSize    int    `long:"max-buffer-size" description:"bufio MaxScanTokenSize"`
 	NULLString       string `long:"null-string" default:"NULL" description:"NULL string write into file. e.g., NULL, nil, None, \"\""`
+	TimeFormat       string `long:"time-format" default:"2006-01-02 15:04:05" description:"oracle time format in golang mod"`
 }
 
 // printPrompt print prompt
@@ -339,6 +340,7 @@ func ParseFlags() (Config, error) {
 		ANSIQuotes:              opt.ANSIQuotes,
 		DisableForeignKeyChecks: opt.DisableForeignKeyChecks,
 		NULLString:              opt.NULLString,
+		TimeFormat:              opt.TimeFormat,
 		MaxBufferSize:           opt.MaxBufferSize,
 		PrintCipher:             opt.PrintCipher,
 		PrintConfig:             opt.PrintConfig,

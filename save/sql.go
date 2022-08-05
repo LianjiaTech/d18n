@@ -16,7 +16,6 @@ package save
 import (
 	"bufio"
 	"database/sql"
-	"fmt"
 	"os"
 	"strings"
 )
@@ -72,14 +71,8 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 			if col == nil {
 				values[j] = sql.NullString{String: s.Config.NULLString, Valid: false}
 			} else {
-				switch col.(type) {
-				case []byte:
-					values[j] = sql.NullString{String: string(col.([]byte)), Valid: true}
-				case []string:
-					values[j] = sql.NullString{String: s.Config.ParseArray(col.([]string)), Valid: true}
-				default:
-					values[j] = sql.NullString{String: fmt.Sprint(col), Valid: true}
-				}
+				values[j] = sql.NullString{String: s.String(col), Valid: true}
+
 				// data mask
 				valueMask, err := s.Masker.Mask(s.FieldName(j), values[j].String)
 				if err != nil {

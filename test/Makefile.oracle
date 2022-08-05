@@ -68,12 +68,17 @@ test-oracle:
 
 	# SELECT NVARCHAR
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM "nvarchar2_demo"' \
-	--file test/oracle.nvarchar2_demo.sql
+	--query 'SELECT * FROM test_language' \
+	--table test_language \
+	--file test/oracle.test_language.sql
 
 	# SELECT RAW DATA
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM "rawdata"' \
-	--table "rawdata" \
+	--query 'SELECT * FROM test_raw' \
+	--table test_raw \
 	--hex-blob c1 \
-	--file test/oracle.rawdata.sql
+	--file test/oracle.test_raw.sql
+
+	# SELECT timestamp & scientific notion
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query 'SELECT * FROM test_ts'

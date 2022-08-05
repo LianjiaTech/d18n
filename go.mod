@@ -30,7 +30,7 @@ require (
 	github.com/pingcap/tidb v1.1.0-beta.0.20210601085537-5d7c852770eb
 	github.com/pingcap/tipb v0.0.0-20210601083426-79a378b6d1c4 // indirect
 	github.com/prestodb/presto-go-client v0.0.0-20201204133205-8958eb37e584
-	github.com/sijms/go-ora/v2 v2.4.9
+	github.com/sijms/go-ora/v2 v2.4.28
 	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07
 	github.com/tealeg/xlsx/v3 v3.2.3
 	github.com/tjfoc/gmsm v1.3.2

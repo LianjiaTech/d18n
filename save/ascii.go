@@ -63,14 +63,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 			if col == nil {
 				values[j] = s.Config.NULLString
 			} else {
-				switch col.(type) {
-				case []byte:
-					values[j] = string(col.([]byte))
-				case []string:
-					values[j] = s.Config.ParseArray(col.([]string))
-				default:
-					values[j] = fmt.Sprint(col)
-				}
+				values[j] = s.String(col)
 
 				// data mask
 				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])

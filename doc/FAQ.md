@@ -127,3 +127,7 @@ Do like this will fix the problem.
 
 ./d18n --server oracle --host 127.0.0.1 --port 1521 --user sys --database xe -p --query 'select 1 from dual'
 ```
+
+# Oracle NUMBER Format
+
+Ref: https://www.anycodings.com/1questions/204281/oracle-floating-point-comparison

@@ -17,11 +17,13 @@ import (
 	"database/sql"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/LianjiaTech/d18n/common"
 	"github.com/LianjiaTech/d18n/mask"
+	ora "github.com/sijms/go-ora/v2"
 )
 
 type saveStatus struct {
@@ -159,4 +161,30 @@ func (s *SaveStruct) ShowStatus() error {
 		)
 	}
 	return err
+}
+
+func (s *SaveStruct) TimeFormat(t time.Time) string {
+	return time.Time(t).Format(s.Config.TimeFormat)
+}
+
+func (s *SaveStruct) String(col interface{}) string {
+	var str string
+	// fmt.Printf("Type: %T, Value: %v\n", col, col)
+	switch col.(type) {
+	case []byte:
+		str = string(col.([]byte))
+	case []string:
+		str = s.Config.ParseArray(col.([]string))
+	case float32: // oracle number
+		str = strconv.FormatFloat(float64(col.(float32)), 'f', -1, 64)
+	case float64: // oracle number
+		str = strconv.FormatFloat(col.(float64), 'f', -1, 64)
+	case time.Time: // oracle date/datetime
+		str = s.TimeFormat(col.(time.Time))
+	case ora.TimeStamp: // oracle timestamp
+		str = s.TimeFormat(time.Time(col.(ora.TimeStamp)))
+	default:
+		str = fmt.Sprint(col)
+	}
+	return str
 }
