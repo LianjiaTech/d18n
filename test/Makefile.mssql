@@ -49,4 +49,11 @@ test-mssql:
 	@./bin/d18n ${D18N_MSSQL_ARGS} \
 	--hex-blob c1 \
 	--query 'SELECT * from "rawdata"' \
+	--table rawdata \
 	--file test/mssql.rawdata.sql
+
+	# test ROWCOUNT
+	@./bin/d18n ${D18N_MSSQL_ARGS} \
+	--limit 2 \
+	--query "SELECT name FROM sys.databases"
+

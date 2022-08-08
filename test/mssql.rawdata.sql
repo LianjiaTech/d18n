@@ -1,2 +1,2 @@
-INSERT INTO "mssql"  VALUES (0x01);
-INSERT INTO "mssql"  VALUES (0x4142);
+INSERT INTO [rawdata]  VALUES (0x01);
+INSERT INTO [rawdata]  VALUES (0x4142);

@@ -33,7 +33,7 @@ import (
 	// oracle pure go driver
 	_ "github.com/sijms/go-ora/v2"
 	// MS SQL purge go driver
-	_ "github.com/denisenkom/go-mssqldb"
+	mssql "github.com/denisenkom/go-mssqldb"
 	// clickhouse
 	_ "github.com/ClickHouse/clickhouse-go"
 	// presto
@@ -59,7 +59,17 @@ func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
 		ctx, _ = context.WithTimeout(ctx, time.Duration(c.Timeout)*time.Second)
 	}
 
-	rows, err := db.QueryContext(ctx, fmt.Sprintf("SELECT * FROM %s LIMIT 0", c.QuoteKey(c.Table)))
+	var sql string
+	switch c.Server {
+	case "mssql", "sqlserver":
+		sql = "SELECT TOP 0 * FROM %s"
+	case "oracle":
+		sql = "SELECT * FROM %s WHERE ROWNUM < 0"
+	default:
+		sql = "SELECT * FROM %s LIMIT 0"
+	}
+
+	rows, err := db.QueryContext(ctx, fmt.Sprintf(sql, c.QuoteKey(c.Table)))
 	if err != nil {
 		return nil, err
 	}
@@ -110,12 +120,25 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = c.dsnMySQL()
 	case "postgres":
 		dsn = c.dsnPostgres()
-	case "sqlite", "sqlite3", "csvq", "csv":
+	case "sqlite", "sqlite3":
+		c.Server = "sqlite"
+		dsn = c.dsnFile()
+	case "csvq", "csv":
+		c.Server = "csvq"
 		dsn = c.dsnFile()
 	case "oracle":
 		dsn = c.dsnOracle()
 	case "sqlserver", "mssql":
+		c.Server = "sqlserver"
 		dsn = c.dsnSQLServer()
+		if c.Limit != 0 {
+			connector, err := mssql.NewConnector(dsn)
+			if err != nil {
+				return nil, err
+			}
+			connector.SessionInitSQL = fmt.Sprintf("SET ROWCOUNT %d", c.Limit)
+			return sql.OpenDB(connector), err
+		}
 	case "clickhouse":
 		dsn = c.dsnClickHouse()
 	case "presto":
@@ -130,12 +153,6 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = strings.TrimSpace(c.DSN)
 	}
 
-	switch c.Server {
-	case "sqlite", "sqlite3":
-		c.Server = "sqlite"
-	case "csvq", "csv":
-		c.Server = "csvq"
-	}
 	return sql.Open(c.Server, dsn)
 }
 
