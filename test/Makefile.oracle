@@ -10,9 +10,17 @@
 #  SELECT VIEW_NAME, TEXT FROM USER_VIEWS;
 #  select dbms_metadata.get_ddl('VIEW', 'VIEW_NAME', 'VIEW_OWNER') from dual;
 
-# https://github.com/MaksymBilenko/docker-oracle-12c
-
 D18N_ORACLE_ARGS=--server oracle --host 127.0.0.1 --port 1521 --user system --password oracle --database xe
+
+# https://github.com/MaksymBilenko/docker-oracle-12c
+# https://github.com/MaksymBilenko/docker-oracle-xe-11g
+# https://github.com/gvenzl/oci-oracle-xe
+# ORACLE_IMAGE=maksymbilenko/oracle-xe-11g make docker-oracle
+# ORACLE_IMAGE=gvenzl/oracle-xe:21-slim make docker-oracle
+ORACLE_IMAGE := $(or ${ORACLE_IMAGE}, ${ORACLE_IMAGE}, maksymbilenko/oracle-12c)
+
+# Oracle-11g container need unset HTTP Proxy ENV
+unexport http_proxy HTTP_PROXY https_proxy HTTPS_PROXY no_proxy NO_PROXY
 
 .PHONY: docker-oracle
 docker-oracle: docker-exist
@@ -21,12 +29,13 @@ docker-oracle: docker-exist
 	@${DOCKER_CMD} run -d --rm \
 	--name d18n-oracle \
 	-p 1521:1521 \
+	-e ORACLE_PASSWORD=oracle \
 	-e NLS_LANG="SIMPLIFIED CHINESE_CHINA.AL32UTF8" \
 	-v `pwd`/test/oracle.init.sql:/docker-entrypoint-initdb.d/oracle.init.sql \
-	quay.io/maksymbilenko/oracle-12c
+	$(ORACLE_IMAGE)
 	@echo "waiting for test database initializing "
 	@timeout=180; while [ $${timeout} -gt 0 ] ; do \
-		ready=$$(${DOCKER_CMD} logs --tail 10 d18n-oracle | grep -c "Database ready to use"); \
+		ready=$$(${DOCKER_CMD} exec d18n-oracle bash -c "source /home/oracle/.bashrc;echo \"select 'Ready' from dual;\" | sqlplus system/oracle@//localhost:1521/xe" 2>/dev/null | grep -c "Ready"); \
 		if [ $${ready} -eq 0 ] ; then \
 		        timeout=`expr $$timeout - 1`; \
 		        printf '.' ;  sleep 1 ; \
@@ -60,25 +69,25 @@ test-oracle:
 
 	# SELECT LIMIT
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM HELP WHERE ROWNUM <= 2'
+	--query 'SELECT * FROM ot.test_language WHERE ROWNUM <= 2'
 
 	# SELECT TABLE
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--table HELP --limit 2
+	--table ot.test_language --limit 2
 
 	# SELECT NVARCHAR
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM test_language' \
+	--query 'SELECT * FROM ot.test_language' \
 	--table test_language \
 	--file test/oracle.test_language.sql
 
 	# SELECT RAW DATA
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM test_raw' \
+	--query 'SELECT * FROM ot.test_raw' \
 	--table test_raw \
 	--hex-blob c1 \
 	--file test/oracle.test_raw.sql
 
 	# SELECT timestamp & scientific notion
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM test_ts'
+	--query 'SELECT * FROM ot.test_ts'

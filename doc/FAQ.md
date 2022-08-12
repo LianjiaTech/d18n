@@ -141,3 +141,13 @@ SELECT TO_CHAR(ts_col, 'DD-MON-YYYY HH24:MI:SSxFF'),
 Ref Link:
 * https://www.anycodings.com/1questions/204281/oracle-floating-point-comparison
 * https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions180.htm
+
+## TLS Handshake failed
+
+```txt
+TLS Handshake failed: tls: server selected unsupported protocol version 301
+```
+
+build d18n with go 1.18 and connect sql server will raise this error, rebuild with go 1.17 fix this.(2022-08-12)
+
+Ref Link: https://github.com/denisenkom/go-mssqldb/issues/726
