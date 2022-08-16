@@ -35,18 +35,29 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 	}
 	defer file.Close()
 
+	// column info
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+
 	// insert prefix
-	insertPrefix, err := s.Config.SQLInsertPrefix(s.Config.DBParserColumnNames(s.Status.Header))
+	insertPrefix, err := s.Config.SQLInsertPrefix(columnNames)
 	if err != nil {
 		return err
 	}
 
 	// header & columns
 	headerColumns := s.Config.DBParseColumnTypes(s.Status.Header)
-	columns := make([]interface{}, len(s.Status.Header))
-	cols := make([]interface{}, len(s.Status.Header))
-	for j := range columns {
-		cols[j] = &columns[j]
+
+	columnValues := make([]interface{}, len(columnNames))
+	cols := make([]interface{}, len(columnNames))
+	for j := range columnValues {
+		cols[j] = &columnValues[j]
 	}
 
 	// write every row into sql
@@ -66,12 +77,12 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 		}
 
 		// data mask
-		values := make([]sql.NullString, len(columns))
-		for j, col := range columns {
+		values := make([]sql.NullString, len(columnNames))
+		for j, col := range columnValues {
 			if col == nil {
 				values[j] = sql.NullString{String: s.Config.NULLString, Valid: false}
 			} else {
-				values[j] = sql.NullString{String: s.String(col), Valid: true}
+				values[j] = sql.NullString{String: s.String(col, columnTypes[j]), Valid: true}
 
 				// data mask
 				valueMask, err := s.Masker.Mask(s.FieldName(j), values[j].String)

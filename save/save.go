@@ -167,12 +167,31 @@ func (s *SaveStruct) TimeFormat(t time.Time) string {
 	return time.Time(t).Format("2006-01-02 15:04:05")
 }
 
-func (s *SaveStruct) String(col interface{}) string {
+func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
 	var str string
-	// fmt.Printf("Type: %T, Value: %v\n", col, col)
+	// fmt.Printf("Type: %T, Value: %v, Ty: %s\n", col, col, ty.DatabaseTypeName())
 	switch col.(type) {
 	case []byte:
-		str = string(col.([]byte))
+		var special bool
+		switch s.Config.Server {
+		case "mssql", "sqlserver":
+			switch ty.DatabaseTypeName() {
+			case "UNIQUEIDENTIFIER":
+				if u := col.([]byte); len(u) == 16 {
+					str = fmt.Sprintf("%X-%X-%X-%X-%X", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
+					special = true
+				}
+			}
+		case "oracle":
+			switch ty.DatabaseTypeName() {
+			case "RAW":
+				str = fmt.Sprintf("%X", col.([]byte))
+				special = true
+			}
+		}
+		if !special {
+			str = string(col.([]byte))
+		}
 	case []string:
 		str = s.Config.ParseArray(col.([]string))
 	case float32: // oracle number

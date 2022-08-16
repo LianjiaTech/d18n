@@ -85,7 +85,6 @@ test-oracle:
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
 	--query 'SELECT * FROM ot.test_raw' \
 	--table test_raw \
-	--hex-blob c1 \
 	--file test/oracle.test_raw.sql
 
 	# SELECT timestamp & scientific notion

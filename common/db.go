@@ -32,7 +32,7 @@ import (
 	_ "modernc.org/sqlite"
 	// oracle pure go driver
 	_ "github.com/sijms/go-ora/v2"
-	// MS SQL purge go driver
+	// MS SQL pure go driver
 	mssql "github.com/denisenkom/go-mssqldb"
 	// clickhouse
 	_ "github.com/ClickHouse/clickhouse-go"

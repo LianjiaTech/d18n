@@ -23,20 +23,28 @@ import (
 
 // saveRows2ASCII print rows as ascii table
 func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
-	var err error
-
 	table := tablewriter.NewWriter(os.Stdout)
+
+	// column info
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
 
 	// set table header
 	if !s.Config.NoHeader && !s.Config.Vertical {
-		table.SetHeader(s.Config.DBParserColumnNames(s.Status.Header))
+		table.SetHeader(columnNames)
 	}
 
 	// init columns
-	columns := make([]interface{}, len(s.Status.Header))
-	cols := make([]interface{}, len(s.Status.Header))
-	for j := range columns {
-		cols[j] = &columns[j]
+	columnValues := make([]interface{}, len(columnNames))
+	cols := make([]interface{}, len(columnNames))
+	for j := range columnValues {
+		cols[j] = &columnValues[j]
 	}
 
 	// set every rows
@@ -58,12 +66,12 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 			return err
 		}
 
-		values := make([]string, len(columns))
-		for j, col := range columns {
+		values := make([]string, len(columnNames))
+		for j, col := range columnValues {
 			if col == nil {
 				values[j] = s.Config.NULLString
 			} else {
-				values[j] = s.String(col)
+				values[j] = s.String(col, columnTypes[j])
 
 				// data mask
 				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])
@@ -78,7 +86,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 		if s.Config.Vertical {
 			table.Append([]string{fmt.Sprintf(`********* Row %d *********`, s.Status.Lines), fmt.Sprintf(`********* Row %d *********`, s.Status.Lines)})
 			for i, v := range values {
-				table.Append([]string{s.Status.Header[i].Name(), v})
+				table.Append([]string{columnNames[i], v})
 			}
 		} else {
 			table.Append(values)
@@ -90,7 +98,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// print table
-	if len(s.Status.Header) > 0 { // `do 1` only return empty set without columns
+	if len(columnNames) > 0 { // `do 1` only return empty set without columns
 		table.Render()
 	}
 	return nil

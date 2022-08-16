@@ -44,9 +44,19 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 	stream := json.NewStream(json.Config{IndentionStep: 2}.Froze(), file, 512)
 	stream.WriteArrayStart() // [
 
+	// column info
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+
 	// key names as json list first element
 	if !s.Config.NoHeader {
-		buf, err := json.Marshal(s.Config.DBParserColumnNames(s.Status.Header))
+		buf, err := json.Marshal(columnNames)
 		if err != nil {
 			return err
 		}
@@ -61,10 +71,10 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// init columns
-	columns := make([]interface{}, len(s.Status.Header))
-	cols := make([]interface{}, len(s.Status.Header))
-	for j := range columns {
-		cols[j] = &columns[j]
+	columnValues := make([]interface{}, len(columnNames))
+	cols := make([]interface{}, len(columnNames))
+	for j := range columnValues {
+		cols[j] = &columnValues[j]
 	}
 
 	for rows.Next() {
@@ -80,12 +90,12 @@ func saveRows2JSON(s *SaveStruct, rows *sql.Rows) error {
 			return err
 		}
 
-		values := make([]string, len(columns))
-		for j, col := range columns {
+		values := make([]string, len(columnNames))
+		for j, col := range columnValues {
 			if col == nil {
 				values[j] = s.Config.NULLString
 			} else {
-				values[j] = s.String(col)
+				values[j] = s.String(col, columnTypes[j])
 
 				// data mask
 				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])

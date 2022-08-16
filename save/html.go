@@ -52,14 +52,25 @@ func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
 	if err != nil {
 		return err
 	}
+
+	// column info
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+
 	// set table header with column name
 	if !s.Config.NoHeader {
 		_, err = w.WriteString("<TR>")
 		if err != nil {
 			return err
 		}
-		for _, h := range s.Status.Header {
-			_, err = w.WriteString("<TH>" + html.EscapeString(h.Name()) + "</TH>")
+		for _, h := range columnNames {
+			_, err = w.WriteString("<TH>" + html.EscapeString(h) + "</TH>")
 			if err != nil {
 				return err
 			}
@@ -71,10 +82,10 @@ func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	// init columns
-	columns := make([]interface{}, len(s.Status.Header))
-	cols := make([]interface{}, len(s.Status.Header))
-	for j := range columns {
-		cols[j] = &columns[j]
+	columnValues := make([]interface{}, len(columnNames))
+	cols := make([]interface{}, len(columnNames))
+	for j := range columnValues {
+		cols[j] = &columnValues[j]
 	}
 
 	for rows.Next() {
@@ -96,12 +107,12 @@ func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
 			return err
 		}
 
-		values := make([]string, len(columns))
-		for j, col := range columns {
+		values := make([]string, len(columnNames))
+		for j, col := range columnValues {
 			if col == nil {
 				values[j] = s.Config.NULLString
 			} else {
-				values[j] = s.String(col)
+				values[j] = s.String(col, columnTypes[j])
 
 				// data mask
 				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])

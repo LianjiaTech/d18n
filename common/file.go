@@ -15,7 +15,6 @@ package common
 
 import (
 	"database/sql"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -176,22 +175,16 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 				switch c.Server {
 				case "oracle":
 					switch ty {
-					case "RAW": // Oracle RAW data
-						value = c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(col.String))))
-						special = true
 					case "DATE", "OCIDATE", "TIMESTAMPDTY", "TIMESTAMPTZ_DTY", "INTERVALYM_DTY",
 						"INTERVALDS_DTY", "TIMETZ", "TIMESTAMP", "TIMESTAMPTZ", "INTERVALYM",
 						"INTERVALDS", "TIMESTAMPLTZ_DTY", "TIMESTAMPLTZ": // Oracle time
 						value = "TIMESTAMP" + c.QuoteString(col.String)
 						special = true
-					case "LONG": // Oracle means string
-						value = col.String
-						special = true
 					}
 				case "mssql", "sqlserver":
 					switch ty {
 					case "LONG": // SQL Server means big integer
-						value = c.QuoteString(col.String)
+						value = col.String
 						special = true
 					}
 				}
@@ -277,7 +270,7 @@ func (c Config) SQLMultiValues(counter int, prefix, values string) string {
 	return fmt.Sprint(prefix, values, delimiter)
 }
 
-// TableTemplate get header []HeaderColumn from table tamplate
+// TableTemplate get header []HeaderColumn from table template
 // schema must be strict formatted, only support SHOW CREATE output info
 func (c Config) TableTemplate() ([]HeaderColumn, error) {
 	var header []HeaderColumn

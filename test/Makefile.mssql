@@ -57,3 +57,7 @@ test-mssql:
 	--limit 2 \
 	--query "SELECT name FROM sys.databases"
 
+	# test []byte
+	@./bin/d18n ${D18N_MSSQL_ARGS} \
+	--query "SELECT CAST('ABC' AS VARBINARY) AS VARBINARY, CAST(123 AS DECIMAL) AS DECIMAL, NEWID() AS UID;"
+

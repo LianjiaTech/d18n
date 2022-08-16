@@ -44,8 +44,18 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 		return err
 	}
 
+	// column info
+	columnNames, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	columnTypes, err := rows.ColumnTypes()
+	if err != nil {
+		return err
+	}
+
 	// check columns count
-	if len(s.Status.Header) > ExcelMaxColumns {
+	if len(columnNames) > ExcelMaxColumns {
 		return fmt.Errorf("excel max columns(%d) exceeded", ExcelMaxColumns)
 	}
 
@@ -53,17 +63,17 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 	if !s.Config.NoHeader {
 		sheetHeader := sheet.AddRow()
 		sheetHeader.SetHeight(12.5) // https://github.com/tealeg/xlsx/issues/647
-		for _, header := range s.Status.Header {
+		for _, name := range columnNames {
 			cell := sheetHeader.AddCell()
-			cell.Value = header.Name()
+			cell.Value = name
 		}
 	}
 
 	// init columns
-	columns := make([]interface{}, len(s.Status.Header))
-	cols := make([]interface{}, len(s.Status.Header))
-	for j := range columns {
-		cols[j] = &columns[j]
+	columnValues := make([]interface{}, len(columnNames))
+	cols := make([]interface{}, len(columnNames))
+	for j := range columnValues {
+		cols[j] = &columnValues[j]
 	}
 
 	var bufSize int
@@ -89,12 +99,12 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 			return err
 		}
 
-		values := make([]string, len(columns))
-		for j, col := range columns {
+		values := make([]string, len(columnNames))
+		for j, col := range columnValues {
 			if col == nil {
 				values[j] = s.Config.NULLString
 			} else {
-				values[j] = s.String(col)
+				values[j] = s.String(col, columnTypes[j])
 
 				// data mask
 				values[j], err = s.Masker.Mask(s.FieldName(j), values[j])
