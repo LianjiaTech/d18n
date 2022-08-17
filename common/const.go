@@ -21,6 +21,12 @@ const (
 	DefaultExcelMaxFileSize = 10 * 1024 * 1024
 )
 
+const (
+	DATETIME_FORMAT = "2006-01-02 15:04:05"
+	DATE_FORMAT     = "2006-01-02"
+	YEAR_FORMAT     = "2006"
+)
+
 // ERROR message
 const (
 	WrongEmptySet    = `Empty set`

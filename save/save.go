@@ -163,8 +163,11 @@ func (s *SaveStruct) ShowStatus() error {
 	return err
 }
 
-func (s *SaveStruct) TimeFormat(t time.Time) string {
-	return time.Time(t).Format("2006-01-02 15:04:05")
+func (s *SaveStruct) TimeFormat(t time.Time, format string) string {
+	if format == "" {
+		format = common.DATETIME_FORMAT
+	}
+	return time.Time(t).Format(format)
 }
 
 func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
@@ -184,7 +187,8 @@ func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
 			}
 		case "oracle":
 			switch ty.DatabaseTypeName() {
-			case "RAW":
+			case "RAW", "LongRaw", "VarRaw", // RAW
+				"OCIBlobLocator": // BLOB
 				str = fmt.Sprintf("%X", col.([]byte))
 				special = true
 			}
@@ -199,9 +203,9 @@ func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
 	case float64: // oracle number
 		str = strconv.FormatFloat(col.(float64), 'f', -1, 64)
 	case time.Time: // oracle date/datetime
-		str = s.TimeFormat(col.(time.Time))
+		str = s.TimeFormat(col.(time.Time), common.DATETIME_FORMAT)
 	case ora.TimeStamp: // oracle timestamp
-		str = s.TimeFormat(time.Time(col.(ora.TimeStamp)))
+		str = s.TimeFormat(time.Time(col.(ora.TimeStamp)), common.DATETIME_FORMAT)
 	default:
 		str = fmt.Sprint(col)
 	}

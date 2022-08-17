@@ -90,3 +90,7 @@ test-oracle:
 	# SELECT timestamp & scientific notion
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
 	--query 'SELECT * FROM ot.test_ts'
+
+	# SELECT DATETIME, DATE
+	@./bin/d18n ${D18N_ORACLE_ARGS} \
+	--query 'SELECT sysdate, to_date(sysdate) FROM DUAL'

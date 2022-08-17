@@ -35,11 +35,13 @@ INSERT INTO test_language VALUES ('안녕하세요');
 
 -- test raw data
 CREATE TABLE test_raw (
-       c1 RAW(11)
+       c1 RAW(11),
+       c2 BLOB,
+       c3 CLOB
 );
 
-INSERT INTO test_raw VALUES ('1');
-INSERT INTO test_raw VALUES ('AB');
+INSERT INTO test_raw VALUES ('1', '2', '3');
+INSERT INTO test_raw VALUES ('AB', 'CD', 'EF');
 
 -- test timestamp
 create table test_ts(
