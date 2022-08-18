@@ -172,7 +172,7 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 			default:
 				// different server has special data types
 				var special bool
-				switch c.Server {
+				switch c.Target {
 				case "oracle":
 					switch ty {
 					case "DATE", "OCIDATE", "TIMESTAMPDTY", "TIMESTAMPTZ_DTY", "INTERVALYM_DTY",

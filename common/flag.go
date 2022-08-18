@@ -39,6 +39,7 @@ type Option struct {
 
 	// database config
 	Server              string `long:"server" default:"mysql" description:"server type, support: mysql, postgres, sqlite, oracle, sqlserver, clickhouse"`
+	Target              string `long:"target" default:"" description:"target server type, use --server value as default"`
 	DSN                 string `long:"dsn" description:"formatted data source name"`
 	User                string `short:"u" long:"user" description:"database user"`
 	Password            string `long:"password" description:"database password"`
@@ -197,6 +198,10 @@ func ParseFlags() (Config, error) {
 		opt.ExcelMaxFileSize = DefaultExcelMaxFileSize
 	}
 
+	if opt.Target == "" {
+		opt.Target = opt.Server
+	}
+
 	if opt.DefaultsExtraFile != "" {
 		err := parseDefaultsExtraFile(opt.DefaultsExtraFile, &c)
 		if err != nil {
@@ -312,6 +317,7 @@ func ParseFlags() (Config, error) {
 
 	c = Config{
 		Server:   opt.Server,
+		Target:   opt.Target,
 		User:     opt.User,
 		Password: opt.Password,
 		Charset:  opt.Charset,

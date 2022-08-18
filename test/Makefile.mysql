@@ -88,6 +88,14 @@ test-mysql: build
 	--file test/test-mysql.hex.sql
 	@./bin/d18n --preview 2 --file test/test-mysql.hex.sql
 
+	# test target
+	@./bin/d18n --defaults-extra-file test/my.cnf \
+	--database sakila \
+	--query 'select * from actor where actor_id = 1' \
+	--target oracle \
+	--complete-insert \
+	--file test/test_target.sql
+
 	# test stdout
 	@./bin/d18n --defaults-extra-file test/my.cnf \
 	--database sakila \

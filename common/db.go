@@ -160,7 +160,7 @@ func (c Config) NewConnection() (*sql.DB, error) {
 func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) error {
 	var err error
 	var sql string
-	switch c.Server {
+	switch c.Target {
 	case "sqlite", "sqlite3":
 		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
 	case "mysql":
@@ -322,7 +322,7 @@ func (c Config) QuoteString(str string) string {
 	// How to escape special characters in Oracle SQL?
 	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
 
-	switch c.Server {
+	switch c.Target {
 	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq, hive
@@ -336,7 +336,7 @@ func (c Config) QuoteString(str string) string {
 }
 
 func (c Config) QuoteKey(str string) string {
-	switch c.Server {
+	switch c.Target {
 	case "postgres", "clickhouse", "presto":
 		return strconv.Quote(str)
 	// sqlserver, mssql [db].[dbo].[tb]
@@ -368,7 +368,13 @@ func (c Config) Hex(name string, value interface{}) (string, bool) {
 	for _, k := range c.HexBLOB {
 		if k == "*" || strings.EqualFold(k, name) {
 			hexed = true
-			return c.hex(fmt.Sprint(value)), hexed
+			if c.Import {
+				// import hexed value from file into database
+				return fmt.Sprint(value), hexed
+			} else {
+				// save hexed value into file
+				return c.hex(fmt.Sprint(value)), hexed
+			}
 		}
 	}
 	return fmt.Sprint(value), hexed
@@ -382,7 +388,7 @@ func (c Config) hex(value interface{}) string {
 		return ret
 	}
 
-	switch c.Server {
+	switch c.Target {
 	case "postgres":
 		return `'\x` + hex.EncodeToString([]byte(ret)) + "'::bytea"
 	case "sqlite", "sqlite3":

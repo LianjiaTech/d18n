@@ -29,6 +29,7 @@ func InitTestEnv() {
 
 	TestConfig = Config{
 		Server:   "mysql",
+		Target:   "mysql",
 		User:     "root",
 		Password: "",
 		Host:     "127.0.0.1",

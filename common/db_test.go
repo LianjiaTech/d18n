@@ -169,10 +169,12 @@ func ExampleQuoteString() {
 	fmt.Println(TestConfig.QuoteString(`abc"`))
 	fmt.Println(TestConfig.QuoteString(`abc'`))
 	TestConfig.Server = "oracle"
+	TestConfig.Target = "oracle"
 	fmt.Println(TestConfig.QuoteString("oracle"))
 	fmt.Println(TestConfig.QuoteString(`abc"`))
 	fmt.Println(TestConfig.QuoteString(`abc'`))
 	TestConfig.Server = "postgres"
+	TestConfig.Target = "postgres"
 	fmt.Println(TestConfig.QuoteString("postgres"))
 	fmt.Println(TestConfig.QuoteString(`abc"`))
 	fmt.Println(TestConfig.QuoteString(`abc'`))
@@ -197,8 +199,10 @@ func ExampleQuoteKey() {
 	fmt.Println(TestConfig.QuoteKey(`abc"`))
 	fmt.Println(TestConfig.QuoteKey(`abc'`))
 	TestConfig.Server = "sqlserver"
+	TestConfig.Target = "sqlserver"
 	fmt.Println(TestConfig.QuoteKey("mssql"))
 	TestConfig.Server = "oracle"
+	TestConfig.Target = "oracle"
 	fmt.Println(TestConfig.QuoteKey("abc"))
 	TestConfig.ANSIQuotes = true
 	fmt.Println(TestConfig.QuoteKey("abc"))

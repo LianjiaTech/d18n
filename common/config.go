@@ -27,6 +27,7 @@ import (
 type Config struct {
 	// server config in my.cnf file, [client] section
 	Server   string // mysql, postgres, oracle
+	Target   string // like Server, but convert data format into other database compatible
 	User     string
 	Password string
 	Charset  string

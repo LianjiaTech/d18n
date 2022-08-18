@@ -14,3 +14,12 @@ test-sqlite: build
 	--detect --server sqlite \
 	--table film_text \
 	--database test/sakila.sqlite3
+	# test BLOB
+	@./bin/d18n --server sqlite \
+	--database 'test/sakila.sqlite3' \
+	--query "SELECT X'31' as c1, typeof(x'31'), 1 as c2, typeof(1), '1' as c3, typeof('1')"
+	@./bin/d18n --server sqlite \
+	--database 'test/sakila.sqlite3' \
+	--hex-blob c1,c2 \
+	--file test/test_sqlite_blob.sql \
+	--query "SELECT X'31' as c1, '1', 1, x'61' as c2, 'a'"
