@@ -89,7 +89,8 @@ test-oracle:
 
 	# SELECT timestamp & scientific notion
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
-	--query 'SELECT * FROM ot.test_ts'
+	--query 'SELECT * FROM ot.test_ts' \
+	--file test/oracle.test_ts.sql
 
 	# SELECT DATETIME, DATE
 	@./bin/d18n ${D18N_ORACLE_ARGS} \
