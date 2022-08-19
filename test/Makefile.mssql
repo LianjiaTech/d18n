@@ -45,6 +45,11 @@ test-mssql:
 	@./bin/d18n ${D18N_MSSQL_ARGS} \
 	--query "declare @a int = 2021; select @a"
 
+	# test CHAR
+	@./bin/d18n ${D18N_MSSQL_ARGS} \
+	--query "select top 1 * from sakila.dbo.language;" \
+	--file test/mssql.test_char.sql
+
 	# test export result to file
 	@./bin/d18n ${D18N_MSSQL_ARGS} \
 	--hex-blob c1 \
