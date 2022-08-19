@@ -25,13 +25,14 @@ alter session set current_schema = ot;
 
 -- test chinese
 CREATE TABLE test_language (
-       description NVARCHAR2(50)
+       c1 NVARCHAR2(50),
+       c2 CHAR(50)
 );
 
-INSERT INTO test_language VALUES (N'你好');
-INSERT INTO test_language VALUES ('Hello');
-INSERT INTO test_language VALUES ('こんにちは');
-INSERT INTO test_language VALUES ('안녕하세요');
+INSERT INTO test_language VALUES (N'你好', N'你好');
+INSERT INTO test_language VALUES ('Hello', 'Hello');
+INSERT INTO test_language VALUES ('こんにちは', 'こんにちは');
+INSERT INTO test_language VALUES ('안녕하세요', '안녕하세요');
 
 -- test raw data
 CREATE TABLE test_raw (

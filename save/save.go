@@ -207,7 +207,17 @@ func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
 	case ora.TimeStamp: // oracle timestamp
 		str = s.TimeFormat(time.Time(col.(ora.TimeStamp)), common.DATETIME_FORMAT)
 	default:
-		str = fmt.Sprint(col)
+		switch s.Config.Server {
+		case "oracle":
+			switch ty.DatabaseTypeName() {
+			case "CHAR": // Oracle will auto fill space with CHAR type
+				str = strings.TrimSpace(fmt.Sprint(col))
+			default:
+				str = fmt.Sprint(col)
+			}
+		default:
+			str = fmt.Sprint(col)
+		}
 	}
 	return str
 }
