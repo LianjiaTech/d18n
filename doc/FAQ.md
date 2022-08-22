@@ -38,12 +38,6 @@ also see: https://github.com/lib/pq/issues/505
 
 d18n use bufio read file chunk by chunk, default MaxScanTokenSize if 64KB, you can change chunk size with `--max-buffer-size` flag. Notice use a large buffer will use more memory.
 
-## ASCII table line wrap
-
-d18n use `github.com/olekukonko/tablewriter` library to print result as ASCII table, some times a long value will be auto printed in multi-lines, even if there is no line-feed in value.
-
-![ascii_line_feed](./images/ascii_line_wrap.png)
-
 ## fatal error: runtime: cannot allocate memory
 
 ```txt

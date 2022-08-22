@@ -1,5 +1,7 @@
 # Useful SQLs
-## SQLite3
+## Version of sqlite
+# select sqlite_version()
+## show tables
 # SELECT '' AS table_schema, name AS table_name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' ORDER BY name
 
 .PHONY: test-sqlite

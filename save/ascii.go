@@ -25,6 +25,10 @@ import (
 func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	table := tablewriter.NewWriter(os.Stdout)
 
+	// ascii table format config
+	table.SetAutoFormatHeaders(false)
+	table.SetAutoWrapText(false)
+
 	// column info
 	columnNames, err := rows.Columns()
 	if err != nil {
