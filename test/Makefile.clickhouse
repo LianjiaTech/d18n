@@ -7,7 +7,8 @@ D18N_CLICKHOUSE_ARGS=--server clickhouse --host 127.0.0.1 --port 9000 --user use
 docker-clickhouse: docker-exist
 	@${DOCKER_CMD} stop d18n-clickhouse 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-clickhouse 2>/dev/null >/dev/null || true
-	@${DOCKER_CMD} run -d --rm --name d18n-clickhouse \
+	@${DOCKER_CMD} rm d18n-clickhouse 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d ${DOCKER_RM} --name d18n-clickhouse \
 	--ulimit nofile=262144:262144 \
 	-e CLICKHOUSE_USER=username \
 	-e CLICKHOUSE_PASSWORD=password \

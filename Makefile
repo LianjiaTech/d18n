@@ -134,6 +134,7 @@ mask-typo:
 
 # check docker installed
 DOCKER_CMD:=$(shell which podman 2>/dev/null || which docker 2>/dev/null)
+DOCKER_RM := $(or ${DOCKER_RM}, ${DOCKER_RM}, --rm)
 
 # read line wrap
 RLWRAP:=$(shell which rlwrap 2>/dev/null || echo "")

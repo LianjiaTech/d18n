@@ -27,8 +27,9 @@ docker-mysql: docker-exist
 	@echo "$(CGREEN)Build mysql test environment ...$(CEND)"
 	@${DOCKER_CMD} stop d18n-mysql 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-mysql 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} rm d18n-mysql 2>/dev/null || true
 	@echo "${DOCKER_CMD} run --name d18n-mysql $(MYSQL_RELEASE):$(MYSQL_VERSION)"
-	@${DOCKER_CMD} run --name d18n-mysql --rm -d \
+	@${DOCKER_CMD} run --name d18n-mysql ${DOCKER_RM} -d \
 	-e MYSQL_ALLOW_EMPTY_PASSWORD=1 \
 	-e MYSQL_DATABASE=test \
 	-v `pwd`/test/sakila.mysql.sql.gz:/docker-entrypoint-initdb.d/sakila.mysql.sql.gz \

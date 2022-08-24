@@ -10,7 +10,7 @@ D18N_HIVE_ARGS=--server hive --host 127.0.0.1 --port 10000 --user sqlflow --pass
 
 .PHONY: docker-hive
 docker-hive:
-	${DOCKER_CMD} run --rm -it --name d18n-hive \
+	${DOCKER_CMD} run ${DOCKER_RM} -it --name d18n-hive \
 		-p 10000:10000 \
 		gohive:dev bash
 

@@ -26,7 +26,8 @@ unexport http_proxy HTTP_PROXY https_proxy HTTPS_PROXY no_proxy NO_PROXY
 docker-oracle: docker-exist
 	@${DOCKER_CMD} stop d18n-oracle 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-oracle 2>/dev/null >/dev/null || true
-	@${DOCKER_CMD} run -d --rm \
+	@${DOCKER_CMD} rm d18n-oracle 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d ${DOCKER_RM} \
 	--name d18n-oracle \
 	-p 1521:1521 \
 	-e ORACLE_PASSWORD=oracle \

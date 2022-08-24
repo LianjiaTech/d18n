@@ -15,8 +15,9 @@ docker-h2: docker-exist
 	@echo "$(CGREEN)Build h2 test environment ...$(CEND)"
 	@${DOCKER_CMD} stop d18n-h2 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-h2 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} rm d18n-h2 2>/dev/null >/dev/null || true
 	@echo "${DOCKER_CMD} run --name d18n-h2 $(H2_RELEASE):$(H2_VERSION)"
-	@${DOCKER_CMD} run --name d18n-h2 --rm -d \
+	@${DOCKER_CMD} run --name d18n-h2 ${DOCKER_RM} -d \
 	-p 8082:8082 \
 	-p 9092:9092 \
 	$(H2_RELEASE):$(H2_VERSION)

@@ -3,7 +3,8 @@
 docker-presto: docker-exist
 	@${DOCKER_CMD} stop d18n-presto 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-presto 2>/dev/null >/dev/null || true
-	@${DOCKER_CMD} run -d --rm \
+	@${DOCKER_CMD} rm d18n-presto 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d ${DOCKER_RM} \
 	-p 8080:8080 \
 	--name d18n-presto \
 	starburstdata/presto

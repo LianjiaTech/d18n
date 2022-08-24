@@ -20,8 +20,9 @@ docker-postgres: docker-exist
 	@echo "$(CGREEN)Build postgres test environment ...$(CEND)"
 	@${DOCKER_CMD} stop d18n-postgres 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-postgres 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} rm d18n-postgres 2>/dev/null >/dev/null || true
 	@echo "${DOCKER_CMD} run --name d18n-postgres $(POSTGRES_RELEASE):$(POSTGRES_VERSION)"
-	@${DOCKER_CMD} run --name d18n-postgres --rm -d \
+	@${DOCKER_CMD} run --name d18n-postgres ${DOCKER_RM} -d \
 	-v `pwd`/test/sakila.postgres.sql.gz:/docker-entrypoint-initdb.d/sakila.postgres.sql.gz \
 	-e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
 	-p 5432:5432 \

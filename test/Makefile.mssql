@@ -16,7 +16,8 @@ D18N_MSSQL_ARGS=--server sqlserver --host 127.0.0.1 --port 1433 --user sa --pass
 docker-mssql: docker-exist
 	@${DOCKER_CMD} stop d18n-mssql 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-mssql 2>/dev/null >/dev/null || true
-	@${DOCKER_CMD} run -d --rm --name d18n-mssql \
+	@${DOCKER_CMD} rm d18n-mssql 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d ${DOCKER_RM} --name d18n-mssql \
 	-e 'ACCEPT_EULA=Y' \
 	-e 'MSSQL_AGENT_ENABLED=true' \
 	-e 'SA_PASSWORD=yourStrong(!)Password' \

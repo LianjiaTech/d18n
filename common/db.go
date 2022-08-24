@@ -323,7 +323,7 @@ func (c Config) QuoteString(str string) string {
 	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
 
 	switch c.Target {
-	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto":
+	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto", "sqlite", "sqlite3":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq, hive
 		return `'` + Escape(str) + `'`

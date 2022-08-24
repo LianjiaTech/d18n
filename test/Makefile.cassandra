@@ -11,8 +11,9 @@ docker-cassandra: docker-exist
 	@echo "$(CGREEN)Build cassandra test environment ...$(CEND)"
 	@${DOCKER_CMD} stop d18n-cassandra 2>/dev/null || true
 	@${DOCKER_CMD} wait d18n-cassandra 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} rm d18n-cassandra 2>/dev/null >/dev/null || true
 	@echo "${DOCKER_CMD} run --name d18n-cassandra $(CASSANDRA_RELEASE):$(CASSANDRA_VERSION)"
-	@${DOCKER_CMD} run --name d18n-cassandra --rm -d \
+	@${DOCKER_CMD} run --name d18n-cassandra ${DOCKER_RM} -d \
 	-p 9042:9042 \
 	$(CASSANDRA_RELEASE):$(CASSANDRA_VERSION)
 
