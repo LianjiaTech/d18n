@@ -20,6 +20,7 @@ import (
 	"strings"
 
 	"github.com/LianjiaTech/d18n/common"
+	"github.com/olekukonko/tablewriter"
 )
 
 // saveRows2CSV save rows result into csv format file
@@ -63,6 +64,11 @@ func saveRows2CSV(s *SaveStruct, rows *sql.Rows) error {
 
 	// set table header with column name
 	if !s.Config.NoHeader {
+		if s.Config.AutoFormatHeader {
+			for i, v := range columnNames {
+				columnNames[i] = tablewriter.Title(v)
+			}
+		}
 		if err = w.Write(columnNames); err != nil {
 			return err
 		}

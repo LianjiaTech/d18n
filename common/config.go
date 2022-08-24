@@ -62,6 +62,7 @@ type Config struct {
 	PrintConfig             bool   // print d18n config
 	IgnoreBlank             bool   // ignore blank lines in import file
 	ExtendedInsert          int    // mysqldump extended-insert
+	AutoFormatHeader        bool   // csv, ascii auto format header
 
 	// mask
 	RandSeed int64 // rand.Seed()

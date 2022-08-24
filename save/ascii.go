@@ -26,7 +26,7 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 	table := tablewriter.NewWriter(os.Stdout)
 
 	// ascii table format config
-	table.SetAutoFormatHeaders(false)
+	table.SetAutoFormatHeaders(s.Config.AutoFormatHeader)
 	table.SetAutoWrapText(false)
 
 	// column info

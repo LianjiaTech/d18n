@@ -100,6 +100,7 @@ type Option struct {
 	RandSeed         int64  `long:"rand-seed" description:"random seed, default: current unix nano timestamp"`
 	MaxBufferSize    int    `long:"max-buffer-size" description:"bufio MaxScanTokenSize"`
 	NULLString       string `long:"null-string" default:"NULL" description:"NULL string write into file. e.g., NULL, nil, None, \"\""`
+	AutoFormatHeader bool   `long:"auto-format-header" description:"csv, ascii column header auto format"`
 }
 
 // printPrompt print prompt
@@ -351,6 +352,7 @@ func ParseFlags() (Config, error) {
 		PrintConfig:             opt.PrintConfig,
 		IgnoreBlank:             opt.IgnoreBlank,
 		ExtendedInsert:          int(opt.ExtendedInsert),
+		AutoFormatHeader:        opt.AutoFormatHeader,
 
 		RandSeed: opt.RandSeed,
 

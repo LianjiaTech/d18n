@@ -180,11 +180,17 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 						"INTERVALDS", "TIMESTAMPLTZ_DTY", "TIMESTAMPLTZ": // Oracle time
 						value = "TIMESTAMP" + c.QuoteString(col.String)
 						special = true
+					case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
+						value = "N" + c.QuoteString(col.String)
+						special = true
 					}
 				case "mssql", "sqlserver":
 					switch ty {
 					case "LONG": // SQL Server means big integer
 						value = col.String
+						special = true
+					case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
+						value = "N" + c.QuoteString(col.String)
 						special = true
 					}
 				}
@@ -200,12 +206,7 @@ func (c Config) SQLInsertValues(header []HeaderColumn, columns []sql.NullString)
 					value = col.String
 				// quote
 				default:
-					switch ty {
-					case "NVARCHAR", "NCHAR", "NATIONAL", "NVARCHAR2":
-						value = "N" + c.QuoteString(col.String)
-					default:
-						value = c.QuoteString(col.String)
-					}
+					value = c.QuoteString(col.String)
 				}
 			}
 
