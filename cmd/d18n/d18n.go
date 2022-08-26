@@ -36,7 +36,9 @@ func main() {
 	common.PanicIfError(err)
 
 	// parse cipher config
-	common.PanicIfError(mask.ParseCipherConfig(c.Cipher))
+	if c.Mask != "" { // generate cipher will cost about 200ms
+		common.PanicIfError(mask.ParseCipherConfig(c.Cipher))
+	}
 
 	// print cipher
 	if c.PrintCipher {
@@ -69,7 +71,9 @@ func main() {
 	}
 
 	// init mask corpus
-	common.PanicIfError(mask.InitMaskCorpus(c.RandSeed))
+	if c.Mask != "" {
+		common.PanicIfError(mask.InitMaskCorpus(c.RandSeed))
+	}
 
 	// import file
 	if c.Import {

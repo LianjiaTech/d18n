@@ -65,6 +65,8 @@ func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
 		sql = "SELECT TOP 0 * FROM %s"
 	case "oracle":
 		sql = "SELECT * FROM %s WHERE ROWNUM < 0"
+	case "mysql":
+		sql = "SELECT * FROM %s LIMIT 0 LOCK IN SHARE MODE"
 	default:
 		sql = "SELECT * FROM %s LIMIT 0"
 	}

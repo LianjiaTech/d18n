@@ -200,7 +200,7 @@ func ParseFlags() (Config, error) {
 	}
 
 	if opt.Target == "" {
-		opt.Target = opt.Server
+		opt.Target = strings.ToLower(opt.Server)
 	}
 
 	if opt.DefaultsExtraFile != "" {
@@ -284,13 +284,15 @@ func ParseFlags() (Config, error) {
 	// --query is empty and -table not empty generate full select query
 	if opt.Table != "" && opt.Query == "" {
 		if opt.Limit != 0 {
-			c.Server = opt.Server
-			c.Target = opt.Target
+			c.Server = strings.ToLower(opt.Server)
+			c.Target = strings.ToLower(opt.Target)
 			switch strings.ToLower(opt.Server) {
 			case "oracle":
 				opt.Query = fmt.Sprintf("SELECT * FROM %s WHERE ROWNUM <= %d", opt.Table, opt.Limit)
 			case "sqlserver", "mssql":
-				opt.Query = fmt.Sprintf("SELECT TOP %d * FROM %s", opt.Limit, opt.Table)
+				opt.Query = fmt.Sprintf("SELECT TOP %d * FROM %s WITH (NOLOCK)", opt.Limit, opt.Table)
+			case "mysql":
+				opt.Query = fmt.Sprintf("SELECT * FROM %s LIMIT %d LOCK IN SHARE MODE", opt.Table, opt.Limit)
 			default:
 				opt.Query = fmt.Sprintf("SELECT * FROM %s LIMIT %d", opt.Table, opt.Limit)
 			}
@@ -318,8 +320,8 @@ func ParseFlags() (Config, error) {
 	}
 
 	c = Config{
-		Server:   opt.Server,
-		Target:   opt.Target,
+		Server:   strings.ToLower(opt.Server),
+		Target:   strings.ToLower(opt.Target),
 		User:     opt.User,
 		Password: opt.Password,
 		Charset:  opt.Charset,
