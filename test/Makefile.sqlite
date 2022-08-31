@@ -1,8 +1,12 @@
 # Useful SQLs
+# https://www.sqlite.org/faq.html
 ## Version of sqlite
 # select sqlite_version()
 ## show tables
 # SELECT '' AS table_schema, name AS table_name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence' ORDER BY name
+## DESC TABLE
+# PRAGMA table_info([tablename]);
+# SELECT sql FROM sqlite_schema WHERE name = 'foo'
 
 .PHONY: test-sqlite
 test-sqlite: build
@@ -25,3 +29,9 @@ test-sqlite: build
 	--hex-blob c1,c2 \
 	--file test/test_sqlite_blob.sql \
 	--query "SELECT X'31' as c1, '1', 1, x'61' as c2, 'a'"
+
+.PHONY: d18n-sqlite
+d18n-sqlite:
+	@${RLWRAP} ./bin/d18n --server sqlite \
+	--database 'test/sakila.sqlite3' \
+	-q --verbose
