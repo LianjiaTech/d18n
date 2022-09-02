@@ -117,21 +117,25 @@ func (c Config) ExecResult() (sql.Result, error) {
 // https://colobu.com/2019/01/10/drivers-connection-string-in-Go/
 func (c Config) NewConnection() (*sql.DB, error) {
 	var dsn string
+	var server = c.Server
 	switch c.Server {
-	case "mysql", "tidb":
+	case "mysql":
+		dsn = c.dsnMySQL()
+	case "tidb":
+		server = "mysql"
 		dsn = c.dsnMySQL()
 	case "postgres":
 		dsn = c.dsnPostgres()
 	case "sqlite", "sqlite3":
-		c.Server = "sqlite"
+		server = "sqlite"
 		dsn = c.dsnFile()
 	case "csvq", "csv":
-		c.Server = "csvq"
+		server = "csvq"
 		dsn = c.dsnFile()
 	case "oracle":
 		dsn = c.dsnOracle()
 	case "sqlserver", "mssql":
-		c.Server = "sqlserver"
+		server = "sqlserver"
 		dsn = c.dsnSQLServer()
 		if c.Limit != 0 {
 			connector, err := mssql.NewConnector(dsn)
@@ -155,7 +159,7 @@ func (c Config) NewConnection() (*sql.DB, error) {
 		dsn = strings.TrimSpace(c.DSN)
 	}
 
-	return sql.Open(c.Server, dsn)
+	return sql.Open(server, dsn)
 }
 
 // SetForeignKeyChecks
@@ -165,7 +169,7 @@ func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) e
 	switch c.Target {
 	case "sqlite", "sqlite3":
 		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
-	case "mysql":
+	case "mysql", "tidb":
 		sql = fmt.Sprintf("SET FOREIGN_KEY_CHECKS = %v;", enable)
 	case "csvq", "csv", "clickhouse", "presto":
 		return fmt.Errorf("not support foreign key")

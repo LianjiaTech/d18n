@@ -333,3 +333,12 @@ test-mysql: build
 	# test --login-path
 	@MYSQL_TEST_LOGIN_FILE=test/.mylogin.cnf ./bin/d18n --login-path=d18n \
 	-e "show databases"
+
+	# test tidb lock in share mode
+	@./bin/d18n --defaults-extra-file test/my.cnf --import \
+	--server tidb \
+	--table actor --database sakila \
+	--replace --verbose \
+	--disable-foreign-key-checks \
+	--file test/actor.csv
+
