@@ -65,7 +65,7 @@ func (c Config) GetColumnTypes() ([]*sql.ColumnType, error) {
 		sql = "SELECT TOP 0 * FROM %s"
 	case "oracle":
 		sql = "SELECT * FROM %s WHERE ROWNUM < 0"
-	case "mysql":
+	case "mysql": // tidb not support LOCK IN SHARE MODE
 		sql = "SELECT * FROM %s LIMIT 0 LOCK IN SHARE MODE"
 	default:
 		sql = "SELECT * FROM %s LIMIT 0"
@@ -118,7 +118,7 @@ func (c Config) ExecResult() (sql.Result, error) {
 func (c Config) NewConnection() (*sql.DB, error) {
 	var dsn string
 	switch c.Server {
-	case "mysql":
+	case "mysql", "tidb":
 		dsn = c.dsnMySQL()
 	case "postgres":
 		dsn = c.dsnPostgres()

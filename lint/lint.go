@@ -251,7 +251,7 @@ func (l *LintStruct) lintCellUndeclaredHeader(line int64, raw []string) (column 
 
 			// check column name length
 			switch l.Config.Server {
-			case "mysql":
+			case "mysql", "tidb":
 				if len(c) > 64 {
 					return k + 1, true
 				}
