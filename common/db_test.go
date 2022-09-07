@@ -134,6 +134,7 @@ func TestNewConnection(t *testing.T) {
 		"csv",
 		"clickhouse",
 		"presto",
+		"trino",
 		"h2",
 	}
 	for _, s := range servers {

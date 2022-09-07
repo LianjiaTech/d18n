@@ -30,14 +30,29 @@ func Example_prepareQuery() {
 		{
 			Query: "use db;",
 		},
+		// support backtick
 		{
 			Query: "use `db`;",
 		},
+		// support single quote
 		{
 			Query: "use 'db';",
 		},
+		// support double quotes
 		{
 			Query: `use "db";`,
+		},
+		// support under score
+		{
+			Query: `use d_b;`,
+		},
+		// support minus
+		{
+			Query: `use d-b;`,
+		},
+		// presto/trino
+		{
+			Query: `use tpch.tiny;`,
 		},
 	}
 
@@ -50,4 +65,7 @@ func Example_prepareQuery() {
 	// db
 	// db
 	// db
+	// d_b
+	// d-b
+	// tpch.tiny
 }

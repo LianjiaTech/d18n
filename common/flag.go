@@ -149,7 +149,7 @@ func (opt *Option) readQuery() error {
 func (opt *Option) prepareQuery() error {
 	var err error
 	// use database
-	dbReg := regexp.MustCompile(`(?i)^\s*use\s+[` + "`" + `\["']?(?P<Database>\w+)[` + "`" + `\]"']?\s*[;]?`)
+	dbReg := regexp.MustCompile(`(?i)^\s*use\s+[` + "`" + `\["']?(?P<Database>[\w\.\-]+)[` + "`" + `\]"']?\s*[;]?`)
 	sub := dbReg.FindStringSubmatch(opt.Query)
 	if len(sub) == 2 {
 		sessionDatabase = sub[1]

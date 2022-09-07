@@ -38,6 +38,8 @@ import (
 	_ "github.com/ClickHouse/clickhouse-go"
 	// presto
 	_ "github.com/prestodb/presto-go-client/presto"
+	// trino
+	_ "github.com/trinodb/trino-go-client/trino"
 	// csvq
 	_ "github.com/mithrandie/csvq-driver"
 	// hive
@@ -148,7 +150,9 @@ func (c Config) NewConnection() (*sql.DB, error) {
 	case "clickhouse":
 		dsn = c.dsnClickHouse()
 	case "presto":
-		dsn = c.dsnPresto()
+		dsn = c.dsnTrino()
+	case "trino":
+		dsn = c.dsnTrino()
 	case "hive":
 		dsn = c.dsnHive()
 	case "h2":
@@ -171,7 +175,7 @@ func (c Config) SetForeignKeyChecks(enable bool, conn *sql.DB, args ...string) e
 		sql = fmt.Sprintf("pragma foreign_keys %v;", enable)
 	case "mysql", "tidb":
 		sql = fmt.Sprintf("SET FOREIGN_KEY_CHECKS = %v;", enable)
-	case "csvq", "csv", "clickhouse", "presto":
+	case "csvq", "csv", "clickhouse", "presto", "trino":
 		return fmt.Errorf("not support foreign key")
 	case "postgres":
 		if enable {
@@ -249,9 +253,22 @@ func (c Config) dsnClickHouse() string {
 	)
 }
 
-// dsnPresto concat PrestoDB dsn string
-func (c Config) dsnPresto() string {
-	return fmt.Sprintf("http://%s@%s:%s", c.User, c.Host, c.Port)
+func (c Config) dsnTrino() string {
+	var auth = c.User
+	if c.Password != "" {
+		auth += ":" + c.Password
+	}
+
+	var schema string
+	tup := strings.Split(c.Database, ".")
+	if len(tup) == 2 {
+		schema = "?catalog=" + tup[0] + "&schema=" + tup[1]
+	} else {
+		if c.Database != "" {
+			schema = "?catalog=" + c.Database
+		}
+	}
+	return fmt.Sprintf("http://%s@%s:%s%s", auth, c.Host, c.Port, schema)
 }
 
 // dsnHive concat Hive dsn string
@@ -329,7 +346,7 @@ func (c Config) QuoteString(str string) string {
 	// http://www.e2college.com/blogs/oracle/oracle_pl_sql_sql_queries/how_to_escape_special_characters_in_oracle_sql_.html
 
 	switch c.Target {
-	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto", "sqlite", "sqlite3":
+	case "postgres", "oracle", "sqlserver", "mssql", "clickhouse", "presto", "trino", "sqlite", "sqlite3":
 		return "'" + strings.Replace(str, "'", "''", -1) + "'"
 	default: // mysql, mariadb, tidb, sqlite, csvq, hive
 		return `'` + Escape(str) + `'`
@@ -343,7 +360,7 @@ func (c Config) QuoteString(str string) string {
 
 func (c Config) QuoteKey(str string) string {
 	switch c.Target {
-	case "postgres", "clickhouse", "presto":
+	case "postgres", "clickhouse", "presto", "trino":
 		return strconv.Quote(str)
 	// sqlserver, mssql [db].[dbo].[tb]
 	case "sqlserver", "mssql":
@@ -402,7 +419,7 @@ func (c Config) hex(value interface{}) string {
 	case "oracle":
 		// https://www.sqlines.com/oracle/datatypes/raw
 		return c.QuoteString(strings.ToUpper(hex.EncodeToString([]byte(ret))))
-	case "csvq", "csv", "clickhouse", "presto":
+	case "csvq", "csv", "clickhouse", "presto", "trino":
 		// not support binary data
 	// TODO: hive
 	default: // mysql, mariadb, tidb, sql server

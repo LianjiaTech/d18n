@@ -7,7 +7,7 @@ include test/Makefile.postgres
 include test/Makefile.oracle
 include test/Makefile.mssql
 include test/Makefile.clickhouse
-include test/Makefile.presto
+include test/Makefile.trino
 include test/Makefile.hive
 include test/Makefile.h2
 include test/Makefile.cassandra
@@ -154,7 +154,7 @@ docker-stop: docker-exist
 	@${DOCKER_CMD} stop d18n-oracle 2>/dev/null || true
 	@${DOCKER_CMD} stop d18n-mssql 2>/dev/null || true
 	@${DOCKER_CMD} stop d18n-clickhouse 2>/dev/null || true
-	@${DOCKER_CMD} stop d18n-presto 2>/dev/null || true
+	@${DOCKER_CMD} stop d18n-trino 2>/dev/null || true
 	@${DOCKER_CMD} volume prune --force
 
 .PHONY: clean

@@ -1,0 +1,47 @@
+## Run a query to see the nodes in the cluster:
+#  SELECT * FROM system.runtime.nodes;
+## Run a query against the TPCH connector:
+#  SELECT * FROM tpch.tiny.region;
+## Other useful SQLs
+#  show catalogs;
+#  show schemas from mysql;
+#  use mysql.sakila;
+#  show tables;
+
+## http://localhost:8080 Username: trino
+# https://trino.io/docs/current/connector.html
+# -v `pwd`/test/trino.mysql.properties:/etc/trino/catalog/mysql.properties \
+.PHONY: docker-trino
+docker-trino: docker-exist
+	@${DOCKER_CMD} stop d18n-trino 2>/dev/null || true
+	@${DOCKER_CMD} wait d18n-trino 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} rm d18n-trino 2>/dev/null >/dev/null || true
+	@${DOCKER_CMD} run -d ${DOCKER_RM} \
+	-p 8080:8080 \
+	--name d18n-trino \
+	trinodb/trino
+
+## You can pass additional arguments to the Trino CLI:
+#@${DOCKER_CMD} exec -it d18n-trino trino --catalog tpch --schema sf1
+.PHONY: connect-trino
+connect-trino:
+	@${DOCKER_CMD} exec -it d18n-trino trino
+
+.PHONY: test-trino-cli
+test-trino:
+	@./bin/d18n --host 127.0.0.1 --port 8080 --server trino \
+	-v \
+	--user trino \
+	--query "show catalogs"
+	@./bin/d18n --host 127.0.0.1 --port 8080 --server trino \
+	-v \
+	--user trino \
+	--query "select 1, 'abc', '中文'"
+	@./bin/d18n --host 127.0.0.1 --port 8080 --server trino \
+	-v \
+	--user trino \
+	--query "select custkey, phone from tpch.tiny.customer limit 1"
+
+.PHONY: d18n-trino
+d18n-trino:
+	@${RLWRAP} ./bin/d18n --server trino --host 127.0.0.1 --port 8080 --user trino -vv -q || true

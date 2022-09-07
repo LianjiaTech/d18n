@@ -68,7 +68,7 @@ https://www.sqlitetutorial.net/sqlite-replace-statement/
 Notice:
 * table name with backtick quote, mysql backtick, oracle double quote
 * value with double quote, single quote
-* not support replace into: presto, postgresql, oracle, clickhouse, sql server
+* not support replace into: presto/trino, postgresql, oracle, clickhouse, sql server
 
 */
 
