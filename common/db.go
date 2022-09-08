@@ -261,12 +261,15 @@ func (c Config) dsnTrino() string {
 
 	var schema string
 	tup := strings.Split(c.Database, ".")
-	if len(tup) == 2 {
+	switch len(tup) {
+	case 2:
 		schema = "?catalog=" + tup[0] + "&schema=" + tup[1]
-	} else {
+	case 1:
 		if c.Database != "" {
 			schema = "?catalog=" + c.Database
 		}
+	default:
+		schema = "?catalog=" + tup[0] + "&schema=" + strings.Join(tup[1:], ".")
 	}
 	return fmt.Sprintf("http://%s@%s:%s%s", auth, c.Host, c.Port, schema)
 }

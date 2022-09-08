@@ -222,6 +222,13 @@ func (s *SaveStruct) String(col interface{}, ty *sql.ColumnType) string {
 			default:
 				str = fmt.Sprint(col)
 			}
+		case "presto", "trino":
+			switch ty.DatabaseTypeName() {
+			case "CHAR": // SQL Server will auto fill space with CHAR type
+				str = strings.TrimSpace(fmt.Sprint(col))
+			default:
+				str = fmt.Sprint(col)
+			}
 		default:
 			str = fmt.Sprint(col)
 		}
