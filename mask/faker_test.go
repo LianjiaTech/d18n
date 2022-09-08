@@ -136,8 +136,8 @@ func TestFakeRegexRandomData(t *testing.T) {
 }
 
 func TestFakeChineseName(t *testing.T) {
-	t.Log(fakeNameByCountry("zh_CN"))
-	t.Log(fakeNameByCountry("zh_CN"))
+	fmt.Println(fakeNameByCountry("zh_CN"))
+	fmt.Println(fakeNameByCountry("zh_CN"))
 }
 
 func Example_fakePassword() {

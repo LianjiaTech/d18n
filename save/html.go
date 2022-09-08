@@ -89,6 +89,9 @@ func saveRows2HTML(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	for rows.Next() {
+		if !s.sample() {
+			continue
+		}
 		s.Status.Lines++
 		// limit return rows
 		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {

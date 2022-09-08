@@ -78,6 +78,9 @@ func saveRows2XLSX(s *SaveStruct, rows *sql.Rows) error {
 
 	var bufSize int
 	for rows.Next() {
+		if !s.sample() {
+			continue
+		}
 		s.Status.Lines++
 
 		// Check excel limit

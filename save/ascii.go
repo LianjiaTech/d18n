@@ -53,6 +53,9 @@ func saveRows2ASCII(s *SaveStruct, rows *sql.Rows) error {
 
 	// set every rows
 	for rows.Next() {
+		if !s.sample() {
+			continue
+		}
 		s.Status.Lines++
 		// preview only show first N lines
 		if s.Config.Preview != 0 && s.Status.Lines > s.Config.Preview {

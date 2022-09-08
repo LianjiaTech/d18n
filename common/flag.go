@@ -38,22 +38,23 @@ type Option struct {
 	Help    func() error `long:"help" required:"false" description:"Show this help message"`
 
 	// database config
-	Server              string `long:"server" default:"mysql" description:"server type, support: mysql, postgres, sqlite, oracle, sqlserver, clickhouse"`
-	Target              string `long:"target" default:"" description:"target server type, use --server value as default"`
-	DSN                 string `long:"dsn" description:"formatted data source name"`
-	User                string `short:"u" long:"user" description:"database user"`
-	Password            string `long:"password" description:"database password"`
-	InteractivePassword bool   `short:"p" description:"input password interactively"`
-	DefaultsExtraFile   string `long:"defaults-extra-file" description:"like mysql --defaults-extra-file for hidden password"`
-	LoginPath           string `long:"login-path" description:"read config like mysql login-path"`
-	Host                string `short:"h" long:"host" default:"127.0.0.1" description:"database host"`
-	Port                int    `short:"P" long:"port" default:"3306" description:"database port"`
-	Socket              string `short:"S" long:"socket" description:"unix socket file"`
-	Database            string `short:"d" long:"database" description:"mysql/sql server: database name, oracle: service_name/sid, sqlite: database file path, csv: database directory"`
-	Table               string `long:"table" description:"table name"`
-	Charset             string `long:"charset" default:"utf8mb4" description:"connection charset"`
-	Limit               int    `long:"limit" description:"query result lines limit"`
-	Timeout             int    `long:"timeout" description:"query timeout in seconds"`
+	Server              string  `long:"server" default:"mysql" description:"server type, support: mysql, postgres, sqlite, oracle, sqlserver, clickhouse"`
+	Target              string  `long:"target" default:"" description:"target server type, use --server value as default"`
+	DSN                 string  `long:"dsn" description:"formatted data source name"`
+	User                string  `short:"u" long:"user" description:"database user"`
+	Password            string  `long:"password" description:"database password"`
+	InteractivePassword bool    `short:"p" description:"input password interactively"`
+	DefaultsExtraFile   string  `long:"defaults-extra-file" description:"like mysql --defaults-extra-file for hidden password"`
+	LoginPath           string  `long:"login-path" description:"read config like mysql login-path"`
+	Host                string  `short:"h" long:"host" default:"127.0.0.1" description:"database host"`
+	Port                int     `short:"P" long:"port" default:"3306" description:"database port"`
+	Socket              string  `short:"S" long:"socket" description:"unix socket file"`
+	Database            string  `short:"d" long:"database" description:"mysql/sql server: database name, oracle: service_name/sid, sqlite: database file path, csv: database directory"`
+	Table               string  `long:"table" description:"table name"`
+	Charset             string  `long:"charset" default:"utf8mb4" description:"connection charset"`
+	Limit               int     `long:"limit" description:"query result lines limit"`
+	Sample              float64 `long:"sample" default:"1" description:"sampling rate"`
+	Timeout             int     `long:"timeout" description:"query timeout in seconds"`
 
 	// read from fille
 	Query            string `short:"e" long:"query" description:"query read from file or command line"`
@@ -301,6 +302,11 @@ func ParseFlags() (Config, error) {
 		}
 	}
 
+	// sample rate > 1, auto divide 100
+	if opt.Sample > 1 {
+		opt.Sample = opt.Sample / 100
+	}
+
 	// test read from file
 	if _, err := os.Stat(opt.Query); err == nil {
 		q, err := ReadFileString(opt.Query)
@@ -332,6 +338,7 @@ func ParseFlags() (Config, error) {
 		Port:     fmt.Sprint(opt.Port),
 		Database: opt.Database,
 		Limit:    opt.Limit,
+		Sample:   opt.Sample,
 		Timeout:  opt.Timeout,
 
 		Interactive:             opt.InteractiveQuery,

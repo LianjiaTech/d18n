@@ -16,6 +16,7 @@ package save
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -38,6 +39,7 @@ type SaveStruct struct {
 	Config common.Config    // common config
 	Status saveStatus       // save status
 	Masker *mask.MaskStruct // masker
+	Rand   *rand.Rand
 }
 
 func NewSaveStruct(c common.Config) (*SaveStruct, error) {
@@ -50,6 +52,7 @@ func NewSaveStruct(c common.Config) (*SaveStruct, error) {
 	s = &SaveStruct{
 		Config: c,
 		Masker: m,
+		Rand:   rand.New(rand.NewSource(c.RandSeed)),
 	}
 	return s, err
 }
@@ -133,6 +136,16 @@ func saveRows(s *SaveStruct, rows *sql.Rows) error {
 	}
 
 	return err
+}
+
+// sample ...
+func (s *SaveStruct) sample() bool {
+	var is bool
+	if s.Config.Sample >= 1 || s.Config.Sample <= 0 || // wrong config
+		s.Rand.Float64() <= s.Config.Sample {
+		is = true
+	}
+	return is
 }
 
 // ShowStatus check SaveRows status at last

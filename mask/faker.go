@@ -230,8 +230,6 @@ func Fake(args ...interface{}) (ret string, err error) {
 
 // fakeAddress generate fake address
 func fakeAddress(country, level string) (ret string, err error) {
-	rand.Seed(time.Now().UnixNano())
-
 	// check country name
 	country = strings.ToLower(country)
 	if _, ok := fakeAddressCorpus[country]; !ok {
@@ -288,8 +286,6 @@ func fakeRegexRandomData(pattern string, min, max uint64) (ret string, err error
 
 // fakeNameByCountry generate fake personal name
 func fakeNameByCountry(country string) (ret string, err error) {
-	rand.Seed(time.Now().UnixNano())
-
 	// check country name
 	country = strings.ToLower(country)
 	if _, ok := fakeNameCorpus[country]; !ok {
@@ -342,7 +338,6 @@ var usccCode = []struct {
 
 // fakerUSCC Chinese unified social credit code
 func fakerUSCC() (ret string, err error) {
-	rand.Seed(time.Now().UnixNano())
 	uscc, err := fakeRegexRandomData("^\\d{6}[0-9A-HJ-NPQRTUWXY]{10}$", 5, 10)
 	if err != nil {
 		return ret, err

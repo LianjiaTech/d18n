@@ -38,8 +38,9 @@ type Config struct {
 	Socket   string
 	Port     string
 	Database string
-	Limit    int // result lines limit
-	Timeout  int // query timeout
+	Limit    int     // result lines limit
+	Sample   float64 // sample rate
+	Timeout  int     // query timeout
 
 	// other config
 	Interactive             bool   // interactive mode

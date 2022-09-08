@@ -64,6 +64,9 @@ func saveRows2SQL(s *SaveStruct, rows *sql.Rows) error {
 	w := bufio.NewWriterSize(file, s.Config.MaxBufferSize)
 	var sqlCounter int
 	for rows.Next() {
+		if !s.sample() {
+			continue
+		}
 		s.Status.Lines++
 		// limit return rows
 		if s.Config.Limit != 0 && s.Status.Lines > s.Config.Limit {
