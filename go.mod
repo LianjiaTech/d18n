@@ -13,7 +13,7 @@ require (
 	github.com/capitalone/fpe v1.2.1
 	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/dnnrly/abbreviate v1.5.2
-	github.com/dolmen-go/mylogin v0.0.0-20211007211255-18ac7793a122
+	github.com/dolmen-go/mylogin v1.0.0
 	github.com/go-ego/gse v0.67.0
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/differential-privacy/go v0.0.0-20210713105217-8da48001ccbd
@@ -29,7 +29,7 @@ require (
 	github.com/pingcap/parser v0.0.0-20210525032559-c37778aff307
 	github.com/pingcap/tidb v1.1.0-beta.0.20210601085537-5d7c852770eb
 	github.com/pingcap/tipb v0.0.0-20210601083426-79a378b6d1c4 // indirect
-	github.com/prestodb/presto-go-client v0.0.0-20211201125635-ad28cec17d6c // indirect
+	github.com/prestodb/presto-go-client v0.0.0-20211201125635-ad28cec17d6c
 	github.com/sijms/go-ora/v2 v2.4.28
 	github.com/taozle/go-hive-driver v0.0.0-20181206100408-79951111cb07
 	github.com/tealeg/xlsx/v3 v3.2.3
